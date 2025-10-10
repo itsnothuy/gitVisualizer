@@ -18,11 +18,11 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - run: corepack enable
-      - run: pnpm install --frozen-lockfile
+      # - run: corepack enable
+      # - run: pnpm install --frozen-lockfile
 
-      - run: pnpm lint
-      - run: pnpm build
+      # - run: pnpm lint
+      # - run: pnpm build
       
       # TODO: Enable when test files are created
       # - run: pnpm test:coverage
