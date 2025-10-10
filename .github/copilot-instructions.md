@@ -58,3 +58,16 @@ You are assisting on a **privacy-first, local-first** Git visualizer. Priorities
 
 ## What to do if unclear
 - Ask for a **minimal ADR patch** or a short proposal PR. Keep artifacts in the repo, not inline chat.
+
+## Area-Specific Instructions
+
+For detailed area-specific instructions, refer to the following files based on the code area you're working on:
+
+| Pattern | File Path | Description |
+| ------- | --------- | ----------- |
+| `src/viz/**`, `src/components/viz/**`, `packages/viz/**` | `.github/instructions/viz.instructions.md` | Visualization layer instructions for DAG layout and rendering with ELK.js, React + SVG, performance targets, and accessibility requirements. |
+| `src/lib/overlays/**`, `packages/overlays/**`, `src/app/(overlays)/**` | `.github/instructions/overlays.instructions.md` | Overlay system instructions for GitHub/GitLab integration with privacy-first OAuth, rate limiting, and read-only access patterns. |
+| `src/lib/git/**`, `packages/ingestion/**` | `.github/instructions/ingestion.instructions.md` | Ingestion layer instructions for local-first Git operations using File System Access API and isomorphic-git with shallow cloning. |
+| `src/**`, `packages/**`, `app/**` | `.github/instructions/a11y.instructions.md` | Accessibility instructions for WCAG 2.2 AA compliance, keyboard navigation, screen reader support, and color-independent design. |
+
+**Note:** These area-specific instructions complement the repository-level instructions above. Always check if area-specific instructions apply to your work.
