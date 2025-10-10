@@ -105,7 +105,7 @@ describe("shallowClone", () => {
     const progressCallback = vi.fn();
 
     // Mock clone to trigger progress callback
-    vi.mocked(git.clone).mockImplementation(async (options: any) => {
+    vi.mocked(git.clone).mockImplementation(async (options: { onProgress?: (event: { phase: string; loaded: number; total: number }) => void }) => {
       if (options.onProgress) {
         options.onProgress({
           phase: "Receiving",
