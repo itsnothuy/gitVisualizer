@@ -11,3 +11,13 @@ jobs:
       - run: pnpm i --frozen-lockfile
       - run: pnpm lint && pnpm test
       - run: pnpm build
+      - name: Debugging CI Failure
+        run: |
+          echo "Node version: $(node -v)"
+          echo "PNPM version: $(pnpm -v)"
+          echo "Installed dependencies:"
+          pnpm list --depth 0
+          echo "Linting output:"
+          pnpm lint || true
+          echo "Testing output:"
+          pnpm test || true
