@@ -463,7 +463,7 @@ export function GraphSVG({
           style={{ minWidth: "100%", minHeight: "100%" }}
         >
           {/* Edges layer (render behind nodes) */}
-          <g aria-label="Commit relationships">
+          <g aria-label="Commit relationships" role="group">
             {edges.map((edge) => (
               <GraphEdge
                 key={edge.id}

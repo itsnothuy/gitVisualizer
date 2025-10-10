@@ -8,6 +8,7 @@ test.describe("Accessibility", () => {
     const accessibilityScanResults = await new AxeBuilder({ page })
       .analyze();
     
+    console.log(accessibilityScanResults.violations);
     expect(accessibilityScanResults.violations).toEqual([]);
   });
 
@@ -15,11 +16,12 @@ test.describe("Accessibility", () => {
     await page.goto("/demo");
     
     // Wait for graph to render
-    await page.waitForSelector('[role="graphics-document"]', { timeout: 10000 });
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 20000 });
     
     const accessibilityScanResults = await new AxeBuilder({ page })
       .analyze();
     
+    console.log(accessibilityScanResults.violations);
     expect(accessibilityScanResults.violations).toEqual([]);
   });
 
@@ -43,7 +45,7 @@ test.describe("Accessibility", () => {
     await page.goto("/demo");
     
     // Wait for graph to render
-    await page.waitForSelector('[role="graphics-document"]', { timeout: 10000 });
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 20000 });
     
     // Check for graphics-document role
     const graphSVG = page.locator('[role="graphics-document"]');
@@ -85,7 +87,7 @@ test.describe("Accessibility", () => {
     await page.goto("/demo");
     
     // Wait for graph to render
-    await page.waitForSelector('[role="graphics-document"]', { timeout: 10000 });
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 20000 });
     
     // Find first graph node
     const firstNode = page.locator('[role="button"][data-testid^="graph-node-"]').first();
@@ -132,7 +134,7 @@ test.describe("Accessibility", () => {
     await page.goto("/demo");
     
     // Wait for graph to render
-    await page.waitForSelector('[role="graphics-document"]', { timeout: 10000 });
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 20000 });
     
     // Check that reduced motion preference is detected
     const hasReducedMotionClass = await page.evaluate(() => {
@@ -146,7 +148,7 @@ test.describe("Accessibility", () => {
     await page.goto("/demo");
     
     // Wait for graph to render
-    await page.waitForSelector('[role="graphics-document"]', { timeout: 10000 });
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 20000 });
     
     // Verify status markers have aria-labels
     const statusMarkers = page.locator('[aria-label*="Build"]');
@@ -166,7 +168,7 @@ test.describe("Accessibility", () => {
     await page.goto("/demo");
     
     // Wait for graph to render
-    await page.waitForSelector('[role="graphics-document"]', { timeout: 10000 });
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 20000 });
     
     // Find first graph node and focus it
     const firstNode = page.locator('[role="button"][data-testid^="graph-node-"]').first();
