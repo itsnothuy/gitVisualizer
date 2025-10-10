@@ -61,6 +61,16 @@ function StatusMarker({ status, x, y }: { status: "success" | "failed" | "pendin
   if (!marker) return null;
 
   return (
+    <svg width="100%" height="600" role="graphics-document" aria-label="Commit graph">
+      {edges.map((e) => (
+        <line key={e.id} x1={positions[e.source].x} y1={positions[e.source].y}
+              x2={positions[e.target].x} y2={positions[e.target].y}
+              stroke="currentColor" strokeWidth="2" />
+      ))}
+      {nodes.map((n) => (
+        <g key={n.id} transform={`translate(${positions[n.id].x},${positions[n.id].y})`} tabIndex={0} role="group">
+          <circle r="8" />
+          <text x="12" y="4">{n.title}</text>
     <g transform={`translate(${x}, ${y})`} aria-label={marker.ariaLabel}>
       {marker.shape === "checkmark" && (
         <path d="M-3,-1 L-1,1 L3,-3" stroke="currentColor" strokeWidth="1.5" fill="none" className={marker.color} />
