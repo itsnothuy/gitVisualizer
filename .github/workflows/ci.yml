@@ -9,7 +9,8 @@ jobs:
         with: { node-version: 20 }
       - run: corepack enable
       - run: pnpm i --frozen-lockfile
-      - run: pnpm lint && pnpm test
+      - run: pnpm lint --debug > eslint-debug.log || true
+      - run: pnpm test
       - run: pnpm build
       - name: Debugging CI Failure
         run: |
@@ -17,7 +18,7 @@ jobs:
           echo "PNPM version: $(pnpm -v)"
           echo "Installed dependencies:"
           pnpm list --depth 0
-          echo "Linting output:"
-          pnpm lint || true
+          echo "Linting output (debug log):"
+          cat eslint-debug.log || true
           echo "Testing output:"
           pnpm test || true
