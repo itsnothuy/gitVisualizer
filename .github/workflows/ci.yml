@@ -20,11 +20,11 @@ jobs:
           cache: 'pnpm'
 
       - run: corepack enable
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: NODE_OPTIONS='--experimental-vm-modules' pnpm test --run
+      - run: pnpm test --run
       - run: pnpm build
       
       - name: Install Playwright browsers
