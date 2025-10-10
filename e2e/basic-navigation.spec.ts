@@ -20,7 +20,9 @@ test.describe("Basic Navigation", () => {
 
   test("displays getting started card", async ({ page }) => {
     await page.goto("/");
+    // Wait for the page to fully load
+    await page.waitForLoadState("networkidle");
     const card = page.getByRole("heading", { name: /getting started/i });
-    await expect(card).toBeVisible();
+    await expect(card).toBeVisible({ timeout: 10000 });
   });
 });

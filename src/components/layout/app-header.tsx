@@ -10,6 +10,12 @@ export function AppHeader() {
       role="banner"
     >
       <div className="container flex h-14 items-center">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:border focus:rounded-md focus:top-2 focus:left-2"
+        >
+          Skip to main content
+        </a>
         <div className="mr-4 flex">
           <Link
             href="/"
@@ -28,12 +34,6 @@ export function AppHeader() {
           </Link>
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-2">
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:border focus:rounded-md focus:top-2 focus:left-2"
-          >
-            Skip to main content
-          </a>
         </div>
       </div>
     </header>

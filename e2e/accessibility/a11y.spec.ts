@@ -44,11 +44,13 @@ test.describe("Accessibility", () => {
   test("should support keyboard navigation", async ({ page }) => {
     await page.goto("/");
     
-    // Tab through interactive elements
+    // Start with the skip link (first focusable element)
     await page.keyboard.press("Tab");
-    await page.keyboard.press("Tab");
+    const skipLink = page.getByRole("link", { name: /skip to main content/i });
+    await expect(skipLink).toBeFocused();
     
-    // Should be able to focus on the logo link
+    // Tab to next element (should be logo link)
+    await page.keyboard.press("Tab");
     const logoLink = page.getByRole("link", { name: /git visualizer/i });
     await expect(logoLink).toBeFocused();
   });
