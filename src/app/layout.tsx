@@ -1,12 +1,20 @@
 import "./globals.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Providers } from "@/components/providers";
+import { AppShell } from "@/components/layout/app-shell";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Git Visualizer",
+  description: "Privacy-first, local-first Git commit graph visualizer",
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const queryClient = new QueryClient();
   return (
     <html lang="en">
       <body>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );

@@ -4,10 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:https": "next dev --turbopack --experimental-https",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest --pool=forks"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest --pool=forks",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.6.2",
@@ -32,6 +35,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.56.0",
     "@tailwindcss/postcss": "^4",
@@ -40,6 +44,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.0.4",
+    "axe-core": "^4.11.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "eslint-plugin-jsx-a11y": "^6.10.2",

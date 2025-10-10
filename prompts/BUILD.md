@@ -9,11 +9,13 @@ pnpm install --frozen-lockfile
 
 # Development
 pnpm dev              # Start dev server on http://localhost:3000
+pnpm dev:https        # Start dev server with HTTPS (for File System Access API)
 
 # Quality Assurance
 pnpm lint            # ESLint + jsx-a11y + Prettier
+pnpm typecheck       # TypeScript type checking
 pnpm test            # Unit & integration tests (Vitest)
-pnpm exec playwright test  # E2E tests
+pnpm test:e2e        # E2E tests (Playwright)
 
 # Production
 pnpm build           # Build for production
@@ -24,7 +26,7 @@ pnpm start           # Start production server
 
 ### System Requirements
 
-- **Node.js**: 18.x or higher
+- **Node.js**: 18.18 or higher
 - **pnpm**: Latest (via corepack)
 - **Browser**: Chrome/Edge 90+, Firefox 88+, Safari 14+
 
@@ -43,9 +45,20 @@ pnpm install --frozen-lockfile
 
 # Verify setup
 pnpm lint           # Should pass without errors
+pnpm typecheck      # Should pass without errors
 pnpm test           # Should pass all tests
 pnpm build          # Should build successfully
 ```
+
+### HTTPS Development Server
+
+To test features that require secure context (e.g., File System Access API):
+
+```bash
+pnpm dev:https
+```
+
+This uses Next.js experimental HTTPS support with self-signed certificates. Your browser will warn about the certificate; you can safely proceed for local development.
 
 ### Environment Configuration
 
