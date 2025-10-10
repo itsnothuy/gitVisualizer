@@ -1,7 +1,8 @@
 # Git Visualizer
-
 A privacy-first, local-first Git repository visualizer that renders commit graphs as interactive DAGs (Directed Acyclic Graphs). Built with Next.js, React, and ELK layout engine.
-
+<p align="center">
+  <img src="./assets/home.png" alt="Home Page"  width="800"/> &nbsp;&nbsp;&nbsp;
+</p>
 ## Features
 
 - 🔒 **Privacy-First**: All processing happens in your browser - no data leaves your device
