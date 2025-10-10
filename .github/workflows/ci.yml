@@ -1,24 +1,32 @@
-name: ci
+name: CI
 on: [push, pull_request]
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
       - run: corepack enable
-      - run: pnpm i --frozen-lockfile
-      - run: pnpm lint --debug > eslint-debug.log || true
-      - run: pnpm test
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+      - run: pnpm test:coverage
       - run: pnpm build
-      - name: Debugging CI Failure
-        run: |
-          echo "Node version: $(node -v)"
-          echo "PNPM version: $(pnpm -v)"
-          echo "Installed dependencies:"
-          pnpm list --depth 0
-          echo "Linting output (debug log):"
-          cat eslint-debug.log || true
-          echo "Testing output:"
-          pnpm test || true
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: E2E tests
+        run: pnpm exec playwright test
