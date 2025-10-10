@@ -1,24 +1,52 @@
-name: ci
-on: [push, pull_request]
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
 jobs:
-  build:
+  quality:
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: corepack enable
-      - run: pnpm i --frozen-lockfile
-      - run: pnpm lint --debug > eslint-debug.log || true
-      - run: pnpm test
-      - run: pnpm build
-      - name: Debugging CI Failure
-        run: |
-          echo "Node version: $(node -v)"
-          echo "PNPM version: $(pnpm -v)"
-          echo "Installed dependencies:"
-          pnpm list --depth 0
-          echo "Linting output (debug log):"
-          cat eslint-debug.log || true
-          echo "Testing output:"
-          pnpm test || true
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.18'
+          cache: 'pnpm'
+      
+      - name: Enable Corepack
+        run: corepack enable
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Lint
+        run: pnpm lint
+      
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+      
+      - name: Unit tests
+        run: pnpm test
+      
+      - name: Build
+        run: pnpm build
+      
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps chromium
+      
+      - name: E2E tests
+        run: pnpm exec playwright test --project=chromium
+      
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
