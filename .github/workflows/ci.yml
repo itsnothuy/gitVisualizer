@@ -22,11 +22,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm lint
-      - run: pnpm test:coverage
       - run: pnpm build
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
-
-      - name: E2E tests
-        run: pnpm exec playwright test
+      
+      # TODO: Enable when test files are created
+      # - run: pnpm test:coverage
+      # - name: Install Playwright browsers
+      #   run: pnpm exec playwright install --with-deps
+      # - name: E2E tests
+      #   run: pnpm exec playwright test
