@@ -36,7 +36,7 @@ export function GraphSVG({ nodes, edges, positions }: GraphSVGProps) {
               stroke="currentColor" strokeWidth="2" />
       ))}
       {nodes.map((n) => (
-        <g key={n.id} transform={`translate(${positions[n.id].x},${positions[n.id].y})`} tabIndex={0}>
+        <g key={n.id} transform={`translate(${positions[n.id].x},${positions[n.id].y})`} tabIndex={0} role="group">
           <circle r="8" />
           <text x="12" y="4">{n.title}</text>
         </g>
