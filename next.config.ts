@@ -3,7 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode: true,
-  experimental: { 
+  output: 'standalone', // Ensures compatibility with Vercel's zero-config deployment
+  experimental: {
+    // @ts-ignore
+    appDir: true, // Enable experimental app directory support
     optimizePackageImports: ["@tanstack/react-query"],
   },
   eslint: { ignoreDuringBuilds: false },
