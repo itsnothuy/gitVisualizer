@@ -8,9 +8,9 @@ applyTo: "src/viz/**,src/components/viz/**,packages/viz/**"
 You are working inside the **visualization layer**: DAG layout, lane assignment, and rendering (graph nodes/edges, interactions, zoom/pan). Optimize for **clarity, performance, and accessibility**.
 
 ## Non-negotiables
-- **Layout**: Use **ELK (elkjs)** layered (Sugiyama) algorithm for positioning and lanes. Tune options; no ad-hoc absolute positioning. :contentReference[oaicite:3]{index=3}
-- **Render**: Default to **React + SVG** (semantic, accessible). If *visible* elements > ~10k or FPS drops, propose a Canvas/WebGL or OffscreenCanvas path for edges, keeping labels as overlay. Back your change with a perf note. (SVG is great up to mid-sized scenes; escalate when density rises.) :contentReference[oaicite:4]{index=4}
-- **A11y**: Meet **WCAG 2.2 AA**; provide keyboard nav (Tab/Shift+Tab), visible focus, text alternatives. **No color-only encodings**—use shape/pattern/labels for status/branches. Use ARIA roles thoughtfully for interactive SVG. :contentReference[oaicite:5]{index=5}
+- **Layout**: Use **ELK (elkjs)** layered (Sugiyama) algorithm for positioning and lanes. Tune options; no ad-hoc absolute positioning.
+- **Render**: Default to **React + SVG** (semantic, accessible). If *visible* elements > ~10k or FPS drops, propose a Canvas/WebGL or OffscreenCanvas path for edges, keeping labels as overlay. Back your change with a perf note. (SVG is great up to mid-sized scenes; escalate when density rises.)
+- **A11y**: Meet **WCAG 2.2 AA**; provide keyboard nav (Tab/Shift+Tab), visible focus, text alternatives. **No color-only encodings**—use shape/pattern/labels for status/branches. Use ARIA roles thoughtfully for interactive SVG.
 
 ## Do / Don’t
 **Do**
@@ -20,7 +20,7 @@ You are working inside the **visualization layer**: DAG layout, lane assignment,
 
 **Don’t**
 - Don’t bypass ELK for quick fixes.
-- Don’t rely on color alone to convey state (CI/branch). Provide `title`/`aria-label` on SVG groups. :contentReference[oaicite:6]{index=6}
+- Don’t rely on color alone to convey state (CI/branch). Provide `title`/`aria-label` on SVG groups.
 
 ## Acceptance criteria (per PR)
 - **Layout**: ELK config documented in code; deterministic results with same inputs.
@@ -32,7 +32,7 @@ You are working inside the **visualization layer**: DAG layout, lane assignment,
 - E2E (smoke): `pnpm exec playwright test`
 
 ## References
-- **ELK layered algorithm & options**. :contentReference[oaicite:7]{index=7}
-- **elkjs** repo. :contentReference[oaicite:8]{index=8}
-- **WCAG 2.2** & what’s new in 2.2. :contentReference[oaicite:9]{index=9}
-- **WAI-ARIA** overview; accessible SVG guidance. :contentReference[oaicite:10]{index=10}
+- **ELK layered algorithm & options**: https://eclipse.dev/elk/reference/algorithms/org-eclipse-elk-layered.html
+- **elkjs** repo: https://github.com/kieler/elkjs
+- **WCAG 2.2**: https://www.w3.org/WAI/WCAG22/quickref/
+- **WAI-ARIA**: https://www.w3.org/WAI/ARIA/apg/
