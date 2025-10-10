@@ -10,9 +10,9 @@ Enrich the local DAG with optional remote metadata (PR/MR, tags/releases, CI). R
 ## Non-negotiables
 - **Auth**: OAuth with PKCE; **read-only scopes**; tokens **in memory** by default; explicit user consent per repo.
 - **Rate limiting**:
-  - **GitHub REST/GraphQL**: observe **secondary limits** and endpoint limits (e.g., REST “points/min”, GraphQL up to **2000 points/min**, concurrency ≤ **100**, and GraphQL content-creation caps). Back off on `Retry-After`/rate headers. :contentReference[oaicite:11]{index=11}
-  - **GitHub GraphQL content creation caps** exist (not typical for read), so keep overlays strictly read-only and batched. :contentReference[oaicite:12]{index=12}
-  - **GitLab**: treat limits as **configurable** per instance; consult headers and docs; back off and paginate. GitLab.com has product-specific pages and a consolidated handbook for current limits. :contentReference[oaicite:13]{index=13}
+  - **GitHub REST/GraphQL**: observe **secondary limits** and endpoint limits (e.g., REST “points/min”, GraphQL up to **2000 points/min**, concurrency ≤ **100**, and GraphQL content-creation caps). Back off on `Retry-After`/rate headers.
+  - **GitHub GraphQL content creation caps** exist (not typical for read), so keep overlays strictly read-only and batched.
+  - **GitLab**: treat limits as **configurable** per instance; consult headers and docs; back off and paginate. GitLab.com has product-specific pages and a consolidated handbook for current limits.
 
 ## Implementation guidance
 - **Mapping commits → PRs**: prefer GitHub GraphQL fields that associate commits with PRs (and PR numbers/URLs). For CI, use Checks/Statuses endpoints (read-only).
@@ -34,6 +34,6 @@ Enrich the local DAG with optional remote metadata (PR/MR, tags/releases, CI). R
 - Toggle to disable overlays globally.
 
 ## References
-- **GitHub REST rate limits** (points/min; concurrency). :contentReference[oaicite:14]{index=14}
-- **GitHub GraphQL limits**. :contentReference[oaicite:15]{index=15}
-- **GitLab rate limits & handbook**. :contentReference[oaicite:16]{index=16}
+- **GitHub REST rate limits**: https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api
+- **GitHub GraphQL limits**: https://docs.github.com/en/graphql/overview/rate-limits-and-node-limits-for-the-graphql-api
+- **GitLab rate limits**: https://docs.gitlab.com/ee/security/rate_limits.html

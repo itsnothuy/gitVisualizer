@@ -111,72 +111,154 @@ export interface CIStatus {
 
 ### Repository Ingestion
 
+#### Local Repository Access (File System Access API)
+
 ```typescript
 /**
- * Local repository access via File System Access API
+ * Check if File System Access API is supported in the current browser.
+ * @returns true if showDirectoryPicker is available
  */
-export interface LocalGitAPI {
-  /**
-   * Open a local repository directory
-   * @param directoryHandle - File System Access API directory handle
-   * @returns Repository metadata and commit graph
-   */
-  openLocalRepository(directoryHandle: FileSystemDirectoryHandle): Promise<GitRepository>;
-  
-  /**
-   * Check if a directory contains a valid Git repository
-   * @param directoryHandle - Directory to check
-   * @returns Promise resolving to true if valid Git repo
-   */
-  isValidRepository(directoryHandle: FileSystemDirectoryHandle): Promise<boolean>;
-  
-  /**
-   * Disconnect from local repository and clear cached data
-   * @param repositoryId - Repository identifier
-   */
-  disconnectRepository(repositoryId: string): Promise<void>;
+export function isFileSystemAccessSupported(): boolean;
+
+/**
+ * Result of attempting to pick a local repository directory
+ */
+export interface PickRepositoryResult {
+  handle: FileSystemDirectoryHandle | null;
+  error?: {
+    type: "unsupported" | "permission-denied" | "user-cancelled" | "unknown";
+    message: string;
+  };
 }
 
 /**
- * Remote repository cloning via isomorphic-git
+ * Prompt user to open a local repository folder using File System Access API.
+ * 
+ * This function:
+ * - Feature-detects File System Access API support
+ * - Presents a directory picker with clear permission prompts
+ * - Handles permission denial and user cancellation gracefully
+ * - Does NOT persist handles or file contents by default
+ * 
+ * @returns Result object with handle or error information
+ * 
+ * @example
+ * ```typescript
+ * const result = await pickLocalRepoDir();
+ * if (result.handle) {
+ *   // Use the directory handle
+ * } else if (result.error) {
+ *   console.error(result.error.message);
+ * }
+ * ```
  */
-export interface RemoteGitAPI {
-  /**
-   * Clone a remote repository into browser storage
-   * @param url - Git repository URL
-   * @param options - Clone options
-   * @returns Promise with clone progress and final repository
-   */
-  cloneRepository(
-    url: string, 
-    options: CloneOptions
-  ): Promise<AsyncGenerator<CloneProgress, GitRepository>>;
-  
-  /**
-   * Check if URL is a valid Git repository
-   * @param url - Repository URL to validate
-   * @returns Promise resolving to repository metadata
-   */
-  validateRepositoryUrl(url: string): Promise<RepositoryMetadata>;
-}
+export async function pickLocalRepoDir(): Promise<PickRepositoryResult>;
 
-export interface CloneOptions {
-  /** Shallow clone depth (default: 50) */
+/**
+ * Verify that a directory handle points to a valid Git repository.
+ * @param handle Directory handle to verify
+ * @returns true if the directory contains a .git folder
+ */
+export async function isGitRepository(handle: FileSystemDirectoryHandle): Promise<boolean>;
+```
+
+#### Remote Repository Cloning (isomorphic-git + LightningFS)
+
+```typescript
+/**
+ * Configuration options for shallow clone operations
+ */
+export interface ShallowCloneOptions {
+  /** Git repository URL to clone */
+  url: string;
+  /** Clone depth (number of commits to fetch) */
   depth?: number;
-  /** Clone single branch only */
+  /** Only clone a single branch */
   singleBranch?: boolean;
-  /** Specific branch to clone */
-  branch?: string;
-  /** CORS proxy URL for private repositories */
+  /** CORS proxy URL if needed for GitHub/GitLab */
   corsProxy?: string;
+  /** Callback for clone progress updates */
+  onProgress?: (progress: CloneProgress) => void;
 }
 
+/**
+ * Progress information during clone operation
+ */
 export interface CloneProgress {
-  phase: 'init' | 'fetch' | 'checkout' | 'complete';
+  phase: "Receiving" | "Resolving" | "Unpacking";
   loaded: number;
   total: number;
-  message: string;
 }
+
+/**
+ * Result of a shallow clone operation
+ */
+export interface ShallowCloneResult {
+  /** Promise-based filesystem interface */
+  fs: typeof LightningFS.prototype.promises;
+  /** Directory path where repository was cloned */
+  dir: string;
+  /** Repository metadata */
+  metadata: {
+    url: string;
+    clonedAt: Date;
+  };
+  error?: never;
+}
+
+/**
+ * Error result from a failed clone operation
+ */
+export interface ShallowCloneError {
+  fs?: never;
+  dir?: never;
+  metadata?: never;
+  error: {
+    type: "network" | "cors" | "invalid-url" | "unknown";
+    message: string;
+    originalError?: unknown;
+  };
+}
+
+/**
+ * Clone a remote Git repository into browser storage using a shallow clone.
+ * 
+ * This function:
+ * - Uses LightningFS for browser-based storage (OPFS preferred)
+ * - Performs shallow clone with configurable depth
+ * - Fetches only a single branch by default
+ * - Requires CORS proxy for cross-origin repositories
+ * - Does NOT upload any data - purely read operations
+ * 
+ * @param options Clone configuration options
+ * @returns Clone result with filesystem and directory, or error
+ * 
+ * @example
+ * ```typescript
+ * const result = await shallowClone({
+ *   url: "https://github.com/user/repo",
+ *   depth: 50,
+ *   corsProxy: "https://cors.isomorphic-git.org",
+ *   onProgress: (progress) => console.log(progress)
+ * });
+ * 
+ * if (result.error) {
+ *   console.error(result.error.message);
+ * } else {
+ *   // Use result.fs and result.dir
+ * }
+ * ```
+ */
+export async function shallowClone(
+  options: ShallowCloneOptions
+): Promise<ShallowCloneResult | ShallowCloneError>;
+
+/**
+ * Check if OPFS (Origin Private File System) is available.
+ * OPFS provides better performance for file operations.
+ * @returns true if OPFS is supported
+ */
+export function isOPFSAvailable(): boolean;
 
 export interface GitRepository {
   /** Unique repository identifier */
