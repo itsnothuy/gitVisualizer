@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Scaffold Git Visualizer Foundation",
+			"type": "shell",
+			"command": "echo 'Delegating to coding agent to execute scaffold step from /prompts/BUILD.md'",
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}
