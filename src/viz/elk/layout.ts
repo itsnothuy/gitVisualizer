@@ -1,9 +1,24 @@
-import ELK, { ElkNode, ElkExtendedEdge } from "elkjs";
+import type { ElkNode, ElkExtendedEdge } from "elkjs";
 import {
   cacheLayout,
   getCachedLayout,
   type LayoutCacheKey,
 } from "../../lib/cache/layout-cache";
+import { wrap } from "comlink";
+import type { LayoutWorkerApi } from "../../workers/layout.worker";
+
+// Threshold for using Web Worker (nodes count)
+const WORKER_THRESHOLD = 1500;
+
+// Lazy-load ELK to avoid loading it on non-graph pages
+let elkInstance: InstanceType<typeof import("elkjs").default> | null = null;
+async function getElk(): Promise<InstanceType<typeof import("elkjs").default>> {
+  if (!elkInstance) {
+    const ELK = await import("elkjs").then((m) => m.default);
+    elkInstance = new ELK();
+  }
+  return elkInstance;
+}
 
 export type DagNode = {
   id: string;
@@ -74,7 +89,7 @@ async function layoutDirect(
   edges: { id: string; source: string; target: string }[],
   layoutOptions: Record<string, string>
 ): Promise<ElkNode> {
-  const elk = new ELK();
+  const elk = await getElk();
   const graph: ElkNode = {
     id: "root",
     layoutOptions,
@@ -95,15 +110,14 @@ async function layoutDirect(
 
 /**
  * Perform layout using Web Worker (asynchronous, non-blocking)
- * Currently falls back to direct layout - Web Worker requires proper build configuration
+ * Uses Comlink for type-safe worker communication
  */
 async function layoutWithWorker(
   nodes: DagNode[],
   edges: { id: string; source: string; target: string }[],
   layoutOptions: Record<string, string>
 ): Promise<{ layout: ElkNode; duration: number }> {
-  // For now, fall back to direct layout if Worker API is not available
-  // In production, use proper Web Worker file
+  // Fall back to direct layout if Worker API is not available
   if (typeof Worker === "undefined") {
     const startTime = performance.now();
     const layout = await layoutDirect(nodes, edges, layoutOptions);
@@ -111,15 +125,47 @@ async function layoutWithWorker(
     return { layout, duration };
   }
 
-  // Use direct layout for now - Web Worker requires proper build configuration
-  const startTime = performance.now();
-  const layout = await layoutDirect(nodes, edges, layoutOptions);
-  const duration = performance.now() - startTime;
-  return { layout, duration };
+  try {
+    // Create worker and wrap with Comlink
+    const worker = new Worker(
+      new URL("../../workers/layout.worker.ts", import.meta.url),
+      { type: "module" }
+    );
+    const workerApi = wrap<LayoutWorkerApi>(worker);
+
+    // Call worker
+    const result = await workerApi.computeLayout({
+      nodes: nodes.map((n) => ({
+        id: n.id,
+        title: n.title,
+        width: 160,
+        height: 36,
+      })),
+      edges,
+      layoutOptions,
+    });
+
+    // Terminate worker
+    worker.terminate();
+
+    if (result.error) {
+      throw new Error(`Worker error: ${result.error}`);
+    }
+
+    return { layout: result.layout, duration: result.duration };
+  } catch (error) {
+    console.warn("Worker layout failed, falling back to direct:", error);
+    // Fall back to direct layout on error
+    const startTime = performance.now();
+    const layout = await layoutDirect(nodes, edges, layoutOptions);
+    const duration = performance.now() - startTime;
+    return { layout, duration };
+  }
 }
 
 /**
  * Main layout function with caching and optional Web Worker support
+ * Automatically uses Worker for large graphs (>1500 nodes)
  */
 export async function elkLayout(
   nodes: DagNode[],
@@ -129,7 +175,10 @@ export async function elkLayout(
   const startTime = performance.now();
   const elkOptions = toElkOptions(options);
   const enableCaching = options?.enableCaching !== false; // default true
-  const useWorker = options?.useWorker === true; // default false
+  // Use worker if explicitly requested OR if node count > threshold
+  const useWorker = 
+    options?.useWorker === true || 
+    (options?.useWorker !== false && nodes.length > WORKER_THRESHOLD);
 
   // Generate cache key
   const cacheKey: LayoutCacheKey = {
