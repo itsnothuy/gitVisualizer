@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone', // Ensures compatibility with Vercel's zero-config deployment
   experimental: {
-    // @ts-expect-error
+    // @ts-expect-error appDir is not yet typed in Next.js
     appDir: true, // Enable experimental app directory support
     optimizePackageImports: ["@tanstack/react-query"],
   },
