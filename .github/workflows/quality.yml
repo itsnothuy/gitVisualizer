@@ -138,11 +138,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: .next/
+      - name: Build application
+        run: pnpm build
 
       - name: Run Lighthouse CI
         run: pnpm lighthouse
