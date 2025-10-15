@@ -141,6 +141,12 @@ jobs:
       - name: Build application
         run: pnpm build
 
+      - name: Start web server
+        run: pnpm start &
+      
+      - name: Wait for server
+        run: npx wait-on http://localhost:3000
+
       - name: Run Lighthouse CI
         run: pnpm lighthouse
         env:
