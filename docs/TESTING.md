@@ -580,7 +580,79 @@ export const mockGitHubResponses = {
 
 ## Continuous Integration
 
-### GitHub Actions Workflow
+### Quality Gates Workflow
+
+The `quality.yml` workflow provides comprehensive quality gates that must pass before PRs can be merged:
+
+#### Jobs
+
+1. **Lint** - Code quality and style
+   - ESLint checks with jsx-a11y rules
+   - TypeScript type checking
+   - Blocks PR on failures
+
+2. **Test** - Unit and integration tests
+   - Vitest test suite execution
+   - Coverage report generation
+   - Uploads coverage artifacts
+
+3. **Build** - Production build verification
+   - Next.js production build
+   - Uploads build artifacts for downstream jobs
+   - Validates bundling and static generation
+
+4. **Lighthouse CI** - Performance and quality metrics
+   - Runs Lighthouse audits on key pages (/, /demo)
+   - Enforces budget thresholds:
+     - Performance: ≥90 (warn)
+     - Accessibility: ≥95 (error)
+     - Best Practices: ≥90 (warn)
+     - SEO: ≥90 (warn)
+   - Performance budgets:
+     - First Contentful Paint: ≤2000ms
+     - Largest Contentful Paint: ≤2500ms
+     - Cumulative Layout Shift: ≤0.1
+     - Total Blocking Time: ≤300ms
+   - Uploads Lighthouse reports as artifacts
+
+5. **Accessibility** - WCAG 2.2 AA compliance
+   - Runs Playwright tests with @axe-core/playwright
+   - Tests critical violations (must be zero)
+   - Tests serious violations (must be zero)
+   - Validates keyboard navigation
+   - Checks color contrast compliance
+   - Verifies ARIA attributes
+   - Uploads test reports and traces on failure
+
+#### Running Locally
+
+```bash
+# Run individual quality gates
+pnpm lint
+pnpm typecheck
+pnpm test --run
+pnpm build
+
+# Run Lighthouse CI (requires built app)
+pnpm build
+pnpm start &  # Start server in background
+pnpm lighthouse
+
+# Run accessibility tests
+pnpm exec playwright test e2e/accessibility/
+```
+
+#### Lighthouse Configuration
+
+The `lighthouserc.json` file defines:
+- URLs to audit
+- Budget thresholds
+- Assertion rules
+- Upload targets
+
+See the [Lighthouse CI documentation](https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md) for more details.
+
+### CI Workflow (Legacy)
 
 ```yaml
 # .github/workflows/test.yml
