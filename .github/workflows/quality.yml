@@ -148,7 +148,7 @@ jobs:
         run: npx wait-on http://localhost:3000
 
       - name: Run Lighthouse CI
-        run: pnpm lighthouse
+        run: npx lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
