@@ -3,8 +3,10 @@
 import * as React from "react";
 import { GraphSVG } from "@/viz/svg/Graph";
 import { elkLayout, type DagNode } from "@/viz/elk/layout";
+import { lgbSkin } from "@/viz/skins";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ThemeSettings, useLgbMode } from "@/components/settings";
 
 /**
  * Generate sample commit data for demo
@@ -102,6 +104,7 @@ export default function DemoPage() {
   } | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [selectedNode, setSelectedNode] = React.useState<DagNode | null>(null);
+  const [isLgbMode] = useLgbMode();
 
   // Generate layout on mount
   React.useEffect(() => {
@@ -166,6 +169,8 @@ export default function DemoPage() {
         </p>
       </div>
 
+      <ThemeSettings />
+
       <Card>
         <CardHeader>
           <CardTitle>Features</CardTitle>
@@ -215,6 +220,7 @@ export default function DemoPage() {
                 height={600}
                 onNodeSelect={handleNodeSelect}
                 onNodeFocus={handleNodeFocus}
+                skin={isLgbMode ? lgbSkin : undefined}
               />
             </div>
           ) : (
