@@ -1,0 +1,82 @@
+/**
+ * LGB Skin - Design tokens
+ * CSS custom properties for the LGB (look & feel) theme
+ * 
+ * Uses CSS variables scoped to .lgb-skin class for easy theming
+ */
+
+/* LGB Skin Variables */
+.lgb-skin {
+  /* Node colors */
+  --lgb-node-fill: oklch(0.75 0.15 280);
+  --lgb-node-stroke: oklch(0.55 0.20 280);
+  --lgb-node-focus: oklch(0.85 0.18 280);
+  
+  /* Edge colors */
+  --lgb-edge-stroke: oklch(0.65 0.12 280);
+  --lgb-edge-copy-stroke: oklch(0.60 0.10 280);
+  
+  /* Label colors */
+  --lgb-label-fill: oklch(0.25 0 0);
+  
+  /* CI status colors (maintaining color-independent markers) */
+  --lgb-ci-success: oklch(0.65 0.18 140);
+  --lgb-ci-failed: oklch(0.60 0.22 25);
+  --lgb-ci-pending: oklch(0.70 0.15 80);
+  --lgb-ci-unknown: oklch(0.55 0.05 280);
+  
+  /* Ref/branch indicator */
+  --lgb-ref-fill: oklch(0.70 0.18 320);
+  
+  /* PR indicator */
+  --lgb-pr-fill: oklch(0.68 0.16 260);
+  
+  /* Border radii */
+  --lgb-radius-node: 50%;
+  --lgb-radius-marker: 2px;
+  
+  /* Shadows */
+  --lgb-shadow-node: 0 2px 4px oklch(0 0 0 / 0.1);
+  --lgb-shadow-focus: 0 0 0 3px oklch(0.75 0.15 280 / 0.3);
+  
+  /* Stroke widths */
+  --lgb-stroke-node: 2px;
+  --lgb-stroke-edge: 2px;
+  --lgb-stroke-focus: 3px;
+  
+  /* Spacing */
+  --lgb-ci-offset-x: 10px;
+  --lgb-ci-offset-y: -10px;
+  --lgb-ci-size: 8px;
+}
+
+/* Dark mode adjustments for LGB skin */
+.dark .lgb-skin {
+  --lgb-node-fill: oklch(0.65 0.18 280);
+  --lgb-node-stroke: oklch(0.45 0.22 280);
+  --lgb-node-focus: oklch(0.75 0.20 280);
+  
+  --lgb-edge-stroke: oklch(0.55 0.14 280);
+  --lgb-edge-copy-stroke: oklch(0.50 0.12 280);
+  
+  --lgb-label-fill: oklch(0.90 0 0);
+  
+  --lgb-ci-success: oklch(0.60 0.20 140);
+  --lgb-ci-failed: oklch(0.55 0.24 25);
+  --lgb-ci-pending: oklch(0.65 0.17 80);
+  --lgb-ci-unknown: oklch(0.50 0.06 280);
+  
+  --lgb-ref-fill: oklch(0.65 0.20 320);
+  --lgb-pr-fill: oklch(0.63 0.18 260);
+  
+  --lgb-shadow-node: 0 2px 6px oklch(0 0 0 / 0.3);
+  --lgb-shadow-focus: 0 0 0 3px oklch(0.65 0.18 280 / 0.4);
+}
+
+/* Reduced motion - disable transitions */
+@media (prefers-reduced-motion: reduce) {
+  .lgb-skin * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

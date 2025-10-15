@@ -3,6 +3,8 @@ import * as React from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { DagNode } from "../elk/layout";
+import type { Skin } from "../skins/types";
+import { LgbSvgDefs } from "../skins/lgb/LgbSvgDefs";
 
 type Edge = {
   id: string;
@@ -33,6 +35,8 @@ interface GraphSVGProps {
   enableVirtualization?: boolean;
   /** Optional: threshold for enabling virtualization (number of visible elements) */
   virtualizationThreshold?: number;
+  /** Optional: skin configuration for custom look & feel */
+  skin?: Skin;
 }
 
 /**
@@ -94,12 +98,14 @@ const GraphNode = React.memo(function GraphNode({
   onSelect,
   onFocus,
   isInView,
+  skin,
 }: {
   node: DagNode;
   position: { x: number; y: number };
   onSelect?: (node: DagNode) => void;
   onFocus?: (node: DagNode) => void;
   isInView: boolean;
+  skin?: Skin;
 }) {
   const nodeRef = React.useRef<SVGGElement>(null);
   const [isFocused, setIsFocused] = React.useState(false);
@@ -137,6 +143,15 @@ const GraphNode = React.memo(function GraphNode({
   const hasPR = node.pr?.id;
   const hasCI = node.ci?.status;
 
+  // Use skin configuration if provided
+  const nodeRadius = skin?.node.radius ?? 8;
+  const nodeStrokeWidth = skin?.node.strokeWidth ?? 2;
+  const ciOffsetX = skin?.ci.offsetX ?? 8;
+  const ciOffsetY = skin?.ci.offsetY ?? -8;
+  const fontSize = skin?.label.fontSize ?? 12;
+  const fontFamily = skin?.label.fontFamily ?? "inherit";
+  const fontWeight = skin?.label.fontWeight ?? "normal";
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -167,15 +182,16 @@ const GraphNode = React.memo(function GraphNode({
           
           {/* Main node circle */}
           <circle
-            r="8"
+            r={nodeRadius}
             fill="currentColor"
             className={`transition-colors ${isFocused ? "text-primary" : "text-foreground"}`}
+            strokeWidth={nodeStrokeWidth}
             aria-hidden="true"
           />
           
           {/* Status indicator overlay (color-independent) */}
           {hasCI && (
-            <StatusMarker status={node.ci!.status} x={8} y={-8} />
+            <StatusMarker status={node.ci!.status} x={ciOffsetX} y={ciOffsetY} />
           )}
           
           {/* Branch/tag indicator (if refs exist) */}
@@ -207,7 +223,9 @@ const GraphNode = React.memo(function GraphNode({
           <text
             x="12"
             y="4"
-            fontSize="12"
+            fontSize={fontSize}
+            fontFamily={fontFamily}
+            fontWeight={fontWeight}
             className="fill-current pointer-events-none select-none"
             aria-hidden="true"
           >
@@ -250,10 +268,12 @@ const GraphEdge = React.memo(function GraphEdge({
   edge,
   positions,
   isInView,
+  skin,
 }: {
   edge: Edge;
   positions: Position;
   isInView: boolean;
+  skin?: Skin;
 }) {
   // Don't render if not in view (virtualization)
   if (!isInView) return null;
@@ -263,6 +283,8 @@ const GraphEdge = React.memo(function GraphEdge({
   
   if (!sourcePos || !targetPos) return null;
 
+  const strokeWidth = skin?.edge.strokeWidth ?? 2;
+
   return (
     <line
       key={edge.id}
@@ -271,7 +293,7 @@ const GraphEdge = React.memo(function GraphEdge({
       x2={targetPos.x}
       y2={targetPos.y}
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth={strokeWidth}
       className="text-muted-foreground"
       aria-hidden="true"
     />
@@ -343,6 +365,7 @@ export function GraphSVG({
   onNodeFocus,
   enableVirtualization = true,
   virtualizationThreshold = 1000,
+  skin,
 }: GraphSVGProps) {
   const [viewBox] = React.useState({ x: 0, y: 0, width: 1200, height: 600 });
   const svgRef = React.useRef<SVGSVGElement>(null);
@@ -459,9 +482,12 @@ export function GraphSVG({
           role="graphics-document"
           aria-label={`Git commit graph with ${nodes.length} commits`}
           onKeyDown={handleSVGKeyDown}
-          className="outline-none"
+          className={`outline-none ${skin?.className || ""}`}
           style={{ minWidth: "100%", minHeight: "100%" }}
         >
+          {/* SVG Defs for markers/arrowheads */}
+          {skin && <LgbSvgDefs skin={skin} />}
+          
           {/* Edges layer (render behind nodes) */}
           <g aria-label="Commit relationships" role="group">
             {edges.map((edge) => (
@@ -470,6 +496,7 @@ export function GraphSVG({
                 edge={edge}
                 positions={positions}
                 isInView={visibleEdges.includes(edge.id)}
+                skin={skin}
               />
             ))}
           </g>
@@ -484,6 +511,7 @@ export function GraphSVG({
                 onSelect={onNodeSelect}
                 onFocus={onNodeFocus}
                 isInView={visibleNodes.includes(node.id)}
+                skin={skin}
               />
             ))}
           </g>
