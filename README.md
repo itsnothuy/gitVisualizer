@@ -119,6 +119,33 @@ No environment variables are required for basic functionality. All Git operation
 - **No Data Exfiltration**: All repository data stays on your device
 - **Secure Contexts Only**: Requires HTTPS for File System Access API
 - **No External Dependencies**: Works completely offline after initial load
+- **Security Headers**: OWASP-recommended headers including CSP, HSTS, and more
+- **Content Security Policy**: Strict CSP with local-only connections by default
+
+### Security Testing
+
+You can verify the security posture of this application using [Mozilla Observatory](https://observatory.mozilla.org/):
+
+```bash
+# After deploying or running locally
+# Visit: https://observatory.mozilla.org/
+# Enter your deployment URL (or use ngrok/similar for local testing)
+# Observatory will scan and grade your security headers
+
+# Or use the command-line tool:
+npm install -g observatory-cli
+observatory <your-url>
+```
+
+The application implements:
+- **Content-Security-Policy**: Restricts resource loading, prevents XSS
+- **Strict-Transport-Security**: Enforces HTTPS connections
+- **X-Content-Type-Options**: Prevents MIME-sniffing attacks
+- **X-Frame-Options**: Prevents clickjacking
+- **Referrer-Policy**: Controls referrer information leakage
+- **Permissions-Policy**: Disables unnecessary browser features
+- **Cross-Origin-Opener-Policy**: Isolates browsing context
+- **Cross-Origin-Embedder-Policy**: Requires CORS for cross-origin resources
 
 ## Performance
 
