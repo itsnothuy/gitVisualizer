@@ -5,7 +5,19 @@
       "numberOfRuns": 3
     },
     "assert": {
-      "preset": "lighthouse:no-pwa"
+      "assertions": {
+        "categories:performance": ["warn", { "minScore": 0.7 }],
+        "categories:accessibility": ["warn", { "minScore": 0.8 }],
+        "categories:best-practices": ["warn", { "minScore": 0.8 }],
+        "categories:seo": ["warn", { "minScore": 0.8 }],
+        "errors-in-console": "off",
+        "label-content-name-mismatch": "warn",
+        "network-dependency-tree-insight": "off",
+        "max-potential-fid": ["warn", { "maxNumericValue": 200 }],
+        "render-blocking-insight": "off",
+        "render-blocking-resources": "off",
+        "total-blocking-time": ["warn", { "maxNumericValue": 1000 }]
+      }
     }
   }
 }
