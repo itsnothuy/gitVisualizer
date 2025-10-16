@@ -48,6 +48,66 @@ async function saveGolden(sceneName: string, frameId: string, svgContent: string
   console.log(`Saved golden: ${filename}`);
 }
 
+test.describe('LGB Visual Goldens - Intro Fixture', () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to fixture page with intro fixture
+    await page.goto('http://localhost:3000/fixture?fixture=intro');
+    
+    // Wait for the graph to render
+    await page.waitForSelector('svg', { timeout: 5000 });
+  });
+
+  test('should capture intro fixture initial state', async ({ page }) => {
+    await page.waitForTimeout(500); // Allow layout to settle
+    
+    const svgContent = await captureSvgContent(page);
+    
+    // Verify SVG has nodes (circles for commits)
+    expect(svgContent).toContain('circle');
+    
+    // Save golden if in record mode
+    if (process.env.RECORD_GOLDENS === 'true') {
+      await saveGolden('intro', 'initial', svgContent);
+    }
+    
+    // Take screenshot for visual verification
+    await page.screenshot({
+      path: resolve(GOLDEN_DIR, 'intro-initial.png'),
+      fullPage: true,
+    });
+  });
+});
+
+test.describe('LGB Visual Goldens - Rebase Fixture', () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to fixture page with rebase fixture
+    await page.goto('http://localhost:3000/fixture?fixture=rebase');
+    
+    // Wait for the graph to render
+    await page.waitForSelector('svg', { timeout: 5000 });
+  });
+
+  test('should capture rebase fixture initial state', async ({ page }) => {
+    await page.waitForTimeout(500); // Allow layout to settle
+    
+    const svgContent = await captureSvgContent(page);
+    
+    // Verify SVG has nodes
+    expect(svgContent).toContain('circle');
+    
+    // Save golden if in record mode
+    if (process.env.RECORD_GOLDENS === 'true') {
+      await saveGolden('rebase', 'initial', svgContent);
+    }
+    
+    // Take screenshot for visual verification
+    await page.screenshot({
+      path: resolve(GOLDEN_DIR, 'rebase-initial.png'),
+      fullPage: true,
+    });
+  });
+});
+
 test.describe('LGB Visual Goldens - Demo Page', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to demo page with LGB mode
