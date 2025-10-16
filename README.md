@@ -12,6 +12,61 @@ A privacy-first, local-first Git repository visualizer that renders commit graph
 - ⚡ **Fast Rendering**: Optimized SVG rendering with virtualization for large repositories
 - 🎯 **Beginner Friendly**: Clean, intuitive interface for understanding Git history
 
+## LGB Mode
+
+<p align="center">
+  <img src="./assets/home.png" alt="LGB Mode Visualization" width="800"/>
+</p>
+
+Git Visualizer includes an optional **LGB (Learn Git Branching) Mode** that recreates the familiar visual style of [Learn Git Branching](https://learngitbranching.js.org/) for educational purposes.
+
+### What is LGB Mode?
+
+LGB Mode provides a **grid-based layout** with smooth animations that help visualize Git operations:
+
+- **Grid Layout**: Commits arranged with generations (topological levels) as rows and branch lanes as columns
+- **Animated Operations**: Watch commits, branches, merges, rebases, and cherry-picks unfold with 120-480ms motion windows
+- **Visual Grammar**: 
+  - Branch labels inline at tips
+  - HEAD arrow clearly visible
+  - Merge commits show two-parent links
+  - Rebase uses dashed "copy" arcs
+  - Cherry-pick displays single copy arc
+
+### Accessibility & Performance
+
+**Accessibility (WCAG 2.2 AA):**
+- ✅ **Reduced Motion Support**: Automatically collapses animation durations to ≤80ms when `prefers-reduced-motion: reduce` is detected
+- ✅ **Screen Reader Announcements**: `aria-live` region announces each Git operation (e.g., "Committed to main", "Rebased 3 commits onto main")
+- ✅ **Keyboard Navigation**: Full keyboard access maintained during animations
+- ✅ **Color Independence**: All information uses shapes, patterns, and text—not color alone
+- ✅ **Zero Critical Violations**: Verified with axe-core in automated tests
+
+**Performance:**
+- ⚡ **Smooth 60 FPS**: Animations run at 60 FPS using `requestAnimationFrame`
+- 🔒 **Input Locking**: User input disabled during playback to prevent race conditions
+- 🎯 **Optimized for Medium Graphs**: First layout ≤1500ms, pan/zoom ≤16ms/frame
+- 📊 **Canvas Fallback Ready**: For graphs >10k elements (not yet implemented)
+
+### How to Enable
+
+1. Click the **"LGB Mode"** toggle in the application header
+2. Theme applies immediately to all graph visualizations
+3. Preference saved in `sessionStorage` for the current session
+
+### Known Limitations
+
+- **Grid Approximation**: ELK's layered algorithm may produce slightly different spacing than original LGB
+- **Input Locking**: All user input locked during animation playback (no pausing/scrubbing)
+- **Single Scene**: Only one animation at a time; new scenes cancel current ones
+- **Browser Support**: Safari <15.4 may not respect `prefers-reduced-motion`
+
+### Learn More
+
+- 📖 **Full Documentation**: See [/docs/LGB_MODE.md](/docs/LGB_MODE.md) for architecture, API, and testing details
+- 🎓 **Learn Git Branching**: Visit [learngitbranching.js.org](https://learngitbranching.js.org/) to try the original tool
+- 📜 **Attribution**: See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for license information
+
 ## Getting Started
 
 ### Prerequisites

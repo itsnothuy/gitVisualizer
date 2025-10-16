@@ -8,7 +8,27 @@ This project includes a visual "skin" inspired by **Learn Git Branching** for ed
 - **Author**: Peter Cottle and contributors
 - **Repository**: https://github.com/pcottle/learnGitBranching
 - **License**: MIT License
+- **License File**: https://github.com/pcottle/learnGitBranching/blob/master/LICENSE
 - **Attribution**: The LGB mode visual styling recreates the look and feel of Learn Git Branching to provide a familiar interface for users. All colors, node geometry, and visual elements are inspired by the original project.
+
+### What We Reproduce
+
+Git Visualizer's LGB mode reproduces the **look and feel** of Learn Git Branching:
+
+- **Visual Style**: Color palette, node shapes, edge styling, and grid layout
+- **Animation Patterns**: Motion timing, transition effects, and visual grammar for Git operations
+- **Educational Approach**: Familiar visual language for users learning Git
+
+### What We Don't Bundle
+
+**Important**: Git Visualizer does **not** bundle or include any upstream code or assets from Learn Git Branching unless explicitly stated. Our implementation:
+
+- Is built independently using **React + SVG** (original uses Canvas)
+- Uses **ELK.js** for layout (original uses custom layout engine)
+- Implements animations from scratch using **requestAnimationFrame** (original uses custom animation system)
+- Follows the same **visual grammar** but with our own code
+
+No files, source code, images, or other assets from the Learn Git Branching repository are included in this project. We only reference the visual design principles and educational approach.
 
 ### MIT License Text
 

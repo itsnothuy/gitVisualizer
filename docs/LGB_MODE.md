@@ -4,6 +4,27 @@
 
 LGB Mode is a visual "skin" that recreates the look and feel of [Learn Git Branching](https://learngitbranching.js.org/) for educational purposes. This mode provides a familiar interface for users who are accustomed to the LGB tool while maintaining all accessibility and privacy-first principles of Git Visualizer.
 
+### What is LGB Mode?
+
+LGB Mode defines a specific **look and motion** that mirrors the visual style of Learn Git Branching:
+
+- **Grid-based Layout**: Commits are arranged in a grid where **generations (topological levels) map to rows** and **branch lanes map to columns**
+- **Smooth Animations**: Git operations (commit, branch, merge, rebase, cherry-pick) are animated with motion windows between **120–480ms**
+- **Visual Grammar**: 
+  - Branch labels appear **inline at the tip** of each branch
+  - HEAD arrow is **clearly visible** when attached to a branch
+  - **Detached HEAD** shows a tag above the commit node
+  - **Merge commits** display two-parent links
+  - **Rebase operations** use dashed "copy" arcs to show the transformation
+  - **Cherry-pick** shows a single dashed arc from source to target
+- **Accessible Motion**: Respects `prefers-reduced-motion` by collapsing all animation durations to ≤80ms and using non-motion cues (color, patterns) instead
+
+### References
+
+- **Learn Git Branching Demo**: [https://learngitbranching.js.org/](https://learngitbranching.js.org/)
+- **LGB Levels Documentation**: [https://github.com/pcottle/learnGitBranching/blob/master/docs/LEVELS.md](https://github.com/pcottle/learnGitBranching/blob/master/docs/LEVELS.md)
+- **LGB Visual Sandbox**: [https://github.com/pcottle/learnGitBranching#visualization](https://github.com/pcottle/learnGitBranching#visualization)
+
 ## Features
 
 ### Skin & Theme Toggle
@@ -766,6 +787,31 @@ function RebaseDemo() {
 }
 ```
 
+## Known Limitations
+
+### Layout Differences
+
+- **Grid Approximation**: While we aim to match LGB's grid layout, ELK's layered algorithm may produce slightly different node spacing in complex scenarios
+- **Lane Assignment**: Branch lane assignment is deterministic but may differ from LGB in graphs with many concurrent branches
+- **Edge Routing**: Edge paths use ELK's router, which may differ from LGB's custom routing
+
+### Animation Constraints
+
+- **Input Locking**: All user input (mouse, keyboard) is locked during animation playback to prevent race conditions
+- **No Scrubbing**: Animations cannot be scrubbed or paused mid-playback (only cancelled)
+- **Single Scene**: Only one animation scene can play at a time; starting a new scene cancels the current one
+
+### Browser Compatibility
+
+- **Reduced Motion**: Safari < 15.4 may not respect `prefers-reduced-motion` CSS media query
+- **Motion Timing**: Animation timing relies on `requestAnimationFrame`, which may have slight variations across browsers
+- **SVG Performance**: Graphs with > 10k visible elements may experience performance degradation; consider Canvas fallback
+
+### Accessibility Trade-offs
+
+- **Screen Reader Announcements**: `aria-live="polite"` announcements may be delayed or skipped if animations queue rapidly
+- **Focus Management**: Focus is not automatically moved during animations to avoid disorienting keyboard users
+
 ## Troubleshooting
 
 ### Theme not persisting across browser restarts
@@ -784,8 +830,15 @@ function RebaseDemo() {
 - Verify `data-theme` attribute on `<html>` element
 - Clear `sessionStorage` and try again
 
+### Animations not playing
+
+- Check that `prefers-reduced-motion` is not set to `reduce` in OS settings
+- Verify browser supports `requestAnimationFrame`
+- Check console for JavaScript errors in animation engine
+
 ## References
 
 - [Learn Git Branching](https://learngitbranching.js.org/)
+- [LGB Levels Documentation](https://github.com/pcottle/learnGitBranching/blob/master/docs/LEVELS.md)
 - [WCAG 2.2 Color Contrast](https://www.w3.org/WAI/WCAG22/quickref/#contrast-minimum)
 - [Reduced Motion](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion)
