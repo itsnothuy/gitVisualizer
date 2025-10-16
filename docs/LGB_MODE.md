@@ -574,6 +574,198 @@ pnpm test src/viz/anim           # Unit tests
 pnpm test:e2e e2e/animation      # E2E tests
 ```
 
+## Rebase & Cherry-pick Scenes
+
+The animation system includes specialized scenes for rebase and cherry-pick operations, visualizing the "copy-then-materialize" nature of these Git commands.
+
+### Rebase Animation
+
+The rebase scene animates moving commits from one base to another, showing each commit as a ghost copy that moves along a dashed arc:
+
+```typescript
+import { sceneRebase } from '@/viz/anim/scenes/rebase';
+
+const scene = sceneRebase(
+  ['c3', 'c4'],                    // Commits being rebased
+  'c1',                            // Old base
+  'c2',                            // New base
+  ['c3-new', 'c4-new'],           // New commit IDs
+  'feature',                       // Branch name
+  [{ x: 200, y: 50 }, { x: 250, y: 50 }], // New positions
+  { x: 250, y: 30 }                // Final label position
+);
+```
+
+**Visual behavior:**
+1. Briefly highlights the new base commit
+2. For each picked commit (in order):
+   - Shows a dashed arc from old to new position
+   - Creates a ghost node (0.4 opacity) at old position
+   - Animates ghost along the arc to new position
+   - Materializes the new commit at target
+   - Fades out the ghost
+3. Dims the original commits (0.3 opacity)
+4. Slides branch label to final position
+
+**Timing:** Sequential animation, ~600-800ms per commit depending on distance
+
+**A11y announcement:** "Rebased N commits onto <base>"
+
+### Interactive Rebase Animation
+
+For reduced-motion users or when faster feedback is needed, the interactive rebase scene uses outline flashes instead of ghost movement:
+
+```typescript
+import { sceneInteractiveRebase } from '@/viz/anim/scenes/rebase';
+
+const scene = sceneInteractiveRebase(
+  ['c3', 'c4'],                    // Commits being rebased
+  'c1',                            // Old base
+  'c2',                            // New base
+  ['c3-new', 'c4-new'],           // New commit IDs
+  'feature',                       // Branch name
+  [{ x: 200, y: 50 }, { x: 250, y: 50 }], // New positions
+  { x: 250, y: 30 }                // Final label position
+);
+```
+
+**Visual behavior:**
+1. Shows a conceptual overlay cue listing the ordered picks
+2. For each commit:
+   - Flash outline on old commit (80ms)
+   - Materialize new commit (80ms)
+   - Dim original (80ms)
+3. Hides overlay cue
+4. Moves branch label (80ms)
+
+**Timing:** ≤80ms per operation stage, respecting `prefers-reduced-motion: reduce`
+
+**A11y announcement:** "Interactively rebased N commits onto <base>"
+
+### Cherry-pick Animation
+
+The cherry-pick scene animates copying a single commit to a different location:
+
+```typescript
+import { sceneCherryPick } from '@/viz/anim/scenes/rebase';
+
+const scene = sceneCherryPick(
+  'c3',                            // Source commit
+  'c5',                            // New commit ID
+  'c2',                            // Target base
+  'main',                          // Branch name
+  { x: 200, y: 0 },                // New position
+  { x: 200, y: -20 },              // Label position
+  false                            // Has conflict?
+);
+```
+
+**Visual behavior:**
+1. Briefly highlights the source commit
+2. Shows a dashed arc from source to target
+3. Creates and animates ghost node along arc
+4. Materializes new commit at target
+5. If conflict flag is true, shows conflict badge stub
+6. Moves branch label to new commit
+7. Final highlight on new commit
+
+**Timing:** ~900-1100ms total
+
+**A11y announcement:** "Cherry-picked <shortSha>" or "Cherry-picked <shortSha> (conflict)"
+
+### Animation Primitives
+
+The rebase scenes use these primitives from `primitives.ts`:
+
+- **Ghost node:** Semi-transparent copy with CSS class `ghost`
+- **Dashed arc:** Temporary edge with CSS class `dashed`, lifetime ~320ms
+- **Fade operations:** Opacity changes for dimming originals
+- **Move operations:** Position changes for ghost animation
+- **Class toggles:** Adding/removing visual states
+
+### Sequential Queueing
+
+Rebase operations ensure commits are animated sequentially:
+- Each commit waits for the previous to complete
+- No parallel ghost animations
+- Maintains causal order
+
+This prevents visual confusion and makes the operation easy to follow.
+
+### Conflict Badge (Stub)
+
+Cherry-pick supports an optional conflict badge:
+- **Visual:** CSS class `conflict-badge` on commit node
+- **No network:** Purely visual indicator, no server interaction
+- **Styling:** Defined in LGB skin tokens
+
+The badge is a stub for future conflict detection features. Currently, it's set via metadata flag.
+
+### Testing
+
+**Unit tests** (`src/viz/anim/__tests__/rebase-scenes.test.ts`):
+- 21 tests covering all rebase/cherry-pick scenes
+- Verify sequential animation order
+- Check ghost node creation
+- Validate dashed edge operations
+- Ensure reduced-motion timing (≤80ms)
+
+**E2E tests** (`e2e/animation/rebase-scenes.spec.ts`):
+- 18 tests across 3 browsers (Chromium, Firefox, WebKit)
+- Screenshot capture (first/last frame)
+- Axe-core accessibility scan (zero critical violations)
+- Keyboard navigation during animations
+- Reduced-motion scenario testing
+
+**Fixture** (`fixtures/lgb/rebase.json`):
+- Two commits on feature branch
+- One commit on main
+- Rebase feature onto main
+- Cherry-pick example with metadata
+
+### Usage Example
+
+```typescript
+import { useAnimation } from '@/viz/anim/useAnimation';
+import { mapDiffToScene } from '@/viz/anim/mapper';
+import type { GitDiff } from '@/viz/anim/mapper';
+
+function RebaseDemo() {
+  const animation = useAnimation({
+    onComplete: () => console.log('Rebase animation complete!'),
+    onAnnounce: (msg) => console.log('Screen reader:', msg),
+  });
+
+  const handleRebase = () => {
+    const diff: GitDiff = {
+      operation: 'rebase',
+      oldState: { /* ... */ },
+      newState: { /* ... */ },
+      metadata: {
+        pickedCommits: ['c3', 'c4'],
+        oldBaseId: 'c1',
+        newBaseId: 'c2',
+        newCommitIds: ['c3-rebased', 'c4-rebased'],
+        newPositions: [{ x: 200, y: 50 }, { x: 250, y: 50 }],
+        branchName: 'feature',
+        labelPosition: { x: 250, y: 30 },
+      },
+    };
+
+    const scene = mapDiffToScene(diff);
+    if (scene) {
+      animation.play(scene);
+    }
+  };
+
+  return (
+    <button onClick={handleRebase} disabled={animation.isLocked}>
+      Rebase Feature
+    </button>
+  );
+}
+```
+
 ## Troubleshooting
 
 ### Theme not persisting across browser restarts
