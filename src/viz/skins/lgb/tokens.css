@@ -1,0 +1,33 @@
+:root {
+  /* Color system approximating LGB feel (accessible contrasts) */
+  --lgb-bg: #0f0f12;
+  --lgb-fg: #f5f7fb;
+  --lgb-muted: #c7c9d3;
+  --lgb-accent: #3aa3ff;     /* branch labels / selection */
+  --lgb-merge: #ffd166;      /* merge nodes/edges */
+  --lgb-rebase: #70e1a1;     /* rebase ghost */
+  --lgb-danger: #ff6b6b;     /* reset/revert cue */
+  --lgb-edge: #9aa0a6;
+  --lgb-edge-dashed: #9aa0a6;
+
+  /* Node + label */
+  --lgb-node-radius: 8px;
+  --lgb-node-stroke: 2px;
+  --lgb-font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+
+  /* Motion (overridden when reduced motion) */
+  --lgb-dur-veryshort: 120ms;
+  --lgb-dur-short: 220ms;
+  --lgb-dur-medium: 320ms;
+  --lgb-dur-long: 480ms;
+  --lgb-ease: cubic-bezier(.2,.8,.2,1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --lgb-dur-veryshort: 40ms;
+    --lgb-dur-short: 60ms;
+    --lgb-dur-medium: 80ms;
+    --lgb-dur-long: 100ms;
+  }
+}
