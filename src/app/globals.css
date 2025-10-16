@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "../viz/skins/lgb/tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -110,6 +111,29 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* LGB Theme - Learn Git Branching skin */
+[data-theme="lgb"] {
+  /* Use LGB color palette from tokens.css */
+  --background: var(--lgb-bg);
+  --foreground: var(--lgb-fg);
+  --card: var(--lgb-bg);
+  --card-foreground: var(--lgb-fg);
+  --popover: var(--lgb-bg);
+  --popover-foreground: var(--lgb-fg);
+  --primary: var(--lgb-accent);
+  --primary-foreground: var(--lgb-bg);
+  --secondary: var(--lgb-muted);
+  --secondary-foreground: var(--lgb-bg);
+  --muted: color-mix(in srgb, var(--lgb-bg) 80%, var(--lgb-muted) 20%);
+  --muted-foreground: var(--lgb-muted);
+  --accent: var(--lgb-accent);
+  --accent-foreground: var(--lgb-bg);
+  --destructive: var(--lgb-danger);
+  --border: color-mix(in srgb, var(--lgb-muted) 30%, transparent 70%);
+  --input: color-mix(in srgb, var(--lgb-muted) 20%, transparent 80%);
+  --ring: var(--lgb-accent);
 }
 
 @layer base {
