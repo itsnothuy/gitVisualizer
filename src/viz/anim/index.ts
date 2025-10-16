@@ -54,7 +54,12 @@ export {
 export {
   sceneCommit,
   sceneBranchCreate,
+  sceneBranchDelete,
   sceneCheckout,
+  sceneFastForward,
+  sceneMerge2P,
+  sceneReset,
+  sceneRevert,
 } from './scenes/core';
 
 // React hook
@@ -63,3 +68,14 @@ export {
   type UseAnimationOptions,
   type UseAnimationReturn,
 } from './useAnimation';
+
+// Mapper for Git operations to scenes
+export {
+  mapDiffToScene,
+  findIntermediateCommits,
+  type GitOperation,
+  type GitNode,
+  type GitRef,
+  type GitState,
+  type GitDiff,
+} from './mapper';

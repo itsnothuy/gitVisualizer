@@ -1,0 +1,280 @@
+{
+  "description": "Introductory Git scenario: commit → branch → checkout → commit → merge",
+  "initialState": {
+    "nodes": [
+      {
+        "id": "c1",
+        "parents": [],
+        "refs": ["main"]
+      }
+    ],
+    "refs": [
+      {
+        "name": "main",
+        "target": "c1"
+      }
+    ],
+    "head": "main"
+  },
+  "operations": [
+    {
+      "type": "commit",
+      "description": "Create new commit C2 on main",
+      "expectedState": {
+        "nodes": [
+          {
+            "id": "c1",
+            "parents": [],
+            "refs": []
+          },
+          {
+            "id": "c2",
+            "parents": ["c1"],
+            "refs": ["main"]
+          }
+        ],
+        "refs": [
+          {
+            "name": "main",
+            "target": "c2"
+          }
+        ],
+        "head": "main"
+      },
+      "metadata": {
+        "commitId": "c2"
+      }
+    },
+    {
+      "type": "branch-create",
+      "description": "Create feature branch at C2",
+      "expectedState": {
+        "nodes": [
+          {
+            "id": "c1",
+            "parents": [],
+            "refs": []
+          },
+          {
+            "id": "c2",
+            "parents": ["c1"],
+            "refs": ["main", "feature"]
+          }
+        ],
+        "refs": [
+          {
+            "name": "main",
+            "target": "c2"
+          },
+          {
+            "name": "feature",
+            "target": "c2"
+          }
+        ],
+        "head": "main"
+      },
+      "metadata": {
+        "branchName": "feature",
+        "labelPosition": { "x": 100, "y": -20 }
+      }
+    },
+    {
+      "type": "checkout",
+      "description": "Switch to feature branch",
+      "expectedState": {
+        "nodes": [
+          {
+            "id": "c1",
+            "parents": [],
+            "refs": []
+          },
+          {
+            "id": "c2",
+            "parents": ["c1"],
+            "refs": ["main", "feature"]
+          }
+        ],
+        "refs": [
+          {
+            "name": "main",
+            "target": "c2"
+          },
+          {
+            "name": "feature",
+            "target": "c2"
+          }
+        ],
+        "head": "feature"
+      },
+      "metadata": {
+        "labelPosition": { "x": 100, "y": -20 }
+      }
+    },
+    {
+      "type": "commit",
+      "description": "Create commit C3 on feature",
+      "expectedState": {
+        "nodes": [
+          {
+            "id": "c1",
+            "parents": [],
+            "refs": []
+          },
+          {
+            "id": "c2",
+            "parents": ["c1"],
+            "refs": ["main"]
+          },
+          {
+            "id": "c3",
+            "parents": ["c2"],
+            "refs": ["feature"]
+          }
+        ],
+        "refs": [
+          {
+            "name": "main",
+            "target": "c2"
+          },
+          {
+            "name": "feature",
+            "target": "c3"
+          }
+        ],
+        "head": "feature"
+      },
+      "metadata": {
+        "commitId": "c3"
+      }
+    },
+    {
+      "type": "checkout",
+      "description": "Switch back to main",
+      "expectedState": {
+        "nodes": [
+          {
+            "id": "c1",
+            "parents": [],
+            "refs": []
+          },
+          {
+            "id": "c2",
+            "parents": ["c1"],
+            "refs": ["main"]
+          },
+          {
+            "id": "c3",
+            "parents": ["c2"],
+            "refs": ["feature"]
+          }
+        ],
+        "refs": [
+          {
+            "name": "main",
+            "target": "c2"
+          },
+          {
+            "name": "feature",
+            "target": "c3"
+          }
+        ],
+        "head": "main"
+      },
+      "metadata": {
+        "labelPosition": { "x": 100, "y": 0 }
+      }
+    },
+    {
+      "type": "commit",
+      "description": "Create commit C4 on main",
+      "expectedState": {
+        "nodes": [
+          {
+            "id": "c1",
+            "parents": [],
+            "refs": []
+          },
+          {
+            "id": "c2",
+            "parents": ["c1"],
+            "refs": []
+          },
+          {
+            "id": "c3",
+            "parents": ["c2"],
+            "refs": ["feature"]
+          },
+          {
+            "id": "c4",
+            "parents": ["c2"],
+            "refs": ["main"]
+          }
+        ],
+        "refs": [
+          {
+            "name": "main",
+            "target": "c4"
+          },
+          {
+            "name": "feature",
+            "target": "c3"
+          }
+        ],
+        "head": "main"
+      },
+      "metadata": {
+        "commitId": "c4"
+      }
+    },
+    {
+      "type": "merge",
+      "description": "Merge feature into main (creates C5)",
+      "expectedState": {
+        "nodes": [
+          {
+            "id": "c1",
+            "parents": [],
+            "refs": []
+          },
+          {
+            "id": "c2",
+            "parents": ["c1"],
+            "refs": []
+          },
+          {
+            "id": "c3",
+            "parents": ["c2"],
+            "refs": ["feature"]
+          },
+          {
+            "id": "c4",
+            "parents": ["c2"],
+            "refs": []
+          },
+          {
+            "id": "c5",
+            "parents": ["c4", "c3"],
+            "refs": ["main"]
+          }
+        ],
+        "refs": [
+          {
+            "name": "main",
+            "target": "c5"
+          },
+          {
+            "name": "feature",
+            "target": "c3"
+          }
+        ],
+        "head": "main"
+      },
+      "metadata": {
+        "commitId": "c5",
+        "parentIds": ["c4", "c3"],
+        "branchName": "main",
+        "labelPosition": { "x": 200, "y": 0 }
+      }
+    }
+  ]
+}
