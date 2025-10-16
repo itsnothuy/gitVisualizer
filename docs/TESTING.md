@@ -789,3 +789,233 @@ Before each release:
 - `tests/helpers/`: Shared test utilities
 
 This comprehensive testing strategy ensures that Git Visualizer meets its quality, accessibility, and performance goals while maintaining the privacy-first principles that guide the project.
+
+## Visual Goldens & Parity Testing
+
+### Overview
+
+Git Visualizer uses visual golden testing and Git CLI parity verification to ensure correctness and visual consistency of LGB-style animations and Git operations.
+
+### Visual Golden System
+
+Visual goldens are SVG snapshots captured at key points during Git operation animations. They serve as regression tests to detect unintended visual changes.
+
+#### Recording Goldens
+
+To record new golden SVG snapshots:
+
+```bash
+# Record goldens for all LGB scenes
+RECORD_GOLDENS=true pnpm test:goldens
+
+# This will:
+# 1. Start the dev server with LGB mode
+# 2. Load each fixture (intro.json, rebase.json)
+# 3. Capture SVG at each operation step
+# 4. Save to fixtures/lgb/goldens/
+```
+
+#### Golden Structure
+
+Goldens are stored in `fixtures/lgb/goldens/`:
+
+```
+fixtures/lgb/goldens/
+├── intro-initial.svg           # Initial state
+├── intro-after-commit.svg      # After first commit
+├── intro-after-branch.svg      # After branch creation
+├── intro-final.svg             # After merge
+├── rebase-initial.svg          # Rebase fixture initial state
+├── rebase-during-rebase.svg    # During rebase animation
+├── rebase-final.svg            # After rebase complete
+├── rebase-cherry-pick.svg      # After cherry-pick
+└── *.json                      # Metadata files
+```
+
+#### Comparing Against Goldens
+
+The visual golden system supports tolerant comparison:
+
+```typescript
+import { compareAgainstGolden, DEFAULT_TOLERANCE } from '@/scripts/visual-goldens';
+
+const result = await compareAgainstGolden(
+  'intro',
+  actualFrames,
+  DEFAULT_TOLERANCE
+);
+
+if (!result.passed) {
+  console.error('Visual regression detected!');
+  result.results.forEach(r => {
+    if (!r.match) {
+      console.error(`Frame ${r.frameId}:`, r.diffs);
+    }
+  });
+}
+```
+
+**Tolerance settings:**
+- Position tolerance: 0.5px (sub-pixel differences ignored)
+- Opacity tolerance: 0.01 (1% opacity differences ignored)
+- Transform tolerance: 0.5px
+- Ignored attributes: `data-testid`, `id`, `aria-describedby`
+
+#### Updating Goldens
+
+When intentional changes are made to the visualization:
+
+```bash
+# Re-record all goldens
+RECORD_GOLDENS=true pnpm test:goldens
+
+# Review changes
+git diff fixtures/lgb/goldens/
+
+# Commit updated goldens
+git add fixtures/lgb/goldens/
+git commit -m "Update visual goldens for [reason]"
+```
+
+### Git Parity Harness
+
+The Git parity harness verifies that our Git model implementations match the behavior of the actual Git CLI.
+
+#### Running Parity Tests
+
+```bash
+# Run parity tests on current repository
+pnpm test:parity .
+
+# Run on a specific repository
+pnpm test:parity /path/to/repo
+
+# Output JSON report
+pnpm test:parity . --json
+```
+
+#### Parity Test Coverage
+
+The harness tests the following Git operations:
+
+1. **merge-base**: Verify our merge-base algorithm matches `git merge-base A B`
+2. **first-parent walk**: Verify our first-parent history matches `git log --first-parent`
+3. **branch --contains**: Verify branch containment logic matches `git branch --contains <sha>`
+4. **commit parents**: Verify parent relationships match `git log --format="%H %P"`
+
+#### Adding New Parity Tests
+
+To add a new parity test in `scripts/git-parity.ts`:
+
+```typescript
+async function testMyGitOperation(repoPath: string): Promise<ParityResult> {
+  try {
+    // Execute git CLI command
+    const gitResult = await gitExec(repoPath, ['my-git-command', 'args']);
+    
+    // TODO: Compare with our model implementation
+    const modelResult = await myModelImplementation(repoPath);
+    
+    const match = gitResult === modelResult;
+    
+    return {
+      test: 'my-git-operation',
+      passed: match,
+      expected: gitResult,
+      actual: modelResult,
+    };
+  } catch (error) {
+    return {
+      test: 'my-git-operation',
+      passed: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+// Add to test suite in runParityTests()
+const tests = [
+  testMergeBase,
+  testFirstParentWalk,
+  testBranchContains,
+  testCommitParents,
+  testMyGitOperation,  // Add here
+];
+```
+
+#### CI Integration
+
+The LGB parity workflow runs on every PR and push:
+
+**Jobs:**
+1. `git-parity`: Runs Git CLI parity tests, uploads JSON diff report
+2. `visual-goldens`: Captures and compares SVG goldens, uploads screenshots
+3. `accessibility-check`: Runs axe-core on LGB mode, ensures 0 critical violations
+
+**Artifacts uploaded:**
+- `git-parity-report`: JSON diff of parity test results
+- `lgb-svg-goldens`: SVG golden files
+- `lgb-screenshots`: PNG screenshots for visual verification
+- `lgb-goldens-report`: Playwright test report
+- `lgb-a11y-results`: Accessibility scan results
+
+#### LGB Accuracy Requirements
+
+Visual goldens and geometry tests verify:
+
+**Geometry:**
+- Rows represent generations (commits at same level have same y-coordinate)
+- Columns represent branch lanes (commits on same branch share x-coordinate column)
+- Layered layout via ELK.js Sugiyama algorithm
+
+**Labels:**
+- Branch tags inline at commit tip
+- HEAD arrow clearly visible
+- Detached HEAD shows tag above node
+
+**Edges:**
+- Merge commits show two-parent links
+- Rebase shows dashed "copy" arcs
+- Cherry-pick shows single dashed copy arc
+
+**Motion:**
+- Animation windows: 120–480ms
+- Input locked during scenes
+- Reduced-motion collapses to ≤80ms
+
+**Accessibility:**
+- `aria-live` announces each operation
+- Axe-core reports 0 critical violations
+- Keyboard navigation functional during animations
+
+### Test Commands
+
+```bash
+# Visual goldens
+pnpm test:goldens              # Record new goldens
+pnpm exec playwright test e2e/lgb-goldens.spec.ts  # Run golden tests
+
+# Git parity
+pnpm test:parity .             # Run parity tests
+pnpm test:parity . --json      # Output JSON report
+
+# Combined CI workflow
+# Runs automatically on PR/push to main or test/lgb-parity-scenes branch
+```
+
+### Troubleshooting
+
+**Golden comparison fails with position differences:**
+- Check if tolerance needs adjustment in `DEFAULT_TOLERANCE`
+- Verify ELK layout is deterministic (same inputs → same output)
+- Re-record goldens if intentional change was made
+
+**Parity test fails:**
+- Check Git CLI version: `git --version` (requires Git 2.30+)
+- Verify repository state matches test expectations
+- Compare JSON diff in CI artifacts to identify discrepancy
+
+**Animation timing differences:**
+- Verify `prefers-reduced-motion` is respected
+- Check that motion windows are within 120–480ms range
+- Ensure input is locked during animation playback
