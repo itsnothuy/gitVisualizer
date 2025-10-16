@@ -41,3 +41,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# visual goldens (generated during test runs)
+# Keep .gitkeep but exclude generated SVG/PNG files
+fixtures/lgb/goldens/*.svg
+fixtures/lgb/goldens/*.png
+fixtures/lgb/goldens/*.json
+!fixtures/lgb/goldens/.gitkeep
