@@ -200,6 +200,163 @@ This skin recreates the visual style of [Learn Git Branching](https://github.com
 - Saved lesson progress (local-only, no server sync)
 - Custom color schemes within LGB style
 
+## Animation Core
+
+The LGB mode now includes a complete animation engine for visualizing Git operations. The animation system is designed with accessibility and performance in mind.
+
+### Architecture
+
+The animation core consists of several layers:
+
+```
+src/viz/anim/
+├── types.ts           # Core types, durations, easing functions
+├── engine.ts          # Animation engine with playback control
+├── selectors.ts       # Element targeting by IDs
+├── primitives.ts      # High-level animation building blocks
+├── scenes/            # Pre-built animation scenes
+│   └── core.ts        # Common Git operation scenes
+└── useAnimation.ts    # React hook for integration
+```
+
+### Key Features
+
+#### 1. Declarative Animation API
+
+Animations are defined declaratively using `AnimStep` objects:
+
+```typescript
+const scene: AnimScene = {
+  name: 'commit',
+  total: 220,
+  steps: [
+    { t: 0, sel: { nodes: ['new-commit'] }, op: 'fade', to: 1, dur: 220 },
+  ],
+};
+```
+
+#### 2. Animation Primitives
+
+High-level primitives simplify common operations:
+
+- **fade(selector, opacity)** - Fade elements in/out
+- **move(selector, position)** - Translate elements
+- **pulse(selector, scale)** - Scale pulse effect
+- **stroke(selector, props)** - Change stroke properties
+- **classAdd/classRemove(selector, className)** - Toggle CSS classes
+
+#### 3. Helper Utilities
+
+Composite operations for Git visualizations:
+
+- **highlightBranchTip(nodeId)** - Emphasize HEAD pointer
+- **moveBranchLabel(labelId, position)** - Animate label repositioning
+- **ghostNode(nodeId, from, to)** - Show copy operations (cherry-pick, rebase)
+- **tempDashedEdge(edgeId)** - Temporary relationship visualization
+
+#### 4. Animation Engine
+
+The engine provides:
+
+- **Queue & Playback**: Plays animation scenes with requestAnimationFrame
+- **Input Locking**: Disables user input during playback
+- **State Management**: Tracks playing/paused/idle/cancelled states
+- **Visibility Handling**: Auto-pauses on tab hide, resumes on show
+- **Cancellation**: Clean cancellation and reset
+
+#### 5. Accessibility (A11y)
+
+Full WCAG 2.2 AA compliance:
+
+- **aria-live region**: Polite announcements for screen readers
+- **Reduced motion**: Respects `prefers-reduced-motion`, caps durations at ≤80ms
+- **Keyboard access**: Navigation remains functional during animations
+- **Semantic descriptions**: Each scene has a description for announcements
+
+### Usage
+
+#### React Integration
+
+Use the `useAnimation` hook in React components:
+
+```typescript
+import { useAnimation } from '@/viz/anim/useAnimation';
+import { sceneCommit } from '@/viz/anim/scenes/core';
+
+function MyComponent() {
+  const animation = useAnimation({
+    onComplete: () => console.log('Animation done!'),
+    onAnnounce: (msg) => console.log('Screen reader:', msg),
+  });
+
+  const handleCommit = () => {
+    const scene = sceneCommit('new-commit-id');
+    animation.play(scene);
+  };
+
+  return (
+    <>
+      <button onClick={handleCommit} disabled={animation.isLocked}>
+        Create Commit
+      </button>
+      <GraphSVG
+        nodes={nodes}
+        edges={edges}
+        positions={positions}
+        animationScene={currentScene}
+      />
+    </>
+  );
+}
+```
+
+#### Building Custom Scenes
+
+Compose scenes using primitives:
+
+```typescript
+import { buildScene } from '@/viz/anim/engine';
+import { fadeInNode, highlightBranchTip } from '@/viz/anim/primitives';
+import { DURATIONS } from '@/viz/anim/types';
+
+function customMergeScene(mergeNodeId: string): AnimScene {
+  const steps = [
+    ...fadeInNode(mergeNodeId, { t: 0, dur: DURATIONS.short }),
+    ...highlightBranchTip(mergeNodeId, { t: DURATIONS.short, dur: DURATIONS.medium }),
+  ];
+
+  return buildScene('merge', steps, 'Merging branches');
+}
+```
+
+### Queue Semantics
+
+- **Single scene at a time**: Starting a new scene cancels the current one
+- **Input locking**: Mouse/keyboard input is blocked during playback
+- **Atomic operations**: Each scene represents a complete Git operation
+- **Clean cancellation**: Cancel/reset clears all state and unlocks input
+
+### Performance
+
+- **requestAnimationFrame**: Smooth 60 FPS animations
+- **Deterministic scheduling**: Same inputs produce identical animations
+- **Efficient selectors**: Direct querySelector targeting by data attributes
+- **Lazy easing**: Simple easing implementations, extensible for libraries
+
+### Testing
+
+Animation system includes comprehensive tests:
+
+- **Unit tests**: Engine determinism, selector targeting, reduced motion
+- **E2E tests**: Keyboard usability, axe scan, structural integrity
+- **Snapshot tests**: Verify reduced-motion behavior
+
+Run tests:
+```bash
+pnpm test src/viz/anim           # Unit tests
+pnpm test:e2e e2e/animation      # E2E tests
+```
+
 ## Troubleshooting
 
 ### Theme not persisting across browser restarts

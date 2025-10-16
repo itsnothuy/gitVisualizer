@@ -6,6 +6,7 @@ import type { DagNode } from "../elk/layout";
 import type { Skin } from '@/viz/skins/lgb/skin';
 import { defaultSkin } from '@/viz/skins/lgb/skin';
 import { LgbSvgDefs } from '@/viz/skins/lgb/LgbSvgDefs';
+import { useAnimation } from '@/viz/anim/useAnimation';
 import type { AnimScene } from '@/viz/anim/types';
 
 type Edge = {
@@ -37,6 +38,12 @@ interface GraphSVGProps {
   enableVirtualization?: boolean;
   /** Optional: threshold for enabling virtualization (number of visible elements) */
   virtualizationThreshold?: number;
+  /** Optional: skin configuration for visual styling */
+  skin?: Skin;
+  /** Optional: animation scene to play */
+  animationScene?: AnimScene | null;
+  /** Optional: callback when animation completes */
+  onAnimationComplete?: () => void;
 }
 
 /**
@@ -347,10 +354,36 @@ export function GraphSVG({
   onNodeFocus,
   enableVirtualization = true,
   virtualizationThreshold = 1000,
-  skin,
-}: GraphSVGProps & { skin: Skin }) {
+  skin = defaultSkin,
+  animationScene,
+  onAnimationComplete,
+}: GraphSVGProps) {
   const [viewBox] = React.useState({ x: 0, y: 0, width: 1200, height: 600 });
   const svgRef = React.useRef<SVGSVGElement>(null);
+  const [announcement, setAnnouncement] = React.useState<string>('');
+
+  // Animation engine integration
+  const animation = useAnimation({
+    onComplete: () => {
+      setAnnouncement('');
+      onAnimationComplete?.();
+    },
+    onAnnounce: (message) => {
+      setAnnouncement(message);
+    },
+  });
+
+  // Update animation engine's root element reference
+  React.useEffect(() => {
+    animation.setRootElement(svgRef.current);
+  }, [animation]);
+
+  // Play animation when animationScene prop changes
+  React.useEffect(() => {
+    if (animationScene) {
+      animation.play(animationScene);
+    }
+  }, [animationScene, animation]);
 
   // Calculate visible elements for virtualization
   const { visibleNodes, visibleEdges } = useVirtualization(
@@ -441,15 +474,26 @@ export function GraphSVG({
   const viewBoxString = `${svgDimensions.minX} ${svgDimensions.minY} ${svgDimensions.maxX - svgDimensions.minX} ${svgDimensions.maxY - svgDimensions.minY}`;
 
   return (
-    <TransformWrapper
-      minScale={0.1}
-      maxScale={3}
-      initialScale={1}
-      centerOnInit
-      limitToBounds={false}
-      panning={{ velocityDisabled: true }}
-      wheel={{ smoothStep: 0.01 }}
-    >
+    <>
+      {/* Aria-live region for animation announcements (A11y) */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        role="status"
+      >
+        {announcement}
+      </div>
+
+      <TransformWrapper
+        minScale={0.1}
+        maxScale={3}
+        initialScale={1}
+        centerOnInit
+        limitToBounds={false}
+        panning={{ disabled: animation.isLocked }}
+        wheel={{ smoothStep: 0.01 }}
+      >
       <TransformComponent
         wrapperStyle={{
           width: typeof width === "number" ? `${width}px` : width,
@@ -499,5 +543,6 @@ export function GraphSVG({
         </svg>
       </TransformComponent>
     </TransformWrapper>
+    </>
   );
 }
