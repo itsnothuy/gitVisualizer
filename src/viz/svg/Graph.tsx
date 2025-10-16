@@ -491,7 +491,7 @@ export function GraphSVG({
         initialScale={1}
         centerOnInit
         limitToBounds={false}
-        panning={{ velocityDisabled: animation.isLocked ? { disabled: true } : { velocityDisabled: true } }}
+        panning={{ disabled: animation.isLocked }}
         wheel={{ smoothStep: 0.01 }}
       >
       <TransformComponent
