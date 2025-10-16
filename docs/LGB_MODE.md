@@ -214,9 +214,226 @@ src/viz/anim/
 ├── engine.ts          # Animation engine with playback control
 ├── selectors.ts       # Element targeting by IDs
 ├── primitives.ts      # High-level animation building blocks
+├── mapper.ts          # Maps Git diffs to animation scenes
 ├── scenes/            # Pre-built animation scenes
 │   └── core.ts        # Common Git operation scenes
 └── useAnimation.ts    # React hook for integration
+```
+
+### Core Scenes
+
+The animation system provides pre-built scenes for common Git operations:
+
+#### 1. Commit
+Creates a new commit node with fade-in animation and branch label updates.
+
+```typescript
+import { sceneCommit } from '@/viz/anim/scenes/core';
+
+const scene = sceneCommit('new-commit-id');
+// - Fade in new node (220ms)
+// - Highlight branch tip (320ms)
+// - Update HEAD pointer if applicable
+```
+
+**Visual behavior:**
+- New node fades in above current branch tip
+- Branch label slides to new position
+- HEAD arrow nudges if on that branch
+- Total duration: ~540ms
+
+#### 2. Branch Create
+Animates creating a new branch label at a commit.
+
+```typescript
+const scene = sceneBranchCreate('feature', 'commit-id', { x: 100, y: 50 });
+// - Highlight anchor commit (220ms)
+// - Label appears and positions (220ms)
+```
+
+**Visual behavior:**
+- Brief pulse on anchor commit
+- Branch label fades in at position
+- Label aligns inline with commit node
+- Total duration: ~440ms
+
+#### 3. Branch Delete
+Removes a branch label with fade-out animation.
+
+```typescript
+const scene = sceneBranchDelete('feature');
+// - Label fades out (220ms)
+```
+
+**Visual behavior:**
+- Branch label fades out smoothly
+- No node changes (commit remains)
+- Total duration: ~220ms
+
+#### 4. Checkout (HEAD Move)
+Animates switching branches or checking out a commit.
+
+```typescript
+const scene = sceneCheckout('from-id', 'to-id', 'HEAD', { x: 200, y: 50 });
+// - Unhighlight old position (120ms)
+// - Move HEAD label (220ms)
+// - Highlight new position (320ms)
+```
+
+**Visual behavior:**
+- HEAD arrow animates along edge path
+- Old tip dims, new tip highlights
+- For detached HEAD, shows tag above node
+- Total duration: ~660ms
+
+#### 5. Fast-Forward
+Animates moving a branch forward along a linear path.
+
+```typescript
+const scene = sceneFastForward(
+  'main',
+  'old-tip',
+  'new-tip',
+  ['intermediate-1', 'intermediate-2'],
+  { x: 300, y: 50 }
+);
+// - Cascade highlight along path
+// - Fade in intermediate nodes
+// - Slide branch label
+```
+
+**Visual behavior:**
+- Cascading highlight from old to new tip
+- Intermediate commits fade in if hidden
+- Branch label slides smoothly
+- Total duration: variable (~600-800ms)
+
+#### 6. Merge (2-Parent)
+Creates a merge commit with two parent edges.
+
+```typescript
+const scene = sceneMerge2P(
+  'merge-id',
+  'parent-1',
+  'parent-2',
+  'edge-id',
+  'main',
+  { x: 400, y: 50 }
+);
+// - Show dashed second-parent edge (220ms)
+// - Pop in merge node (220ms)
+// - Highlight parents (220ms)
+// - Update branch label (220ms)
+```
+
+**Visual behavior:**
+- Temporary dashed arc to second parent
+- Merge node pops in at intersection
+- Both parents briefly highlighted
+- Branch label moves to merge commit
+- Total duration: ~1200ms (includes edge lifetime)
+
+#### 7. Reset
+Moves HEAD/branch to a previous commit (soft or hard mode).
+
+```typescript
+const scene = sceneReset('current-id', 'target-id', 'HEAD', { x: 100, y: 50 }, 'hard');
+// - Emphasize current with danger color (220ms)
+// - Quick snap to target (120ms)
+// - Highlight target (320ms)
+```
+
+**Visual behavior:**
+- Current position emphasized (accent for soft, danger for hard)
+- Safe "snap" animation (no silent node loss)
+- Target commit highlighted
+- Total duration: ~660ms
+
+**Safety notes:**
+- Hard reset uses danger color (red)
+- Soft reset uses accent color (blue)
+- No commits are visually removed
+
+#### 8. Revert
+Creates a new commit that undoes changes from a previous commit.
+
+```typescript
+const scene = sceneRevert('revert-id', 'original-id', 'main', { x: 500, y: 50 });
+// - Highlight commit being reverted (220ms)
+// - Fade in revert commit with danger stroke (220ms)
+// - Move branch label (220ms)
+// - Final pulse (320ms)
+```
+
+**Visual behavior:**
+- Original commit briefly highlighted
+- Revert commit appears with danger color
+- Branch label moves to new commit
+- Pulse emphasizes it's a special commit
+- Total duration: ~980ms
+
+### Timing Guidelines
+
+All scenes respect consistent timing windows:
+- **Very Short**: 120ms (quick transitions, snaps)
+- **Short**: 220ms (standard animations, fades)
+- **Medium**: 320ms (emphasis, highlights)
+- **Long**: 480ms (complex movements)
+
+**Reduced Motion:** When `prefers-reduced-motion: reduce` is detected, all durations are capped at ≤80ms.
+
+### Git Operation Mapper
+
+The mapper module (`mapper.ts`) converts Git state diffs to animation scenes:
+
+```typescript
+import { mapDiffToScene, type GitDiff } from '@/viz/anim/mapper';
+
+const diff: GitDiff = {
+  operation: 'commit',
+  oldState: { nodes: [...], refs: [...], head: 'main' },
+  newState: { nodes: [...newCommit], refs: [...], head: 'main' },
+};
+
+const scene = mapDiffToScene(diff);
+// Returns appropriate AnimScene for the operation
+```
+
+**Supported operations:**
+- `commit` → `sceneCommit`
+- `branch-create` → `sceneBranchCreate`
+- `branch-delete` → `sceneBranchDelete`
+- `checkout` → `sceneCheckout`
+- `fast-forward` → `sceneFastForward`
+- `merge` → `sceneMerge2P`
+- `reset` → `sceneReset`
+- `revert` → `sceneRevert`
+
+### Integration Example
+
+```typescript
+import { useAnimation } from '@/viz/anim/useAnimation';
+import { mapDiffToScene } from '@/viz/anim/mapper';
+
+function MyComponent() {
+  const animation = useAnimation({
+    onComplete: () => console.log('Animation done!'),
+    onAnnounce: (msg) => console.log('Screen reader:', msg),
+  });
+
+  const handleGitOperation = (diff: GitDiff) => {
+    const scene = mapDiffToScene(diff);
+    if (scene) {
+      animation.play(scene);
+    }
+  };
+
+  return (
+    <button onClick={() => handleGitOperation(someDiff)} disabled={animation.isLocked}>
+      Perform Git Operation
+    </button>
+  );
+}
 ```
 
 ### Key Features
