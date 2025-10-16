@@ -6,7 +6,6 @@ import type { DagNode } from "../elk/layout";
 import type { Skin } from '@/viz/skins/lgb/skin';
 import { defaultSkin } from '@/viz/skins/lgb/skin';
 import { LgbSvgDefs } from '@/viz/skins/lgb/LgbSvgDefs';
-import type { AnimScene } from '@/viz/anim/types';
 
 type Edge = {
   id: string;
@@ -37,6 +36,8 @@ interface GraphSVGProps {
   enableVirtualization?: boolean;
   /** Optional: threshold for enabling virtualization (number of visible elements) */
   virtualizationThreshold?: number;
+  /** Optional: skin configuration for visual styling */
+  skin?: Skin;
 }
 
 /**
@@ -347,8 +348,8 @@ export function GraphSVG({
   onNodeFocus,
   enableVirtualization = true,
   virtualizationThreshold = 1000,
-  skin,
-}: GraphSVGProps & { skin: Skin }) {
+  skin = defaultSkin,
+}: GraphSVGProps) {
   const [viewBox] = React.useState({ x: 0, y: 0, width: 1200, height: 600 });
   const svgRef = React.useRef<SVGSVGElement>(null);
 
