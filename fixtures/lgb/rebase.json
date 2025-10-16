@@ -1,0 +1,164 @@
+{
+  "description": "Rebase scenario: two commits on feature branch; one on main; rebase feature onto main",
+  "initialState": {
+    "nodes": [
+      {
+        "id": "c1",
+        "parents": [],
+        "refs": []
+      },
+      {
+        "id": "c2",
+        "parents": ["c1"],
+        "refs": ["main"]
+      },
+      {
+        "id": "c3",
+        "parents": ["c1"],
+        "refs": []
+      },
+      {
+        "id": "c4",
+        "parents": ["c3"],
+        "refs": ["feature"]
+      }
+    ],
+    "refs": [
+      {
+        "name": "main",
+        "target": "c2"
+      },
+      {
+        "name": "feature",
+        "target": "c4"
+      }
+    ],
+    "head": "feature"
+  },
+  "operations": [
+    {
+      "type": "rebase",
+      "description": "Rebase feature branch onto main (c3, c4 → c3', c4')",
+      "expectedState": {
+        "nodes": [
+          {
+            "id": "c1",
+            "parents": [],
+            "refs": []
+          },
+          {
+            "id": "c2",
+            "parents": ["c1"],
+            "refs": ["main"]
+          },
+          {
+            "id": "c3",
+            "parents": ["c1"],
+            "refs": []
+          },
+          {
+            "id": "c4",
+            "parents": ["c3"],
+            "refs": []
+          },
+          {
+            "id": "c3-rebased",
+            "parents": ["c2"],
+            "refs": []
+          },
+          {
+            "id": "c4-rebased",
+            "parents": ["c3-rebased"],
+            "refs": ["feature"]
+          }
+        ],
+        "refs": [
+          {
+            "name": "main",
+            "target": "c2"
+          },
+          {
+            "name": "feature",
+            "target": "c4-rebased"
+          }
+        ],
+        "head": "feature"
+      },
+      "metadata": {
+        "pickedCommits": ["c3", "c4"],
+        "oldBaseId": "c1",
+        "newBaseId": "c2",
+        "newCommitIds": ["c3-rebased", "c4-rebased"],
+        "newPositions": [
+          { "x": 200, "y": 50 },
+          { "x": 250, "y": 50 }
+        ],
+        "branchName": "feature",
+        "labelPosition": { "x": 250, "y": 30 }
+      }
+    },
+    {
+      "type": "cherry-pick",
+      "description": "Cherry-pick c3 from feature onto main (creates c5)",
+      "expectedState": {
+        "nodes": [
+          {
+            "id": "c1",
+            "parents": [],
+            "refs": []
+          },
+          {
+            "id": "c2",
+            "parents": ["c1"],
+            "refs": []
+          },
+          {
+            "id": "c3",
+            "parents": ["c1"],
+            "refs": []
+          },
+          {
+            "id": "c4",
+            "parents": ["c3"],
+            "refs": []
+          },
+          {
+            "id": "c3-rebased",
+            "parents": ["c2"],
+            "refs": []
+          },
+          {
+            "id": "c4-rebased",
+            "parents": ["c3-rebased"],
+            "refs": ["feature"]
+          },
+          {
+            "id": "c5",
+            "parents": ["c2"],
+            "refs": ["main"]
+          }
+        ],
+        "refs": [
+          {
+            "name": "main",
+            "target": "c5"
+          },
+          {
+            "name": "feature",
+            "target": "c4-rebased"
+          }
+        ],
+        "head": "main"
+      },
+      "metadata": {
+        "sourceCommitId": "c3",
+        "targetBaseId": "c2",
+        "commitId": "c5",
+        "newPosition": { "x": 200, "y": 0 },
+        "branchName": "main",
+        "labelPosition": { "x": 200, "y": -20 },
+        "hasConflict": false
+      }
+    }
+  ]
+}
