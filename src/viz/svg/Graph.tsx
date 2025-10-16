@@ -4,6 +4,8 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { DagNode } from "../elk/layout";
 import type { Skin } from '@/viz/skins/lgb/skin';
+import { defaultSkin } from '@/viz/skins/lgb/skin';
+import { LgbSvgDefs } from '@/viz/skins/lgb/LgbSvgDefs';
 import type { AnimScene } from '@/viz/anim/types';
 
 type Edge = {
@@ -345,9 +347,8 @@ export function GraphSVG({
   onNodeFocus,
   enableVirtualization = true,
   virtualizationThreshold = 1000,
-  skin,
-  scene,
-}: GraphSVGProps & { skin: Skin; scene?: AnimScene }) {
+  skin = defaultSkin,
+}: GraphSVGProps & { skin?: Skin; scene?: AnimScene }) {
   const [viewBox] = React.useState({ x: 0, y: 0, width: 1200, height: 600 });
   const svgRef = React.useRef<SVGSVGElement>(null);
 
@@ -467,6 +468,9 @@ export function GraphSVG({
           style={{ minWidth: "100%", minHeight: "100%" }}
           data-skin={skin.defsId}
         >
+          {/* Render LGB defs if using LGB skin */}
+          {skin.defsId === 'lgb-defs' && <LgbSvgDefs />}
+          
           {/* Edges layer (render behind nodes) */}
           <g aria-label="Commit relationships" role="group">
             {edges.map((edge) => (

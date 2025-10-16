@@ -5,6 +5,8 @@ import { GraphSVG } from "@/viz/svg/Graph";
 import { elkLayout, type DagNode } from "@/viz/elk/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/lib/theme/use-theme";
+import { defaultSkin, lgbSkin } from "@/viz/skins/lgb/skin";
 
 /**
  * Generate sample commit data for demo
@@ -102,6 +104,10 @@ export default function DemoPage() {
   } | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [selectedNode, setSelectedNode] = React.useState<DagNode | null>(null);
+  const { theme } = useTheme();
+
+  // Select skin based on theme
+  const skin = theme === 'lgb' ? lgbSkin : defaultSkin;
 
   // Generate layout on mount
   React.useEffect(() => {
@@ -215,6 +221,7 @@ export default function DemoPage() {
                 height={600}
                 onNodeSelect={handleNodeSelect}
                 onNodeFocus={handleNodeFocus}
+                skin={skin}
               />
             </div>
           ) : (

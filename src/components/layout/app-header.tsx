@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { GitBranch } from "lucide-react";
+import { ThemeToggle } from "@/components/settings/theme-toggle";
 
 export function AppHeader() {
   return (
@@ -34,6 +35,7 @@ export function AppHeader() {
           </Link>
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-2">
+          <ThemeToggle />
         </div>
       </div>
     </header>
