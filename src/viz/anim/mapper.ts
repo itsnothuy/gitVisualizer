@@ -14,6 +14,11 @@ import {
   sceneReset,
   sceneRevert,
 } from './scenes/core';
+import {
+  sceneRebase,
+  sceneInteractiveRebase,
+  sceneCherryPick,
+} from './scenes/rebase';
 
 /**
  * Git operation types that can be animated
@@ -26,7 +31,10 @@ export type GitOperation =
   | 'fast-forward'
   | 'merge'
   | 'reset'
-  | 'revert';
+  | 'revert'
+  | 'rebase'
+  | 'interactive-rebase'
+  | 'cherry-pick';
 
 /**
  * Represents a Git commit node
@@ -69,6 +77,17 @@ export interface GitDiff {
     intermediateNodes?: string[];
     resetMode?: 'soft' | 'hard';
     labelPosition?: { x: number; y: number };
+    // Rebase-specific
+    pickedCommits?: string[];
+    oldBaseId?: string;
+    newBaseId?: string;
+    newCommitIds?: string[];
+    newPositions?: Array<{ x: number; y: number }>;
+    // Cherry-pick-specific
+    sourceCommitId?: string;
+    targetBaseId?: string;
+    newPosition?: { x: number; y: number };
+    hasConflict?: boolean;
   };
 }
 
@@ -94,6 +113,12 @@ export function mapDiffToScene(diff: GitDiff): AnimScene | null {
       return mapReset(diff);
     case 'revert':
       return mapRevert(diff);
+    case 'rebase':
+      return mapRebase(diff);
+    case 'interactive-rebase':
+      return mapInteractiveRebase(diff);
+    case 'cherry-pick':
+      return mapCherryPick(diff);
     default:
       return null;
   }
@@ -305,4 +330,91 @@ export function findIntermediateCommits(
 
   // Remove the endpoints (fromId and toId)
   return path.filter((id) => id !== fromId && id !== toId);
+}
+
+/**
+ * Map a rebase operation to a scene
+ */
+function mapRebase(diff: GitDiff): AnimScene {
+  const metadata = diff.metadata;
+  if (
+    !metadata?.pickedCommits ||
+    !metadata?.oldBaseId ||
+    !metadata?.newBaseId ||
+    !metadata?.newCommitIds ||
+    !metadata?.newPositions
+  ) {
+    throw new Error('Missing required rebase metadata');
+  }
+
+  const branchName = metadata.branchName || 'HEAD';
+  const labelPos = metadata.labelPosition || { x: 0, y: 0 };
+
+  return sceneRebase(
+    metadata.pickedCommits,
+    metadata.oldBaseId,
+    metadata.newBaseId,
+    metadata.newCommitIds,
+    branchName,
+    metadata.newPositions,
+    labelPos
+  );
+}
+
+/**
+ * Map an interactive rebase operation to a scene
+ */
+function mapInteractiveRebase(diff: GitDiff): AnimScene {
+  const metadata = diff.metadata;
+  if (
+    !metadata?.pickedCommits ||
+    !metadata?.oldBaseId ||
+    !metadata?.newBaseId ||
+    !metadata?.newCommitIds ||
+    !metadata?.newPositions
+  ) {
+    throw new Error('Missing required interactive rebase metadata');
+  }
+
+  const branchName = metadata.branchName || 'HEAD';
+  const labelPos = metadata.labelPosition || { x: 0, y: 0 };
+
+  return sceneInteractiveRebase(
+    metadata.pickedCommits,
+    metadata.oldBaseId,
+    metadata.newBaseId,
+    metadata.newCommitIds,
+    branchName,
+    metadata.newPositions,
+    labelPos
+  );
+}
+
+/**
+ * Map a cherry-pick operation to a scene
+ */
+function mapCherryPick(diff: GitDiff): AnimScene {
+  const newCommit = findNewCommit(diff.oldState, diff.newState);
+  if (!newCommit) {
+    throw new Error('No new commit found in cherry-pick diff');
+  }
+
+  const metadata = diff.metadata;
+  if (!metadata?.sourceCommitId || !metadata?.targetBaseId || !metadata?.newPosition) {
+    throw new Error('Missing required cherry-pick metadata');
+  }
+
+  const branchName = metadata.branchName || 'HEAD';
+  const labelPos = metadata.labelPosition || { x: 0, y: 0 };
+  const hasConflict = metadata.hasConflict || false;
+
+  return sceneCherryPick(
+    metadata.sourceCommitId,
+    newCommit.id,
+    metadata.targetBaseId,
+    branchName,
+    metadata.newPosition,
+    labelPos,
+    hasConflict
+  );
 }

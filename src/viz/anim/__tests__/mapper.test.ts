@@ -10,6 +10,7 @@ import {
   type GitDiff,
   type GitState,
   type GitNode,
+  type GitOperation,
 } from '../mapper';
 
 describe('Animation Mapper', () => {
@@ -400,6 +401,206 @@ describe('Animation Mapper', () => {
         const scene = mapDiffToScene(diff);
         expect(scene).not.toBeNull();
         expect(scene?.name).toBe('revert');
+      });
+    });
+
+    describe('rebase operation', () => {
+      it('should map a rebase diff to a rebase scene', () => {
+        const oldState: GitState = {
+          nodes: [
+            { id: 'c1', parents: [] },
+            { id: 'c2', parents: ['c1'] },
+            { id: 'c3', parents: ['c1'] },
+            { id: 'c4', parents: ['c3'] },
+          ],
+          refs: [
+            { name: 'main', target: 'c2' },
+            { name: 'feature', target: 'c4' },
+          ],
+          head: 'feature',
+        };
+
+        const newState: GitState = {
+          nodes: [
+            { id: 'c1', parents: [] },
+            { id: 'c2', parents: ['c1'] },
+            { id: 'c3', parents: ['c1'] },
+            { id: 'c4', parents: ['c3'] },
+            { id: 'c3-rebased', parents: ['c2'] },
+            { id: 'c4-rebased', parents: ['c3-rebased'] },
+          ],
+          refs: [
+            { name: 'main', target: 'c2' },
+            { name: 'feature', target: 'c4-rebased' },
+          ],
+          head: 'feature',
+        };
+
+        const diff: GitDiff = {
+          operation: 'rebase',
+          oldState,
+          newState,
+          metadata: {
+            pickedCommits: ['c3', 'c4'],
+            oldBaseId: 'c1',
+            newBaseId: 'c2',
+            newCommitIds: ['c3-rebased', 'c4-rebased'],
+            newPositions: [
+              { x: 200, y: 50 },
+              { x: 250, y: 50 },
+            ],
+            branchName: 'feature',
+            labelPosition: { x: 250, y: 30 },
+          },
+        };
+
+        const scene = mapDiffToScene(diff);
+        expect(scene).not.toBeNull();
+        expect(scene?.name).toBe('rebase');
+        expect(scene?.description).toContain('Rebased 2 commits');
+      });
+
+      it('should throw if rebase metadata is missing', () => {
+        const state: GitState = {
+          nodes: [{ id: 'c1', parents: [] }],
+          refs: [{ name: 'main', target: 'c1' }],
+          head: 'main',
+        };
+
+        const diff: GitDiff = {
+          operation: 'rebase',
+          oldState: state,
+          newState: state,
+          metadata: {}, // Missing required fields
+        };
+
+        expect(() => mapDiffToScene(diff)).toThrow('Missing required rebase metadata');
+      });
+    });
+
+    describe('interactive-rebase operation', () => {
+      it('should map an interactive rebase diff to an interactive rebase scene', () => {
+        const oldState: GitState = {
+          nodes: [
+            { id: 'c1', parents: [] },
+            { id: 'c2', parents: ['c1'] },
+            { id: 'c3', parents: ['c1'] },
+          ],
+          refs: [
+            { name: 'main', target: 'c2' },
+            { name: 'feature', target: 'c3' },
+          ],
+          head: 'feature',
+        };
+
+        const newState: GitState = {
+          nodes: [
+            { id: 'c1', parents: [] },
+            { id: 'c2', parents: ['c1'] },
+            { id: 'c3', parents: ['c1'] },
+            { id: 'c3-rebased', parents: ['c2'] },
+          ],
+          refs: [
+            { name: 'main', target: 'c2' },
+            { name: 'feature', target: 'c3-rebased' },
+          ],
+          head: 'feature',
+        };
+
+        const diff: GitDiff = {
+          operation: 'interactive-rebase',
+          oldState,
+          newState,
+          metadata: {
+            pickedCommits: ['c3'],
+            oldBaseId: 'c1',
+            newBaseId: 'c2',
+            newCommitIds: ['c3-rebased'],
+            newPositions: [{ x: 200, y: 50 }],
+            branchName: 'feature',
+            labelPosition: { x: 200, y: 30 },
+          },
+        };
+
+        const scene = mapDiffToScene(diff);
+        expect(scene).not.toBeNull();
+        expect(scene?.name).toBe('interactive-rebase');
+      });
+    });
+
+    describe('cherry-pick operation', () => {
+      it('should map a cherry-pick diff to a cherry-pick scene', () => {
+        const oldState: GitState = {
+          nodes: [
+            { id: 'c1', parents: [] },
+            { id: 'c2', parents: ['c1'] },
+            { id: 'c3', parents: ['c1'] },
+          ],
+          refs: [
+            { name: 'main', target: 'c2' },
+            { name: 'feature', target: 'c3' },
+          ],
+          head: 'main',
+        };
+
+        const newState: GitState = {
+          nodes: [
+            { id: 'c1', parents: [] },
+            { id: 'c2', parents: ['c1'] },
+            { id: 'c3', parents: ['c1'] },
+            { id: 'c4', parents: ['c2'] }, // Cherry-picked commit
+          ],
+          refs: [
+            { name: 'main', target: 'c4' },
+            { name: 'feature', target: 'c3' },
+          ],
+          head: 'main',
+        };
+
+        const diff: GitDiff = {
+          operation: 'cherry-pick',
+          oldState,
+          newState,
+          metadata: {
+            sourceCommitId: 'c3',
+            targetBaseId: 'c2',
+            newPosition: { x: 200, y: 0 },
+            branchName: 'main',
+            labelPosition: { x: 200, y: -20 },
+            hasConflict: false,
+          },
+        };
+
+        const scene = mapDiffToScene(diff);
+        expect(scene).not.toBeNull();
+        expect(scene?.name).toBe('cherry-pick');
+        expect(scene?.description).toContain('Cherry-picked');
+      });
+
+      it('should throw if cherry-pick metadata is missing', () => {
+        const oldState: GitState = {
+          nodes: [{ id: 'c1', parents: [] }],
+          refs: [{ name: 'main', target: 'c1' }],
+          head: 'main',
+        };
+
+        const newState: GitState = {
+          nodes: [
+            { id: 'c1', parents: [] },
+            { id: 'c2', parents: ['c1'] },
+          ],
+          refs: [{ name: 'main', target: 'c2' }],
+          head: 'main',
+        };
+
+        const diff: GitDiff = {
+          operation: 'cherry-pick',
+          oldState,
+          newState,
+          metadata: {}, // Missing required fields
+        };
+
+        expect(() => mapDiffToScene(diff)).toThrow('Missing required cherry-pick metadata');
       });
     });
 
