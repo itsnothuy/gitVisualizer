@@ -15,12 +15,15 @@ fi
 
 # Check Node.js version
 NODE_VERSION=$(node -v | sed 's/v//')
-REQUIRED_VERSION="18.18.0"
+REQUIRED_MAJOR=18
+CURRENT_MAJOR=$(echo $NODE_VERSION | cut -d. -f1)
 
-if ! npx semver -r ">=$REQUIRED_VERSION" "$NODE_VERSION" &> /dev/null; then
-    echo "❌ Node.js version $NODE_VERSION is not supported. Please install Node.js $REQUIRED_VERSION or later."
+if [ "$CURRENT_MAJOR" -lt "$REQUIRED_MAJOR" ]; then
+    echo "❌ Node.js version $NODE_VERSION is not supported. Please install Node.js 18.18.0 or later."
     exit 1
 fi
+
+echo "✅ Node.js version $NODE_VERSION is compatible"
 
 # Check if pnpm is available
 if ! command -v pnpm &> /dev/null; then

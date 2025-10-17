@@ -11,13 +11,13 @@ const nextConfig: NextConfig = {
   output: 'standalone', // Ensures compatibility with Vercel's zero-config deployment
   experimental: {
     optimizePackageImports: ["@tanstack/react-query"],
-    turbo: {
-      // Configure Turbopack for better development experience
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+  turbopack: {
+    // Configure Turbopack for better development experience
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
