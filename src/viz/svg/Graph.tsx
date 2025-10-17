@@ -182,6 +182,7 @@ const GraphNode = React.memo(function GraphNode({
             fill="currentColor"
             className={`transition-colors ${isFocused ? "text-primary" : "text-foreground"}`}
             aria-hidden="true"
+            data-node-id={node.id}
           />
           
           {/* Status indicator overlay (color-independent) */}
@@ -285,6 +286,7 @@ const GraphEdge = React.memo(function GraphEdge({
       strokeWidth="2"
       className="text-muted-foreground"
       aria-hidden="true"
+      data-edge-id={edge.id}
     />
   );
 });

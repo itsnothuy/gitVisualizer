@@ -44,5 +44,12 @@ jobs:
       
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
+      
+      - name: Start web server
+        run: pnpm start &
+      
+      - name: Wait for server
+        run: npx wait-on http://localhost:3000
+      
       - name: E2E tests
         run: pnpm exec playwright test --project=chromium
