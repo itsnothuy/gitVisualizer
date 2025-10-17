@@ -10,9 +10,16 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone', // Ensures compatibility with Vercel's zero-config deployment
   experimental: {
-    // @ts-expect-error appDir is not yet typed in Next.js
-    appDir: true, // Enable experimental app directory support
     optimizePackageImports: ["@tanstack/react-query"],
+    turbo: {
+      // Configure Turbopack for better development experience
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
   eslint: { ignoreDuringBuilds: false },
   // Handle web-worker fallback for ELKjs

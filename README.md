@@ -77,11 +77,21 @@ LGB Mode provides a **grid-based layout** with smooth animations that help visua
 
 ### Development
 
+#### Quick Start (Automated)
+```bash
+# One-command setup and start
+./scripts/dev-start.sh
+```
+
+#### Manual Setup
 ```bash
 # Install dependencies
 pnpm install
 
-# Start development server with HTTPS
+# Run validation checks
+pnpm validate
+
+# Start development server with HTTPS (recommended)
 pnpm dev:https
 
 # Or start regular development server
@@ -89,6 +99,20 @@ pnpm dev
 ```
 
 Open [https://localhost:3000](https://localhost:3000) to view the application.
+
+#### Health Check
+```bash
+# Verify the application is running correctly
+./scripts/health-check.sh
+```
+
+#### VS Code Setup
+The project includes recommended extensions and settings:
+- Install recommended extensions when prompted
+- Use built-in debugger configurations
+- Automatic formatting and linting on save
+
+📋 See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the complete development guide.
 
 ### Building for Production
 
@@ -132,17 +156,26 @@ pnpm start
 ### Development Commands
 
 ```bash
-# Run tests
-pnpm test
+# Development
+pnpm dev              # Start dev server with Turbopack
+pnpm dev:https        # Start dev server with HTTPS
 
-# Run E2E tests
-pnpm test:e2e
+# Quality Assurance
+pnpm validate         # Run all checks (type, lint, test, build)
+pnpm typecheck        # TypeScript type checking
+pnpm lint             # ESLint checking
+pnpm lint:fix         # Fix auto-fixable lint issues
+pnpm test             # Run unit tests
+pnpm test:e2e         # Run E2E tests
 
-# Lint code
-pnpm lint
+# Build & Deploy
+pnpm build            # Production build
+pnpm build:analyze    # Build with bundle analysis
+pnpm start            # Start production server
 
-# Type check
-pnpm typecheck
+# Maintenance
+pnpm clean            # Clear build cache
+pnpm reset            # Reset node_modules and reinstall
 ```
 
 ## Deployment
