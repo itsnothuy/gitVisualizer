@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
-import { GraphSVG } from "@/viz/svg/Graph";
-import { elkLayout, type DagNode } from "@/viz/elk/layout";
-import { lgbSkin } from "@/viz/skins/lgb/skin";
 import introFixture from "@/../fixtures/lgb/intro.json";
 import rebaseFixture from "@/../fixtures/lgb/rebase.json";
+import { elkLayout, type DagNode } from "@/viz/elk/layout";
+import { lgbSkin } from "@/viz/skins/lgb/skin";
+import { GraphSVG } from "@/viz/svg/Graph";
+import * as React from "react";
 
 /**
  * Convert fixture format to DagNode format
@@ -23,20 +23,21 @@ function convertFixtureToNodes(fixture: typeof introFixture | typeof rebaseFixtu
 export default function FixturePage({
   searchParams,
 }: {
-  searchParams: { fixture?: string };
+  searchParams: Promise<{ fixture?: string }>;
 }) {
-  const fixtureName = searchParams.fixture || "intro";
-  
+  const resolvedSearchParams = React.use(searchParams);
+  const fixtureName = resolvedSearchParams.fixture || "intro";
+
   const [nodes] = React.useState<DagNode[]>(() => {
     const fixture = fixtureName === "rebase" ? rebaseFixture : introFixture;
     return convertFixtureToNodes(fixture);
   });
-  
+
   const [layoutData, setLayoutData] = React.useState<{
     positions: { [id: string]: { x: number; y: number } };
     edges: { id: string; source: string; target: string }[];
   } | null>(null);
-  
+
   const [isLoading, setIsLoading] = React.useState(true);
 
   // Generate layout on mount

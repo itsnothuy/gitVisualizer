@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
 import withBundleAnalyzer from "@next/bundle-analyzer";
+import type { NextConfig } from "next";
 
 const bundleAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
   async headers() {
     // Check if overlays are enabled to conditionally allow external API connections
     const overlaysEnabled = process.env.NEXT_PUBLIC_ENABLE_OVERLAYS === 'true';
-    
+
     // Build connect-src directive: always allow self, conditionally add overlay APIs
     const connectSrc = overlaysEnabled
       ? "'self' https://api.github.com https://github.com https://gitlab.com"
