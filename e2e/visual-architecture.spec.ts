@@ -12,8 +12,8 @@ test.describe('Visual Architecture System', () => {
     // Navigate to the main page
     await page.goto('/');
     
-    // Wait for the page to load
-    await page.waitForLoadState('networkidle');
+    // Wait for the graph to be ready instead of networkidle
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 30000 });
   });
 
   test('should render visual elements with correct structure', async ({ page }) => {
@@ -125,7 +125,6 @@ test.describe('Visual Elements Grid System', () => {
   test('should position nodes according to grid system', async ({ page }) => {
     // Navigate to a test page or fixture (if available)
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
     
     // Wait for graph to render
     await page.waitForSelector('[role="graphics-document"]', { timeout: 10000 });
