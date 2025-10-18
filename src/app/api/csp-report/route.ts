@@ -23,7 +23,16 @@ export async function POST(request: NextRequest) {
     }
 
     const report = await request.json();
-    
+
+    // Validate the structure of the CSP report
+    if (!report || typeof report !== 'object' || !report['csp-report']) {
+      logWarning('Invalid CSP report structure', { report });
+      return NextResponse.json(
+        { error: 'Invalid CSP report structure' },
+        { status: 400 }
+      );
+    }
+
     // Log the CSP violation locally
     logWarning('CSP Violation Report', {
       report,

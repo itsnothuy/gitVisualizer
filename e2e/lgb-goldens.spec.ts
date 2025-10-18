@@ -8,10 +8,10 @@
  * For now, they verify the existing demo page structure meets LGB requirements.
  */
 
-import { test, expect } from '@playwright/test';
-import { resolve } from 'node:path';
-import { writeFile, mkdir } from 'node:fs/promises';
+import { expect, test } from '@playwright/test';
 import { existsSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 const GOLDEN_DIR = resolve(__dirname, '../../fixtures/lgb/goldens');
 
@@ -52,24 +52,24 @@ test.describe('LGB Visual Goldens - Intro Fixture', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to fixture page with intro fixture
     await page.goto('http://localhost:3000/fixture?fixture=intro');
-    
+
     // Wait for the graph to render
     await page.waitForSelector('svg', { timeout: 5000 });
   });
 
   test('should capture intro fixture initial state', async ({ page }) => {
     await page.waitForTimeout(500); // Allow layout to settle
-    
+
     const svgContent = await captureSvgContent(page);
-    
+
     // Verify SVG has nodes (circles for commits)
     expect(svgContent).toContain('circle');
-    
+
     // Save golden if in record mode
     if (process.env.RECORD_GOLDENS === 'true') {
       await saveGolden('intro', 'initial', svgContent);
     }
-    
+
     // Take screenshot for visual verification
     await page.screenshot({
       path: resolve(GOLDEN_DIR, 'intro-initial.png'),
@@ -82,24 +82,24 @@ test.describe('LGB Visual Goldens - Rebase Fixture', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to fixture page with rebase fixture
     await page.goto('http://localhost:3000/fixture?fixture=rebase');
-    
+
     // Wait for the graph to render
     await page.waitForSelector('svg', { timeout: 5000 });
   });
 
   test('should capture rebase fixture initial state', async ({ page }) => {
     await page.waitForTimeout(500); // Allow layout to settle
-    
+
     const svgContent = await captureSvgContent(page);
-    
+
     // Verify SVG has nodes
     expect(svgContent).toContain('circle');
-    
+
     // Save golden if in record mode
     if (process.env.RECORD_GOLDENS === 'true') {
       await saveGolden('rebase', 'initial', svgContent);
     }
-    
+
     // Take screenshot for visual verification
     await page.screenshot({
       path: resolve(GOLDEN_DIR, 'rebase-initial.png'),
@@ -113,32 +113,32 @@ test.describe('LGB Visual Goldens - Demo Page', () => {
     // Navigate to demo page with LGB mode
     // Note: This assumes theme can be set via localStorage or query param
     await page.goto('http://localhost:3000/demo');
-    
+
     // Set LGB theme if possible via localStorage
     await page.evaluate(() => {
       sessionStorage.setItem('theme', 'lgb');
     });
-    
+
     // Reload to apply theme
     await page.reload();
-    
+
     // Wait for the graph to render
     await page.waitForSelector('svg', { timeout: 5000 });
   });
 
   test('should capture demo page SVG state', async ({ page }) => {
     await page.waitForTimeout(500); // Allow layout to settle
-    
+
     const svgContent = await captureSvgContent(page);
-    
+
     // Verify SVG has nodes (circles for commits)
     expect(svgContent).toContain('circle');
-    
+
     // Save golden if in record mode
     if (process.env.RECORD_GOLDENS === 'true') {
       await saveGolden('demo', 'initial', svgContent);
     }
-    
+
     // Take screenshot for visual verification
     await page.screenshot({
       path: resolve(GOLDEN_DIR, 'demo-initial.png'),
@@ -148,19 +148,19 @@ test.describe('LGB Visual Goldens - Demo Page', () => {
 
   test('should capture selected node state', async ({ page }) => {
     await page.waitForTimeout(500);
-    
+
     // Click on a node to select it
     const firstNode = page.locator('circle[data-node-id]').first();
     await firstNode.click();
-    
+
     await page.waitForTimeout(300); // Wait for selection to complete
-    
+
     const svgContent = await captureSvgContent(page);
-    
+
     if (process.env.RECORD_GOLDENS === 'true') {
       await saveGolden('demo', 'selected', svgContent);
     }
-    
+
     await page.screenshot({
       path: resolve(GOLDEN_DIR, 'demo-selected.png'),
     });
@@ -172,7 +172,7 @@ test.describe('LGB Geometry Verification', () => {
     await page.goto('http://localhost:3000/demo');
     await page.waitForSelector('svg', { timeout: 5000 });
     await page.waitForTimeout(1000);
-    
+
     // Get all commit nodes
     const nodes = await page.evaluate(() => {
       const circles = document.querySelectorAll('circle[data-node-id]');
@@ -185,10 +185,10 @@ test.describe('LGB Geometry Verification', () => {
         };
       });
     });
-    
+
     // Verify nodes are arranged in rows (same y for same generation)
     expect(nodes.length).toBeGreaterThan(0);
-    
+
     // Group by y coordinate (with tolerance)
     const rows = new Map<number, typeof nodes>();
     nodes.forEach(node => {
@@ -198,7 +198,7 @@ test.describe('LGB Geometry Verification', () => {
       }
       rows.get(row)!.push(node);
     });
-    
+
     // Each row should have at least one node
     expect(rows.size).toBeGreaterThan(0);
   });
@@ -207,7 +207,7 @@ test.describe('LGB Geometry Verification', () => {
     await page.goto('http://localhost:3000/demo');
     await page.waitForSelector('svg', { timeout: 5000 });
     await page.waitForTimeout(500);
-    
+
     const nodes = await page.evaluate(() => {
       const circles = document.querySelectorAll('circle[data-node-id]');
       return Array.from(circles).map(circle => {
@@ -219,7 +219,7 @@ test.describe('LGB Geometry Verification', () => {
         };
       });
     });
-    
+
     // Group by x coordinate (columns)
     const columns = new Map<number, typeof nodes>();
     nodes.forEach(node => {
@@ -229,7 +229,7 @@ test.describe('LGB Geometry Verification', () => {
       }
       columns.get(col)!.push(node);
     });
-    
+
     // Should have at least 1 column
     expect(columns.size).toBeGreaterThanOrEqual(1);
   });
@@ -240,20 +240,20 @@ test.describe('LGB Label Positioning', () => {
     await page.goto('http://localhost:3000/demo');
     await page.waitForSelector('svg', { timeout: 5000 });
     await page.waitForTimeout(500);
-    
+
     // Check for branch labels or ref indicators
     // In the actual implementation, these might be text elements with specific data attributes
     const hasLabels = await page.evaluate(() => {
       const labels = document.querySelectorAll('text[data-label-type], text[data-ref]');
       return labels.length > 0;
     });
-    
+
     // At minimum, we should have text elements for commit info
     const hasText = await page.evaluate(() => {
       const textElements = document.querySelectorAll('svg text');
       return textElements.length > 0;
     });
-    
+
     expect(hasText || hasLabels).toBe(true);
   });
 
@@ -261,10 +261,10 @@ test.describe('LGB Label Positioning', () => {
     await page.goto('http://localhost:3000/demo');
     await page.waitForSelector('svg', { timeout: 5000 });
     await page.waitForTimeout(500);
-    
+
     // Tab to first focusable node
     await page.keyboard.press('Tab');
-    
+
     // Check that something is focused
     const focusedElement = page.locator(':focus');
     await expect(focusedElement).toBeVisible();
@@ -276,12 +276,12 @@ test.describe('LGB Edge Styling', () => {
     await page.goto('http://localhost:3000/demo');
     await page.waitForSelector('svg', { timeout: 5000 });
     await page.waitForTimeout(500);
-    
+
     const edgeCount = await page.evaluate(() => {
       const paths = document.querySelectorAll('svg path[data-edge-id], svg line[data-edge-id]');
       return paths.length;
     });
-    
+
     // Demo should have multiple edges
     expect(edgeCount).toBeGreaterThan(0);
   });
@@ -290,7 +290,7 @@ test.describe('LGB Edge Styling', () => {
     await page.goto('http://localhost:3000/demo');
     await page.waitForSelector('svg', { timeout: 5000 });
     await page.waitForTimeout(500);
-    
+
     // Check if there are nodes with multiple parents (merge commits)
     const hasMergeCommit = await page.evaluate(() => {
       const circles = document.querySelectorAll('circle[data-node-id]');
@@ -306,7 +306,7 @@ test.describe('LGB Edge Styling', () => {
       }
       return false;
     });
-    
+
     // Demo data includes a merge commit, so this should be true
     expect(hasMergeCommit).toBe(true);
   });
@@ -316,11 +316,11 @@ test.describe('LGB Accessibility', () => {
   test('should have aria-live region', async ({ page }) => {
     await page.goto('http://localhost:3000/demo');
     await page.waitForSelector('svg', { timeout: 5000 });
-    
+
     // Check for aria-live region for announcements
     const liveRegion = page.locator('[aria-live]');
     const count = await liveRegion.count();
-    
+
     // Should have at least one live region (could be 0 if not implemented yet)
     expect(count).toBeGreaterThanOrEqual(0);
   });
@@ -329,17 +329,17 @@ test.describe('LGB Accessibility', () => {
     await page.goto('http://localhost:3000/demo');
     await page.waitForSelector('svg', { timeout: 5000 });
     await page.waitForTimeout(500);
-    
+
     // Tab to first node
     await page.keyboard.press('Tab');
-    
+
     // Should have focus on a graph element
     const focusedElement = page.locator(':focus');
     await expect(focusedElement).toBeVisible();
-    
+
     // Should be able to activate with Enter
     await page.keyboard.press('Enter');
-    
+
     // Some selection or action should occur
     // This is implementation-dependent
   });

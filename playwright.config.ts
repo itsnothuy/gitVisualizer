@@ -16,7 +16,7 @@ export default defineConfig({
     command: "pnpm start",
     port: 3000,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000, // give server startup up to 2 minutes
+    timeout: process.env.CI ? 240_000 : 120_000, // Increase timeout to 4 minutes for CI
   },
   projects: [
     {
