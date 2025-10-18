@@ -516,8 +516,10 @@ export function GraphSVG({
             style={{ minWidth: "100%", minHeight: "100%" }}
             data-skin={skin.defsId}
           >
-            {/* Render LGB defs if using LGB skin */}
-            {skin.defsId === 'lgb-defs' && <LgbSvgDefs />}
+            {/* Always render defs element for patterns and markers */}
+            <defs>
+              {skin.defsId === 'lgb-defs' && <LgbSvgDefs />}
+            </defs>
 
             {/* Edges layer (render behind nodes) */}
             <g aria-label="Commit relationships" role="group">

@@ -14,9 +14,10 @@ export default defineConfig({
   },
   webServer: {
     command: "pnpm start",
+    url: "http://localhost:3000",
     port: 3000,
     reuseExistingServer: !process.env.CI,
-    timeout: process.env.CI ? 240_000 : 120_000, // Increase timeout to 4 minutes for CI
+    timeout: process.env.CI ? 300_000 : 120_000, // Increase timeout to 5 minutes for CI
   },
   projects: [
     {

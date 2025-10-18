@@ -33,7 +33,7 @@ test('Take screenshots of theme toggle', async ({ page }) => {
   console.log('✓ Screenshot 4: Toggle button (ON)')
 
   // Navigate to demo page
-  await page.goto('http://localhost:3000/demo', { waitUntil: 'networkidle' })
+  await page.goto('/demo')
   await page.waitForTimeout(2000)
 
   // Screenshot 5: LGB theme demo with graph

@@ -51,6 +51,7 @@ test.describe("Rebase Animation Scenes", () => {
     const defs = page.locator('svg defs');
     const defsCount = await defs.count();
     console.log('SVG defs found in ghost node rendering test:', defsCount);
+    // Now that we always render defs, this should pass
     await expect(defs).toHaveCount(1);
 
     // Verify graph can render multiple nodes
