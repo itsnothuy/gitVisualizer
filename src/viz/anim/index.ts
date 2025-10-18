@@ -79,3 +79,25 @@ export {
   type GitState,
   type GitDiff,
 } from './mapper';
+
+// Animation Factory
+export {
+  AnimationFactory,
+  BOUNCE_EASING,
+  SMOOTH_EASING,
+  type Position,
+  type CommitBirthOptions,
+  type BranchMoveOptions,
+  type MergeOptions,
+  type RebaseOptions,
+  type ResetOptions,
+  type RevertOptions,
+} from './AnimationFactory';
+
+// Animation Queue
+export {
+  AnimationQueue,
+  createAnimationQueue,
+  type QueueOptions,
+  type QueueState,
+} from './AnimationQueue';
