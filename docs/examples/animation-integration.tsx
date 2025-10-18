@@ -88,6 +88,11 @@ export function useGraphAnimations() {
 }
 
 /**
+ * Time gap between sequential animations (in ms)
+ */
+const ANIMATION_GAP_MS = 200;
+
+/**
  * Generate an animation scene from a diff result
  */
 function generateSceneFromDiff(diff: DiffResult): AnimScene | null {
@@ -106,7 +111,7 @@ function generateSceneFromDiff(diff: DiffResult): AnimScene | null {
         const commitSteps = AnimationFactory.commitBirth(change.nodeId, {
           position: { x: 0, y: 0 }, // Position would come from layout
           branchLabel: 'main', // Would come from current branch
-          startTime: steps.length > 0 ? steps[steps.length - 1].t + 200 : 0,
+          startTime: steps.length > 0 ? steps[steps.length - 1].t + ANIMATION_GAP_MS : 0,
         });
         steps.push(...commitSteps);
         break;
@@ -120,7 +125,7 @@ function generateSceneFromDiff(diff: DiffResult): AnimScene | null {
         const moveSteps = AnimationFactory.branchMove(change.branchName, {
           oldPosition: { x: 0, y: 0 }, // Would come from layout
           newPosition: { x: 100, y: 100 }, // Would come from layout
-          startTime: steps.length > 0 ? steps[steps.length - 1].t + 200 : 0,
+          startTime: steps.length > 0 ? steps[steps.length - 1].t + ANIMATION_GAP_MS : 0,
         });
         steps.push(...moveSteps);
         break;
@@ -137,7 +142,7 @@ function generateSceneFromDiff(diff: DiffResult): AnimScene | null {
           parent2Id: change.parents[1],
           position: { x: 0, y: 0 }, // Would come from layout
           branchLabel: 'main',
-          startTime: steps.length > 0 ? steps[steps.length - 1].t + 200 : 0,
+          startTime: steps.length > 0 ? steps[steps.length - 1].t + ANIMATION_GAP_MS : 0,
         });
         steps.push(...mergeSteps);
         break;
@@ -155,7 +160,7 @@ function generateSceneFromDiff(diff: DiffResult): AnimScene | null {
           newPositions: change.newCommits.map(() => ({ x: 100, y: 0 })), // From layout
           branchLabel: 'feature',
           labelPosition: { x: 100, y: 50 },
-          startTime: steps.length > 0 ? steps[steps.length - 1].t + 200 : 0,
+          startTime: steps.length > 0 ? steps[steps.length - 1].t + ANIMATION_GAP_MS : 0,
         });
         steps.push(...rebaseSteps);
         break;
