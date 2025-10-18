@@ -8,7 +8,6 @@ const bundleAnalyzer = withBundleAnalyzer({
 const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode: true,
-  output: 'standalone', // Ensures compatibility with Vercel's zero-config deployment
   experimental: {
     optimizePackageImports: ["@tanstack/react-query"],
   },

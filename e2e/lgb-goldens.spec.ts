@@ -296,9 +296,9 @@ test.describe('LGB Edge Styling', () => {
       const circles = document.querySelectorAll('circle[data-node-id]');
       for (const circle of circles) {
         const nodeId = circle.getAttribute('data-node-id');
-        // Count incoming edges to this node
+        // Count incoming edges to this node (edges that TARGET this node)
         const incomingEdges = document.querySelectorAll(
-          `path[data-edge-source="${nodeId}"], line[data-edge-source="${nodeId}"]`
+          `path[data-edge-target="${nodeId}"], line[data-edge-target="${nodeId}"]`
         );
         if (incomingEdges.length >= 2) {
           return true;

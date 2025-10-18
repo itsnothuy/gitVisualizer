@@ -7,6 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
+  timeout: 60000, // per-test timeout (ms)
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
@@ -15,6 +16,7 @@ export default defineConfig({
     command: "pnpm start",
     port: 3000,
     reuseExistingServer: !process.env.CI,
+    timeout: 120_000, // give server startup up to 2 minutes
   },
   projects: [
     {

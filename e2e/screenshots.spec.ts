@@ -1,8 +1,13 @@
 import { test } from '@playwright/test'
+import { mkdirSync } from 'node:fs'
+
+// ensure screenshots dir exists
+mkdirSync('/tmp/screenshots', { recursive: true })
 
 test('Take screenshots of theme toggle', async ({ page }) => {
-  // Navigate to home page
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle' })
+  // Navigate to home page using baseURL, wait until load
+  await page.goto('/', { waitUntil: 'load' })
+  await page.waitForSelector('body')
   await page.waitForTimeout(1000)
   
   // Screenshot 1: Default theme home page

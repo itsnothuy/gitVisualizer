@@ -1,13 +1,13 @@
 "use client";
-import * as React from "react";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { DagNode } from "../elk/layout";
+import type { AnimScene } from '@/viz/anim/types';
+import { useAnimation } from '@/viz/anim/useAnimation';
+import { LgbSvgDefs } from '@/viz/skins/lgb/LgbSvgDefs';
 import type { Skin } from '@/viz/skins/lgb/skin';
 import { defaultSkin } from '@/viz/skins/lgb/skin';
-import { LgbSvgDefs } from '@/viz/skins/lgb/LgbSvgDefs';
-import { useAnimation } from '@/viz/anim/useAnimation';
-import type { AnimScene } from '@/viz/anim/types';
+import * as React from "react";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import type { DagNode } from "../elk/layout";
 
 type Edge = {
   id: string;
@@ -51,7 +51,7 @@ interface GraphSVGProps {
  */
 function getStatusMarker(status?: "success" | "failed" | "pending" | "unknown" | null) {
   if (!status) return null;
-  
+
   switch (status) {
     case "success":
       return { shape: "checkmark", color: "text-green-600", ariaLabel: "Build passed" };
@@ -175,7 +175,7 @@ const GraphNode = React.memo(function GraphNode({
               aria-hidden="true"
             />
           )}
-          
+
           {/* Main node circle */}
           <circle
             r="8"
@@ -184,12 +184,12 @@ const GraphNode = React.memo(function GraphNode({
             aria-hidden="true"
             data-node-id={node.id}
           />
-          
+
           {/* Status indicator overlay (color-independent) */}
           {hasCI && (
             <StatusMarker status={node.ci!.status} x={8} y={-8} />
           )}
-          
+
           {/* Branch/tag indicator (if refs exist) */}
           {hasRefs && (
             <circle
@@ -201,7 +201,7 @@ const GraphNode = React.memo(function GraphNode({
               aria-hidden="true"
             />
           )}
-          
+
           {/* PR indicator */}
           {hasPR && (
             <rect
@@ -214,7 +214,7 @@ const GraphNode = React.memo(function GraphNode({
               aria-hidden="true"
             />
           )}
-          
+
           {/* Commit message label */}
           <text
             x="12"
@@ -272,7 +272,7 @@ const GraphEdge = React.memo(function GraphEdge({
 
   const sourcePos = positions[edge.source];
   const targetPos = positions[edge.target];
-  
+
   if (!sourcePos || !targetPos) return null;
 
   return (
@@ -287,6 +287,8 @@ const GraphEdge = React.memo(function GraphEdge({
       className="text-muted-foreground"
       aria-hidden="true"
       data-edge-id={edge.id}
+      data-edge-source={edge.source}
+      data-edge-target={edge.target}
     />
   );
 });
@@ -304,7 +306,7 @@ function useVirtualization(
 ) {
   return React.useMemo(() => {
     const totalElements = nodes.length + edges.length;
-    
+
     // Skip virtualization if disabled or below threshold
     if (!enabled || totalElements <= threshold) {
       return {
@@ -452,7 +454,7 @@ export function GraphSVG({
     if (nodes.length === 0) return { minX: 0, minY: 0, maxX: 1200, maxY: 600 };
 
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    
+
     nodes.forEach((node) => {
       const pos = positions[node.id];
       if (pos) {
@@ -496,55 +498,55 @@ export function GraphSVG({
         panning={{ disabled: animation.isLocked }}
         wheel={{ smoothStep: 0.01 }}
       >
-      <TransformComponent
-        wrapperStyle={{
-          width: typeof width === "number" ? `${width}px` : width,
-          height: typeof height === "number" ? `${height}px` : height,
-        }}
-      >
-        <svg
-          ref={svgRef}
-          width={svgDimensions.maxX - svgDimensions.minX}
-          height={svgDimensions.maxY - svgDimensions.minY}
-          viewBox={viewBoxString}
-          role="graphics-document"
-          aria-label={`Git commit graph with ${nodes.length} commits`}
-          onKeyDown={handleSVGKeyDown}
-          className="outline-none"
-          style={{ minWidth: "100%", minHeight: "100%" }}
-          data-skin={skin.defsId}
+        <TransformComponent
+          wrapperStyle={{
+            width: typeof width === "number" ? `${width}px` : width,
+            height: typeof height === "number" ? `${height}px` : height,
+          }}
         >
-          {/* Render LGB defs if using LGB skin */}
-          {skin.defsId === 'lgb-defs' && <LgbSvgDefs />}
-          
-          {/* Edges layer (render behind nodes) */}
-          <g aria-label="Commit relationships" role="group">
-            {edges.map((edge) => (
-              <GraphEdge
-                key={edge.id}
-                edge={edge}
-                positions={positions}
-                isInView={visibleEdges.includes(edge.id)}
-              />
-            ))}
-          </g>
+          <svg
+            ref={svgRef}
+            width={svgDimensions.maxX - svgDimensions.minX}
+            height={svgDimensions.maxY - svgDimensions.minY}
+            viewBox={viewBoxString}
+            role="graphics-document"
+            aria-label={`Git commit graph with ${nodes.length} commits`}
+            onKeyDown={handleSVGKeyDown}
+            className="outline-none"
+            style={{ minWidth: "100%", minHeight: "100%" }}
+            data-skin={skin.defsId}
+          >
+            {/* Render LGB defs if using LGB skin */}
+            {skin.defsId === 'lgb-defs' && <LgbSvgDefs />}
 
-          {/* Nodes layer */}
-          <g aria-label="Commits">
-            {nodes.map((node) => (
-              <GraphNode
-                key={node.id}
-                node={node}
-                position={positions[node.id] || { x: 0, y: 0 }}
-                onSelect={onNodeSelect}
-                onFocus={onNodeFocus}
-                isInView={visibleNodes.includes(node.id)}
-              />
-            ))}
-          </g>
-        </svg>
-      </TransformComponent>
-    </TransformWrapper>
+            {/* Edges layer (render behind nodes) */}
+            <g aria-label="Commit relationships" role="group">
+              {edges.map((edge) => (
+                <GraphEdge
+                  key={edge.id}
+                  edge={edge}
+                  positions={positions}
+                  isInView={visibleEdges.includes(edge.id)}
+                />
+              ))}
+            </g>
+
+            {/* Nodes layer */}
+            <g aria-label="Commits">
+              {nodes.map((node) => (
+                <GraphNode
+                  key={node.id}
+                  node={node}
+                  position={positions[node.id] || { x: 0, y: 0 }}
+                  onSelect={onNodeSelect}
+                  onFocus={onNodeFocus}
+                  isInView={visibleNodes.includes(node.id)}
+                />
+              ))}
+            </g>
+          </svg>
+        </TransformComponent>
+      </TransformWrapper>
     </>
   );
 }
