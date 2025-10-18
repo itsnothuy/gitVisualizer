@@ -120,6 +120,30 @@ export type LayoutNode = DagNode & {
 - Canvas/WebGL fallback path for >10k elements
 - Incremental layout updates on repository changes
 
+**Visual Elements Architecture** (`elements/`)
+- Class-based visual element system for rendering Git DAG
+- `VisBase`: Abstract base class for all visual elements
+- `VisNode`: Commit node rendering with accessibility support
+- `VisEdge`: Curved edge paths using cubic Bezier curves
+- `VisTag`: Branch labels, HEAD markers with dynamic placement
+- `VisBranch`: Branch management with commit tracking
+- Grid system: `ROW_WIDTH=80px`, `ROW_HEIGHT=60px` for consistent positioning
+
+**Visual Elements Class Hierarchy:**
+```
+VisBase (abstract)
+├── VisNode     - Commit dots with SHA labels, CI status
+├── VisEdge     - Curved paths between commits
+├── VisTag      - Branch/HEAD labels (inline or above)
+└── VisBranch   - Branch visualization with tag management
+```
+
+**Grid Positioning System:**
+- Branches occupy columns (x = branchIndex × ROW_WIDTH)
+- Commits occupy rows (y = commitLevel × ROW_HEIGHT)
+- Functions: `gridToScreen()`, `screenToGrid()`, `gridDistance()`
+- Provides deterministic, predictable layout for DAG elements
+
 ### 3. Overlay System (`src/lib/overlays/`) [Future]
 
 **GitHub Integration**

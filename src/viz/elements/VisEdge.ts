@@ -138,7 +138,7 @@ export function createEdgesForCommit(
   parents: Array<{ id: string; position: GridPosition }>,
   visuals: Visuals
 ): VisEdge[] {
-  return parents.map((parent, index) => {
+  return parents.map((parent) => {
     const edgeEntity: EdgeEntity = {
       id: `${commitId}-${parent.id}`,
       source: commitId,

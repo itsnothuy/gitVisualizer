@@ -85,10 +85,6 @@ export class VisBranch extends VisBase<BranchEntity> {
     g.setAttribute('aria-label', `Branch ${this.gitEntity.name}`);
     g.setAttribute('role', 'group');
 
-    // Get branch x-coordinate
-    const x = this.getX();
-    const tipCoords = this.getScreenCoords();
-
     // Create branch label (tag) at the tip
     const tagEntity: TagEntity = {
       id: `tag-${this.gitEntity.id}`,
