@@ -49,6 +49,7 @@ describe('GitEngine - Interactive Rebase', () => {
     const result = GitEngine.rebaseInteractive(state, command);
     
     expect(result.success).toBe(true);
+    if (!result.success) return;
     expect(result.newState.rebaseState).toBeDefined();
     expect(result.newState.rebaseState?.todos.length).toBe(3);
     expect(result.newState.rebaseState?.operation).toBe('rebase-interactive');
@@ -68,6 +69,7 @@ describe('GitEngine - Interactive Rebase', () => {
     const result = GitEngine.rebaseInteractive(state, command);
     
     expect(result.success).toBe(true);
+    if (!result.success) return;
     const todos = result.newState.rebaseState?.todos || [];
     
     todos.forEach((todo, index) => {
@@ -89,11 +91,13 @@ describe('GitEngine - Interactive Rebase', () => {
     });
     
     expect(result.success).toBe(true);
+    if (!result.success) return;
 
     // Execute rebase
     result = GitEngine.executeRebase(result.newState);
     
     expect(result.success).toBe(true);
+    if (!result.success) return;
     expect(result.newState.rebaseState).toBeUndefined();
     expect(result.newState.commits.size).toBeGreaterThan(state.commits.size);
   });
@@ -111,6 +115,7 @@ describe('GitEngine - Interactive Rebase', () => {
     });
     
     expect(rebaseResult.success).toBe(true);
+    if (!rebaseResult.success) return;
 
     // Modify todos to drop second commit
     const stateWithDroppedCommit = {
@@ -127,6 +132,7 @@ describe('GitEngine - Interactive Rebase', () => {
     const result = GitEngine.executeRebase(stateWithDroppedCommit);
     
     expect(result.success).toBe(true);
+    if (!result.success) return;
     expect(result.message).toContain('2 commits applied');
   });
 
@@ -144,11 +150,13 @@ describe('GitEngine - Interactive Rebase', () => {
     });
     
     expect(rebaseResult.success).toBe(true);
+    if (!rebaseResult.success) return;
 
     // Abort rebase
     const result = GitEngine.abortRebase(rebaseResult.newState);
     
     expect(result.success).toBe(true);
+    if (!result.success) return;
     expect(result.newState.rebaseState).toBeUndefined();
     expect(result.newState.branches.get('main')?.target).toBe(originalHead.join(''));
   });
@@ -159,6 +167,7 @@ describe('GitEngine - Interactive Rebase', () => {
     const result = GitEngine.abortRebase(state);
     
     expect(result.success).toBe(false);
+    if (result.success) return;
     expect(result.error).toContain('No rebase in progress');
   });
 });

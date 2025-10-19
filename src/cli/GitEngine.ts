@@ -767,6 +767,9 @@ export class GitEngine {
     }
 
     const newState = cloneState(state);
+    if (!newState.rebaseState) {
+      return { success: false, error: 'No rebase in progress' };
+    }
     const { todos, onto } = newState.rebaseState;
     const ontoCommit = resolveRef(newState, onto);
 
@@ -840,6 +843,9 @@ export class GitEngine {
     }
 
     const newState = cloneState(state);
+    if (!newState.rebaseState) {
+      return { success: false, error: 'No rebase in progress' };
+    }
     const originalHead = newState.rebaseState.originalHead;
 
     // Restore HEAD to original position

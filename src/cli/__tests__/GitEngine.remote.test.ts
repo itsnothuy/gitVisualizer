@@ -32,6 +32,7 @@ describe('GitEngine - Remote Operations', () => {
       });
       
       expect(result.success).toBe(true);
+      if (!result.success) return;
       expect(result.newState.remoteConfigs?.has('origin')).toBe(true);
       expect(result.newState.remoteConfigs?.get('origin')?.url).toBe(
         'https://github.com/user/repo.git'
@@ -48,6 +49,7 @@ describe('GitEngine - Remote Operations', () => {
       });
       
       expect(result.success).toBe(true);
+      if (!result.success) return;
       
       result = GitEngine.remoteAdd(result.newState, {
         name: 'remote',
@@ -56,6 +58,7 @@ describe('GitEngine - Remote Operations', () => {
       });
       
       expect(result.success).toBe(false);
+      if (result.success) return;
       expect(result.error).toContain('already exists');
     });
 
@@ -69,6 +72,7 @@ describe('GitEngine - Remote Operations', () => {
       });
       
       expect(result.success).toBe(false);
+      if (result.success) return;
       expect(result.error).toContain('Usage');
     });
   });
@@ -83,15 +87,20 @@ describe('GitEngine - Remote Operations', () => {
         options: {},
       });
       
+      if (!result.success) return;
+      
       result = GitEngine.remoteAdd(result.newState, {
         name: 'remote',
         args: ['upstream', 'https://github.com/upstream/repo.git'],
         options: {},
       });
       
+      if (!result.success) return;
+      
       const listResult = GitEngine.remoteList(result.newState);
       
       expect(listResult.success).toBe(true);
+      if (!listResult.success) return;
       expect(listResult.message).toContain('origin');
       expect(listResult.message).toContain('upstream');
     });
@@ -102,6 +111,7 @@ describe('GitEngine - Remote Operations', () => {
       const result = GitEngine.remoteList(state);
       
       expect(result.success).toBe(true);
+      if (!result.success) return;
       expect(result.message).toContain('No remotes');
     });
   });
@@ -117,6 +127,8 @@ describe('GitEngine - Remote Operations', () => {
         options: {},
       });
       
+      if (!result.success) return;
+      
       // Fetch
       result = GitEngine.fetch(result.newState, {
         name: 'fetch',
@@ -125,6 +137,7 @@ describe('GitEngine - Remote Operations', () => {
       });
       
       expect(result.success).toBe(true);
+      if (!result.success) return;
       expect(result.newState.remotes?.has('origin')).toBe(true);
       expect(result.newState.remoteTrackingBranches?.size).toBeGreaterThan(0);
     });
@@ -139,6 +152,7 @@ describe('GitEngine - Remote Operations', () => {
       });
       
       expect(result.success).toBe(false);
+      if (result.success) return;
       expect(result.error).toContain('does not appear to be a git repository');
     });
 
@@ -152,6 +166,8 @@ describe('GitEngine - Remote Operations', () => {
         options: {},
       });
       
+      if (!result.success) return;
+      
       // Fetch
       result = GitEngine.fetch(result.newState, {
         name: 'fetch',
@@ -159,6 +175,7 @@ describe('GitEngine - Remote Operations', () => {
         options: {},
       });
       
+      if (!result.success) return;
       const trackingBranches = result.newState.remoteTrackingBranches;
       expect(trackingBranches?.has('origin/main')).toBe(true);
       expect(trackingBranches?.get('origin/main')?.remote).toBe('origin');
@@ -177,6 +194,8 @@ describe('GitEngine - Remote Operations', () => {
         options: {},
       });
       
+      if (!result.success) return;
+      
       // Push
       result = GitEngine.push(result.newState, {
         name: 'push',
@@ -185,6 +204,7 @@ describe('GitEngine - Remote Operations', () => {
       });
       
       expect(result.success).toBe(true);
+      if (!result.success) return;
       expect(result.message).toContain('Pushed to origin/main');
       expect(result.newState.remotes?.get('origin')?.has('main')).toBe(true);
     });
@@ -199,6 +219,7 @@ describe('GitEngine - Remote Operations', () => {
       });
       
       expect(result.success).toBe(false);
+      if (result.success) return;
       expect(result.error).toContain('does not appear to be a git repository');
     });
   });
@@ -213,6 +234,8 @@ describe('GitEngine - Remote Operations', () => {
         args: ['origin', 'https://github.com/user/repo.git'],
         options: {},
       });
+      
+      if (!result.success) return;
       
       // Pull
       result = GitEngine.pull(result.newState, {
@@ -234,6 +257,7 @@ describe('GitEngine - Remote Operations', () => {
       });
       
       expect(result.success).toBe(false);
+      if (result.success) return;
       expect(result.error).toContain('does not appear to be a git repository');
     });
   });
