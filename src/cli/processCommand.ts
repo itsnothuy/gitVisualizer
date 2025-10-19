@@ -71,6 +71,10 @@ function cloneState(state: GitState): GitState {
     head: { ...state.head },
     staging: state.staging ? new Set(state.staging) : undefined,
     remotes: state.remotes ? new Map(state.remotes) : undefined,
+    remoteConfigs: state.remoteConfigs ? new Map(state.remoteConfigs) : undefined,
+    remoteTrackingBranches: state.remoteTrackingBranches ? new Map(state.remoteTrackingBranches) : undefined,
+    conflict: state.conflict ? { ...state.conflict } : undefined,
+    rebaseState: state.rebaseState ? { ...state.rebaseState, todos: [...state.rebaseState.todos] } : undefined,
   };
 }
 
@@ -158,11 +162,40 @@ function executeCommand(
       case 'log':
         result = GitEngine.log(state, command);
         break;
-      case 'cherry-pick':
       case 'rebase':
-      case 'push':
-      case 'pull':
+        if (command.options.i || command.options.interactive) {
+          result = GitEngine.rebaseInteractive(state, command);
+        } else if (command.options.abort) {
+          result = GitEngine.abortRebase(state);
+        } else if (command.options.continue) {
+          result = GitEngine.executeRebase(state);
+        } else {
+          return {
+            success: false,
+            message: 'Use --interactive, --continue, or --abort',
+          };
+        }
+        break;
+      case 'remote':
+        if (command.args[0] === 'add') {
+          result = GitEngine.remoteAdd(state, {
+            ...command,
+            args: command.args.slice(1),
+          });
+        } else {
+          result = GitEngine.remoteList(state);
+        }
+        break;
       case 'fetch':
+        result = GitEngine.fetch(state, command);
+        break;
+      case 'pull':
+        result = GitEngine.pull(state, command);
+        break;
+      case 'push':
+        result = GitEngine.push(state, command);
+        break;
+      case 'cherry-pick':
       case 'clone':
       case 'describe':
         // Not yet implemented

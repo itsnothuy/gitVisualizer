@@ -28,7 +28,19 @@ function cloneState(state: GitState): GitState {
     tags: new Map(state.tags),
     head: { ...state.head },
     staging: state.staging ? new Set(state.staging) : undefined,
-    remotes: state.remotes ? new Map(state.remotes) : undefined,
+    remotes: state.remotes
+      ? new Map(Array.from(state.remotes).map(([k, v]) => [k, new Map(v)]))
+      : undefined,
+    remoteConfigs: state.remoteConfigs
+      ? new Map(Array.from(state.remoteConfigs).map(([k, v]) => [k, { ...v, fetch: [...v.fetch] }]))
+      : undefined,
+    remoteTrackingBranches: state.remoteTrackingBranches
+      ? new Map(state.remoteTrackingBranches)
+      : undefined,
+    conflict: state.conflict ? { ...state.conflict, files: [...state.conflict.files] } : undefined,
+    rebaseState: state.rebaseState
+      ? { ...state.rebaseState, todos: state.rebaseState.todos.map(t => ({ ...t })) }
+      : undefined,
   };
 }
 
@@ -57,6 +69,10 @@ function resolveRef(state: GitState, ref: string): string | null {
   // Check if it's a branch
   const branch = state.branches.get(ref);
   if (branch) return branch.target;
+
+  // Check if it's a remote tracking branch
+  const trackingBranch = state.remoteTrackingBranches?.get(ref);
+  if (trackingBranch) return trackingBranch.target;
 
   // Check if it's a tag
   const tag = state.tags.get(ref);
@@ -671,6 +687,407 @@ export class GitEngine {
       success: true,
       message: commits.join('\n'),
       newState: state,
+    };
+  }
+
+  /**
+   * Start interactive rebase
+   * Sets up rebase state for UI to handle
+   */
+  static rebaseInteractive(
+    state: GitState,
+    command: ParsedCommand
+  ): GitOperationResult {
+    const newState = cloneState(state);
+    const onto = command.args[0];
+    const ontoCommit = resolveRef(newState, onto);
+
+    if (!ontoCommit) {
+      return {
+        success: false,
+        error: `fatal: invalid upstream '${onto}'`,
+      };
+    }
+
+    const currentCommit = resolveHead(newState);
+    if (!currentCommit) {
+      return { success: false, error: 'No current commit' };
+    }
+
+    // Find commits between onto and current
+    const commitsToRebase: string[] = [];
+    const visited = new Set<string>();
+    const queue = [currentCommit];
+
+    while (queue.length > 0) {
+      const commitId = queue.shift()!;
+      if (visited.has(commitId) || commitId === ontoCommit) continue;
+      visited.add(commitId);
+
+      commitsToRebase.push(commitId);
+      const commit = newState.commits.get(commitId);
+      if (commit) {
+        queue.push(...commit.parents);
+      }
+    }
+
+    // Create rebase state
+    const todos = commitsToRebase.reverse().map((commitId, index) => {
+      const commit = newState.commits.get(commitId)!;
+      return {
+        operation: 'pick' as const,
+        commitId,
+        message: commit.message,
+        order: index,
+      };
+    });
+
+    newState.rebaseState = {
+      operation: 'rebase-interactive',
+      branch: getCurrentBranch(newState) ?? 'HEAD',
+      onto,
+      todos,
+      currentStep: 0,
+      originalHead: currentCommit,
+    };
+
+    return {
+      success: true,
+      message: `Interactive rebase started. ${todos.length} commits to rebase.`,
+      newState,
+    };
+  }
+
+  /**
+   * Execute rebase operations from interactive rebase
+   */
+  static executeRebase(state: GitState): GitOperationResult {
+    if (!state.rebaseState) {
+      return { success: false, error: 'No rebase in progress' };
+    }
+
+    const newState = cloneState(state);
+    const { todos, onto } = newState.rebaseState;
+    const ontoCommit = resolveRef(newState, onto);
+
+    if (!ontoCommit) {
+      return { success: false, error: 'Invalid rebase target' };
+    }
+
+    let currentBase = ontoCommit;
+    const newCommitIds: string[] = [];
+
+    // Process each todo
+    for (const todo of todos) {
+      if (todo.operation === 'drop') {
+        // Skip this commit
+        continue;
+      }
+
+      const originalCommit = newState.commits.get(todo.commitId);
+      if (!originalCommit) continue;
+
+      if (todo.operation === 'pick' || todo.operation === 'reword') {
+        // Create new commit
+        const newCommit: GitCommit = {
+          id: generateCommitId(),
+          parents: [currentBase],
+          message: originalCommit.message,
+          timestamp: Date.now(),
+        };
+        newState.commits.set(newCommit.id, newCommit);
+        currentBase = newCommit.id;
+        newCommitIds.push(newCommit.id);
+      } else if (todo.operation === 'squash') {
+        // Squash with previous commit
+        if (newCommitIds.length > 0) {
+          const prevCommitId = newCommitIds[newCommitIds.length - 1];
+          const prevCommit = newState.commits.get(prevCommitId);
+          if (prevCommit) {
+            prevCommit.message += '\n\n' + originalCommit.message;
+          }
+        }
+      }
+      // 'edit' would pause rebase - for now we treat it as pick
+    }
+
+    // Update branch to point to new HEAD
+    if (newState.head.type === 'branch') {
+      const branch = newState.branches.get(newState.head.name);
+      if (branch) {
+        branch.target = currentBase;
+      }
+    } else {
+      newState.head = { type: 'detached', commit: currentBase };
+    }
+
+    // Clear rebase state
+    delete newState.rebaseState;
+
+    return {
+      success: true,
+      message: `Rebase completed. ${newCommitIds.length} commits applied.`,
+      newState,
+    };
+  }
+
+  /**
+   * Abort rebase
+   */
+  static abortRebase(state: GitState): GitOperationResult {
+    if (!state.rebaseState) {
+      return { success: false, error: 'No rebase in progress' };
+    }
+
+    const newState = cloneState(state);
+    const originalHead = newState.rebaseState.originalHead;
+
+    // Restore HEAD to original position
+    if (newState.head.type === 'branch') {
+      const branch = newState.branches.get(newState.head.name);
+      if (branch) {
+        branch.target = originalHead;
+      }
+    } else {
+      newState.head = { type: 'detached', commit: originalHead };
+    }
+
+    delete newState.rebaseState;
+
+    return {
+      success: true,
+      message: 'Rebase aborted',
+      newState,
+    };
+  }
+
+  /**
+   * Simulate merge conflict detection
+   */
+  static detectConflicts(
+    _state: GitState,
+    _source: string,
+    _target: string,
+    _operation: 'merge' | 'rebase'
+  ): string[] {
+    // Simulate conflict detection by randomly choosing some "files"
+    // In a real implementation, this would compare tree objects
+    const conflictProbability = 0.3;
+    
+    if (Math.random() < conflictProbability) {
+      // Simulate some common file conflicts
+      const potentialFiles = [
+        'src/index.ts',
+        'package.json',
+        'README.md',
+        'src/components/App.tsx',
+        'src/utils/helpers.ts',
+      ];
+      const numConflicts = Math.floor(Math.random() * 3) + 1;
+      return potentialFiles.slice(0, numConflicts);
+    }
+    
+    return [];
+  }
+
+  /**
+   * Resolve conflicts
+   */
+  static resolveConflicts(
+    state: GitState,
+    resolution: 'ours' | 'theirs' | 'manual'
+  ): GitOperationResult {
+    if (!state.conflict) {
+      return { success: false, error: 'No conflict in progress' };
+    }
+
+    const newState = cloneState(state);
+    delete newState.conflict;
+
+    return {
+      success: true,
+      message: `Conflicts resolved using '${resolution}' strategy`,
+      newState,
+    };
+  }
+
+  /**
+   * Add remote
+   */
+  static remoteAdd(state: GitState, command: ParsedCommand): GitOperationResult {
+    const newState = cloneState(state);
+    const [name, url] = command.args;
+
+    if (!name || !url) {
+      return { success: false, error: 'Usage: git remote add <name> <url>' };
+    }
+
+    if (!newState.remoteConfigs) {
+      newState.remoteConfigs = new Map();
+    }
+
+    if (newState.remoteConfigs.has(name)) {
+      return { success: false, error: `remote ${name} already exists` };
+    }
+
+    newState.remoteConfigs.set(name, {
+      name,
+      url,
+      fetch: [`+refs/heads/*:refs/remotes/${name}/*`],
+    });
+
+    return {
+      success: true,
+      message: `Added remote ${name}`,
+      newState,
+    };
+  }
+
+  /**
+   * List remotes
+   */
+  static remoteList(state: GitState): GitOperationResult {
+    const remotes = state.remoteConfigs
+      ? Array.from(state.remoteConfigs.keys())
+      : [];
+
+    return {
+      success: true,
+      message: remotes.length > 0 ? remotes.join('\n') : 'No remotes configured',
+      newState: state,
+    };
+  }
+
+  /**
+   * Simulate fetch from remote
+   */
+  static fetch(state: GitState, command: ParsedCommand): GitOperationResult {
+    const newState = cloneState(state);
+    const remoteName = command.args[0] || 'origin';
+
+    if (!newState.remoteConfigs?.has(remoteName)) {
+      return {
+        success: false,
+        error: `fatal: '${remoteName}' does not appear to be a git repository`,
+      };
+    }
+
+    // Initialize remote tracking structures
+    if (!newState.remotes) {
+      newState.remotes = new Map();
+    }
+    if (!newState.remoteTrackingBranches) {
+      newState.remoteTrackingBranches = new Map();
+    }
+
+    // Simulate fetching branches from remote
+    const remoteBranches = new Map<string, string>();
+    for (const [branchName, branch] of newState.branches) {
+      remoteBranches.set(branchName, branch.target);
+
+      // Create remote tracking branch
+      const trackingName = `${remoteName}/${branchName}`;
+      newState.remoteTrackingBranches.set(trackingName, {
+        name: trackingName,
+        remote: remoteName,
+        localName: branchName,
+        target: branch.target,
+        ahead: 0,
+        behind: 0,
+      });
+    }
+    newState.remotes.set(remoteName, remoteBranches);
+
+    return {
+      success: true,
+      message: `Fetched from ${remoteName}`,
+      newState,
+    };
+  }
+
+  /**
+   * Simulate pull from remote
+   */
+  static pull(state: GitState, command: ParsedCommand): GitOperationResult {
+    const remoteName = command.args[0] || 'origin';
+    const branchName = command.args[1] || getCurrentBranch(state);
+
+    if (!branchName) {
+      return { success: false, error: 'No branch specified' };
+    }
+
+    // First fetch
+    const fetchResult = this.fetch(state, { ...command, args: [remoteName] });
+    if (!fetchResult.success) {
+      return fetchResult;
+    }
+
+    // Then merge remote branch
+    const trackingBranch = `${remoteName}/${branchName}`;
+    const mergeCommand: ParsedCommand = {
+      name: 'merge',
+      args: [trackingBranch],
+      options: {},
+    };
+
+    return this.merge(fetchResult.newState, mergeCommand);
+  }
+
+  /**
+   * Simulate push to remote
+   */
+  static push(state: GitState, command: ParsedCommand): GitOperationResult {
+    const newState = cloneState(state);
+    const remoteName = command.args[0] || 'origin';
+    const branchName = command.args[1] || getCurrentBranch(newState);
+
+    if (!branchName) {
+      return { success: false, error: 'No branch specified' };
+    }
+
+    if (!newState.remoteConfigs?.has(remoteName)) {
+      return {
+        success: false,
+        error: `fatal: '${remoteName}' does not appear to be a git repository`,
+      };
+    }
+
+    const branch = newState.branches.get(branchName);
+    if (!branch) {
+      return { success: false, error: `Branch '${branchName}' not found` };
+    }
+
+    // Initialize remote tracking structures
+    if (!newState.remotes) {
+      newState.remotes = new Map();
+    }
+    if (!newState.remoteTrackingBranches) {
+      newState.remoteTrackingBranches = new Map();
+    }
+
+    // Update remote branch
+    let remoteBranches = newState.remotes.get(remoteName);
+    if (!remoteBranches) {
+      remoteBranches = new Map();
+      newState.remotes.set(remoteName, remoteBranches);
+    }
+    remoteBranches.set(branchName, branch.target);
+
+    // Update remote tracking branch
+    const trackingName = `${remoteName}/${branchName}`;
+    newState.remoteTrackingBranches.set(trackingName, {
+      name: trackingName,
+      remote: remoteName,
+      localName: branchName,
+      target: branch.target,
+      ahead: 0,
+      behind: 0,
+    });
+
+    return {
+      success: true,
+      message: `Pushed to ${remoteName}/${branchName}`,
+      newState,
     };
   }
 }
