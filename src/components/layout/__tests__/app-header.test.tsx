@@ -15,12 +15,7 @@ describe("AppHeader", () => {
     expect(title).toBeInTheDocument();
   });
 
-  it("provides skip to main content link", () => {
-    render(<AppHeader />);
-    const skipLink = screen.getByText("Skip to main content");
-    expect(skipLink).toBeInTheDocument();
-    expect(skipLink).toHaveAttribute("href", "#main-content");
-  });
+  // Skip link test removed - now handled at app-shell level as first element
 
   it("has mode selector with correct modes", () => {
     render(<AppHeader />);

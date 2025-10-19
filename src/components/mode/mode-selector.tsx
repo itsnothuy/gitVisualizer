@@ -66,7 +66,7 @@ export function ModeSelector({ className }: ModeSelectorProps) {
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
               isActive
                 ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                : 'text-gray-700 hover:text-foreground hover:bg-background/50'
             )}
           >
             {mode.label}
