@@ -196,7 +196,7 @@ test.describe('Advanced Git Features', () => {
       }
     });
 
-    test.skip('can resolve conflicts with "ours" strategy', async ({ page }) => {
+    test.skip('can resolve conflicts with "ours" strategy', async () => {
       // This test would require deterministic conflict triggering
       // Currently conflicts are simulated randomly
       // Implementation pending integration
