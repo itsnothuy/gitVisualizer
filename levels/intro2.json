@@ -1,0 +1,160 @@
+{
+  "id": "intro2",
+  "name": {
+    "en_US": "Branching in Git",
+    "de_DE": "Branching in Git"
+  },
+  "description": {
+    "en_US": "Learn how to create and switch between branches",
+    "de_DE": "Lerne, wie man Branches erstellt und zwischen ihnen wechselt"
+  },
+  "difficulty": "intro",
+  "order": 2,
+  "initialState": {
+    "commits": [
+      {
+        "id": "C0",
+        "parents": [],
+        "message": "Initial commit",
+        "timestamp": 1700000000000
+      },
+      {
+        "id": "C1",
+        "parents": ["C0"],
+        "message": "First commit",
+        "timestamp": 1700000001000
+      }
+    ],
+    "branches": [
+      {
+        "name": "main",
+        "target": "C1"
+      }
+    ],
+    "tags": [],
+    "head": {
+      "type": "branch",
+      "name": "main"
+    }
+  },
+  "goalState": {
+    "commits": [
+      {
+        "id": "C0",
+        "parents": [],
+        "message": "Initial commit",
+        "timestamp": 1700000000000
+      },
+      {
+        "id": "C1",
+        "parents": ["C0"],
+        "message": "First commit",
+        "timestamp": 1700000001000
+      },
+      {
+        "id": "C2",
+        "parents": ["C1"],
+        "message": "Feature commit",
+        "timestamp": 1700000002000
+      }
+    ],
+    "branches": [
+      {
+        "name": "main",
+        "target": "C1"
+      },
+      {
+        "name": "feature",
+        "target": "C2"
+      }
+    ],
+    "tags": [],
+    "head": {
+      "type": "branch",
+      "name": "feature"
+    }
+  },
+  "tutorialSteps": [
+    {
+      "type": "dialog",
+      "id": "intro2-welcome",
+      "title": {
+        "en_US": "Git Branches",
+        "de_DE": "Git Branches"
+      },
+      "content": {
+        "en_US": [
+          "Branches in Git are lightweight movable pointers to commits.",
+          "They allow you to work on different features or experiments in parallel.",
+          "Let's create a new branch and make a commit on it!"
+        ],
+        "de_DE": [
+          "Branches in Git sind leichtgewichtige bewegliche Zeiger auf Commits.",
+          "Sie ermöglichen es dir, parallel an verschiedenen Features oder Experimenten zu arbeiten.",
+          "Lass uns einen neuen Branch erstellen und einen Commit darauf machen!"
+        ]
+      }
+    },
+    {
+      "type": "demonstration",
+      "id": "intro2-demo",
+      "beforeText": {
+        "en_US": [
+          "To create a new branch, use `git branch <name>`.",
+          "To switch to it, use `git checkout <name>`, or combine both with `git checkout -b <name>`."
+        ],
+        "de_DE": [
+          "Um einen neuen Branch zu erstellen, verwende `git branch <name>`.",
+          "Um zu ihm zu wechseln, verwende `git checkout <name>`, oder kombiniere beides mit `git checkout -b <name>`."
+        ]
+      },
+      "setupCommands": [],
+      "demonstrationCommand": "git checkout -b demo",
+      "afterText": {
+        "en_US": [
+          "Perfect! We created a new branch called 'demo' and switched to it.",
+          "HEAD now points to the demo branch."
+        ],
+        "de_DE": [
+          "Perfekt! Wir haben einen neuen Branch namens 'demo' erstellt und sind zu ihm gewechselt.",
+          "HEAD zeigt jetzt auf den demo-Branch."
+        ]
+      }
+    },
+    {
+      "type": "challenge",
+      "id": "intro2-challenge",
+      "instructions": {
+        "en_US": [
+          "Create a new branch called 'feature' and make a commit on it.",
+          "Hint: You can use `git checkout -b feature` followed by `git commit`"
+        ],
+        "de_DE": [
+          "Erstelle einen neuen Branch namens 'feature' und mache einen Commit darauf.",
+          "Hinweis: Du kannst `git checkout -b feature` gefolgt von `git commit` verwenden"
+        ]
+      },
+      "hints": []
+    }
+  ],
+  "solutionCommands": ["git checkout -b feature", "git commit"],
+  "hints": [
+    {
+      "en_US": [
+        "First create and switch to a new branch with `git checkout -b feature`"
+      ],
+      "de_DE": [
+        "Erstelle zuerst einen neuen Branch und wechsle zu ihm mit `git checkout -b feature`"
+      ]
+    },
+    {
+      "en_US": [
+        "Then make a commit with `git commit`"
+      ],
+      "de_DE": [
+        "Dann mache einen Commit mit `git commit`"
+      ]
+    }
+  ],
+  "flags": {}
+}
