@@ -86,6 +86,9 @@ jobs:
         run: pnpm exec playwright test e2e/lgb-goldens.spec.ts --project=chromium
         continue-on-error: true
 
+      - name: Ensure goldens directory exists
+        run: mkdir -p fixtures/lgb/goldens/
+      
       - name: Upload SVG goldens
         uses: actions/upload-artifact@v4
         if: always()

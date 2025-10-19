@@ -153,6 +153,9 @@ jobs:
       #   env:
       #     LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
+      - name: Ensure lighthouse directory exists
+        run: mkdir -p .lighthouseci/
+      
       - name: Upload Lighthouse reports
         uses: actions/upload-artifact@v4
         if: always()
