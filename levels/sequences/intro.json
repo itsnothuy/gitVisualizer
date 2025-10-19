@@ -1,0 +1,13 @@
+{
+  "id": "intro",
+  "name": {
+    "en_US": "Introduction to Git",
+    "de_DE": "Einführung in Git"
+  },
+  "description": {
+    "en_US": "Learn the basics of Git: commits, branches, and merging",
+    "de_DE": "Lerne die Grundlagen von Git: Commits, Branches und Merging"
+  },
+  "levelIds": ["intro1", "intro2", "intro3"],
+  "locked": false
+}
