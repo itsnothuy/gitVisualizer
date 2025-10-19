@@ -3,7 +3,7 @@
  * Parses user input into structured command objects with validation
  */
 
-import type { ParsedCommand, CommandParseResult } from './types';
+import type { CommandParseResult } from './types';
 
 /**
  * Supported Git commands
