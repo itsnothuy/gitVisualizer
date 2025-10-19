@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { useTheme } from '@/lib/theme/use-theme'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/i18n'
 
 /**
  * Theme toggle component for switching between default and LGB mode
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button'
  */
 export function ThemeToggle() {
   const { theme, setTheme, mounted } = useTheme()
+  const { t } = useTranslation()
 
   // Avoid hydration mismatch by not rendering until mounted
   if (!mounted) {
@@ -27,14 +29,14 @@ export function ThemeToggle() {
   return (
     <div className="flex items-center space-x-2">
       <span className="text-sm font-medium">
-        LGB Mode
+        {t('settings.theme.lgbMode')}
       </span>
       <Button
         variant={theme === 'lgb' ? 'default' : 'outline'}
         size="sm"
         onClick={handleToggle}
         aria-pressed={theme === 'lgb'}
-        aria-label={theme === 'lgb' ? 'Disable Learn Git Branching mode' : 'Enable Learn Git Branching mode'}
+        aria-label={theme === 'lgb' ? t('settings.theme.disableLgbMode') : t('settings.theme.enableLgbMode')}
         data-testid="theme-toggle"
       >
         {theme === 'lgb' ? 'On' : 'Off'}

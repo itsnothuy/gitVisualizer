@@ -15,13 +15,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useTranslation, useLocalizedContent } from '@/lib/i18n';
 import type { DialogTutorialStep } from '@/tutorial/types';
 
 export interface TutorialDialogProps {
   /** Tutorial step to display */
   step: DialogTutorialStep;
-  /** Current locale */
-  locale?: string;
   /** Whether dialog is open */
   open: boolean;
   /** Callback when user wants to proceed */
@@ -54,7 +53,6 @@ function renderText(text: string): React.ReactNode {
  */
 export function TutorialDialog({
   step,
-  locale = 'en_US',
   open,
   onNext,
   onPrev,
@@ -62,8 +60,12 @@ export function TutorialDialog({
   canGoNext = true,
   onClose,
 }: TutorialDialogProps) {
-  const title = step.title[locale] || step.title['en_US'] || 'Tutorial';
-  const content = step.content[locale] || step.content['en_US'] || [];
+  const { t } = useTranslation();
+  const title = useLocalizedContent(step.title);
+  const content = useLocalizedContent(step.content);
+
+  // Ensure content is an array
+  const contentArray = Array.isArray(content) ? content : [content];
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose?.()}>
@@ -74,12 +76,12 @@ export function TutorialDialog({
         <DialogHeader>
           <DialogTitle id="tutorial-title">{title}</DialogTitle>
           <DialogDescription id="tutorial-description" className="sr-only">
-            Tutorial step instructions
+            {t('tutorial.dialog.ariaDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4" role="document">
-          {content.map((paragraph, i) => (
+          {contentArray.map((paragraph, i) => (
             <p key={i} className="text-sm leading-relaxed">
               {renderText(paragraph)}
             </p>
@@ -91,19 +93,19 @@ export function TutorialDialog({
             <Button
               variant="outline"
               onClick={onPrev}
-              aria-label="Go to previous step"
+              aria-label={t('tutorial.dialog.previousStep')}
             >
-              Previous
+              {t('common.previous')}
             </Button>
           )}
           {canGoNext && (
-            <Button onClick={onNext} aria-label="Go to next step">
-              Next
+            <Button onClick={onNext} aria-label={t('tutorial.dialog.nextStep')}>
+              {t('common.next')}
             </Button>
           )}
           {!canGoNext && (
-            <Button onClick={onClose} aria-label="Close tutorial">
-              Got it!
+            <Button onClick={onClose} aria-label={t('tutorial.dialog.closeTutorial')}>
+              {t('common.gotIt')}
             </Button>
           )}
         </DialogFooter>

@@ -90,7 +90,6 @@ export function TutorialManager({
     return (
       <TutorialDialog
         step={currentStep as DialogTutorialStep}
-        locale={locale}
         open={isOpen}
         onNext={handleNext}
         onPrev={handlePrev}
@@ -126,7 +125,6 @@ export function TutorialManager({
           title: { [locale]: 'Your Turn!' },
           content: { [locale]: instructions },
         }}
-        locale={locale}
         open={isOpen}
         onNext={handleClose}
         canGoPrev={canGoPrev}

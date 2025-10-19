@@ -1,0 +1,57 @@
+{
+  "common": {
+    "appName": "مُصَوِّر Git",
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "close": "إغلاق",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "next": "التالي",
+    "previous": "السابق",
+    "gotIt": "فهمت!",
+    "learnMore": "معرفة المزيد"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "settings": "الإعدادات",
+    "sidebarLabel": "التنقل في الشريط الجانبي"
+  },
+  "home": {
+    "welcome": "مرحبًا بك في مُصَوِّر Git",
+    "tagline": "مُصَوِّر رسم بياني لالتزامات Git يحفظ الخصوصية ويعمل محليًا",
+    "gettingStarted": {
+      "title": "البدء",
+      "description": "صوّر مستودع Git الخاص بك بواسطة رسم بياني تفاعلي للالتزامات",
+      "intro": "يساعدك مُصَوِّر Git على فهم تاريخ مستودعك من خلال رسم بياني تفاعلي يمكن الوصول إليه. تتم جميع العمليات محليًا في متصفحك—لا يتم إرسال أي بيانات إلى خوادم خارجية.",
+      "repositoryConnected": "تم الاتصال بالمستودع:",
+      "errorPrefix": "خطأ:"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "language": {
+      "label": "اللغة",
+      "description": "اختر لغتك المفضلة"
+    },
+    "theme": {
+      "lgbMode": "وضع LGB",
+      "enableLgbMode": "تفعيل وضع Learn Git Branching",
+      "disableLgbMode": "تعطيل وضع Learn Git Branching"
+    }
+  },
+  "tutorial": {
+    "dialog": {
+      "ariaDescription": "تعليمات خطوة البرنامج التعليمي",
+      "previousStep": "الانتقال إلى الخطوة السابقة",
+      "nextStep": "الانتقال إلى الخطوة التالية",
+      "closeTutorial": "إغلاق البرنامج التعليمي"
+    }
+  },
+  "errors": {
+    "pageNotFound": "الصفحة غير موجودة",
+    "pageNotFoundMessage": "الصفحة التي تبحث عنها غير موجودة.",
+    "backToHome": "العودة إلى الصفحة الرئيسية",
+    "somethingWentWrong": "حدث خطأ ما",
+    "tryAgain": "حاول مرة أخرى"
+  }
+}
