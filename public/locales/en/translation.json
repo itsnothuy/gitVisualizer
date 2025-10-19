@@ -1,0 +1,57 @@
+{
+  "common": {
+    "appName": "Git Visualizer",
+    "loading": "Loading...",
+    "error": "Error",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "next": "Next",
+    "previous": "Previous",
+    "gotIt": "Got it!",
+    "learnMore": "Learn More"
+  },
+  "navigation": {
+    "home": "Home",
+    "settings": "Settings",
+    "sidebarLabel": "Sidebar navigation"
+  },
+  "home": {
+    "welcome": "Welcome to Git Visualizer",
+    "tagline": "A privacy-first, local-first Git commit graph visualizer",
+    "gettingStarted": {
+      "title": "Getting Started",
+      "description": "Visualize your Git repository with an interactive commit graph",
+      "intro": "Git Visualizer helps you understand your repository history with an accessible, interactive commit graph. All processing happens locally in your browser—no data is sent to external servers.",
+      "repositoryConnected": "Repository connected:",
+      "errorPrefix": "Error:"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "label": "Language",
+      "description": "Choose your preferred language"
+    },
+    "theme": {
+      "lgbMode": "LGB Mode",
+      "enableLgbMode": "Enable Learn Git Branching mode",
+      "disableLgbMode": "Disable Learn Git Branching mode"
+    }
+  },
+  "tutorial": {
+    "dialog": {
+      "ariaDescription": "Tutorial step instructions",
+      "previousStep": "Go to previous step",
+      "nextStep": "Go to next step",
+      "closeTutorial": "Close tutorial"
+    }
+  },
+  "errors": {
+    "pageNotFound": "Page Not Found",
+    "pageNotFoundMessage": "The page you're looking for doesn't exist.",
+    "backToHome": "Back to Home",
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try again"
+  }
+}

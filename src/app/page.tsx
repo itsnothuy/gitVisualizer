@@ -4,8 +4,10 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RepositoryPicker } from "@/components/ingestion/repository-picker";
+import { useTranslation } from "@/lib/i18n";
 
 export default function Home() {
+  const { t } = useTranslation();
   const [selectedRepo, setSelectedRepo] = React.useState<FileSystemDirectoryHandle | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -23,30 +25,28 @@ export default function Home() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Welcome to Git Visualizer</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('home.welcome')}</h1>
         <p className="text-muted-foreground mt-2">
-          A privacy-first, local-first Git commit graph visualizer
+          {t('home.tagline')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Getting Started</CardTitle>
+          <CardTitle>{t('home.gettingStarted.title')}</CardTitle>
           <CardDescription>
-            Visualize your Git repository with an interactive commit graph
+            {t('home.gettingStarted.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm">
-            Git Visualizer helps you understand your repository history with an accessible,
-            interactive commit graph. All processing happens locally in your browser—no data
-            is sent to external servers.
+            {t('home.gettingStarted.intro')}
           </p>
 
           {selectedRepo && (
             <div className="p-4 bg-green-50 dark:bg-green-950 rounded-md" role="status">
               <p className="text-sm text-green-800 dark:text-green-200">
-                <span className="font-semibold">Repository connected:</span> {selectedRepo.name}
+                <span className="font-semibold">{t('home.gettingStarted.repositoryConnected')}</span> {selectedRepo.name}
               </p>
             </div>
           )}
@@ -54,7 +54,7 @@ export default function Home() {
           {error && (
             <div className="p-4 bg-red-50 dark:bg-red-950 rounded-md" role="alert">
               <p className="text-sm text-red-800 dark:text-red-200">
-                <span className="font-semibold">Error:</span> {error}
+                <span className="font-semibold">{t('home.gettingStarted.errorPrefix')}</span> {error}
               </p>
             </div>
           )}
@@ -64,7 +64,7 @@ export default function Home() {
               onRepositorySelected={handleRepositorySelected}
               onError={handleError}
             />
-            <Button variant="outline">Learn More</Button>
+            <Button variant="outline">{t('common.learnMore')}</Button>
           </div>
         </CardContent>
       </Card>

@@ -4,20 +4,22 @@ import Link from "next/link";
 import { Home, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+import { useTranslation } from "@/lib/i18n";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { href: "/", label: t('navigation.home'), icon: Home },
+    { href: "/settings", label: t('navigation.settings'), icon: Settings },
+  ];
 
   return (
     <aside
       className="w-64 border-r bg-background"
       role="complementary"
-      aria-label="Sidebar navigation"
+      aria-label={t('navigation.sidebarLabel')}
     >
       <nav className="flex flex-col gap-1 p-4" role="navigation">
         {navItems.map((item) => {

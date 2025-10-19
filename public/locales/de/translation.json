@@ -1,0 +1,57 @@
+{
+  "common": {
+    "appName": "Git Visualizer",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "close": "Schließen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "gotIt": "Verstanden!",
+    "learnMore": "Mehr erfahren"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "settings": "Einstellungen",
+    "sidebarLabel": "Seitenleiste Navigation"
+  },
+  "home": {
+    "welcome": "Willkommen bei Git Visualizer",
+    "tagline": "Ein datenschutzfreundlicher, lokaler Git-Commit-Graph-Visualizer",
+    "gettingStarted": {
+      "title": "Erste Schritte",
+      "description": "Visualisieren Sie Ihr Git-Repository mit einem interaktiven Commit-Graphen",
+      "intro": "Git Visualizer hilft Ihnen, die Historie Ihres Repositorys mit einem zugänglichen, interaktiven Commit-Graphen zu verstehen. Die gesamte Verarbeitung erfolgt lokal in Ihrem Browser—keine Daten werden an externe Server gesendet.",
+      "repositoryConnected": "Repository verbunden:",
+      "errorPrefix": "Fehler:"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": {
+      "label": "Sprache",
+      "description": "Wählen Sie Ihre bevorzugte Sprache"
+    },
+    "theme": {
+      "lgbMode": "LGB Modus",
+      "enableLgbMode": "Learn Git Branching Modus aktivieren",
+      "disableLgbMode": "Learn Git Branching Modus deaktivieren"
+    }
+  },
+  "tutorial": {
+    "dialog": {
+      "ariaDescription": "Tutorial-Schritt Anweisungen",
+      "previousStep": "Zum vorherigen Schritt gehen",
+      "nextStep": "Zum nächsten Schritt gehen",
+      "closeTutorial": "Tutorial schließen"
+    }
+  },
+  "errors": {
+    "pageNotFound": "Seite nicht gefunden",
+    "pageNotFoundMessage": "Die gesuchte Seite existiert nicht.",
+    "backToHome": "Zurück zur Startseite",
+    "somethingWentWrong": "Etwas ist schief gelaufen",
+    "tryAgain": "Erneut versuchen"
+  }
+}
