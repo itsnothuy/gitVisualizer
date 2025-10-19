@@ -5,7 +5,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SandboxSession } from '../SandboxSession';
 import { GitEngine } from '@/cli/GitEngine';
-import type { GitState } from '@/cli/types';
 
 describe('SandboxSession', () => {
   let session: SandboxSession;

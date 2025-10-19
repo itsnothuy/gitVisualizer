@@ -11,6 +11,7 @@ import { CommandConsole, useCommandConsole } from '@/components/cli/CommandConso
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { HistoryPanel } from '@/components/sandbox/history-panel';
+import { NewScenarioDialog } from '@/components/sandbox/new-scenario-dialog';
 import { SandboxSession } from '@/lib/sandbox/SandboxSession';
 import { Download, Upload, Share2, RotateCcw } from 'lucide-react';
 import { snapshotToState } from '@/tutorial/stateUtils';
@@ -136,6 +137,21 @@ export default function SandboxPage() {
     }
   }, [session]);
 
+  // Handle new scenario creation
+  const handleCreateScenario = React.useCallback(
+    (scenario: GitStateSnapshot, name: string) => {
+      if (!session) return;
+
+      const newState = snapshotToState(scenario);
+      session.setName(name);
+      session.setState(newState);
+      session.clearHistory(); // Clear history for fresh start
+      setState(newState);
+      setShowToast({ message: `Created scenario: ${name}`, type: 'success' });
+    },
+    [session, setState]
+  );
+
   // Reset to initial state
   const handleReset = React.useCallback(() => {
     if (!session) return;
@@ -209,6 +225,7 @@ export default function SandboxPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <NewScenarioDialog onCreateScenario={handleCreateScenario} />
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Export
