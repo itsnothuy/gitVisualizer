@@ -22,9 +22,14 @@ describe("AppHeader", () => {
     expect(skipLink).toHaveAttribute("href", "#main-content");
   });
 
-  it("has navigation landmark with label", () => {
+  it("has mode selector with correct modes", () => {
     render(<AppHeader />);
-    const nav = screen.getByRole("navigation", { name: /main navigation/i });
-    expect(nav).toBeInTheDocument();
+    const modeSelector = screen.getByRole("tablist", { name: /application mode selector/i });
+    expect(modeSelector).toBeInTheDocument();
+
+    // Check all three modes are present
+    expect(screen.getByRole("tab", { name: /local repository mode/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /sandbox mode/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /tutorial mode/i })).toBeInTheDocument();
   });
 });
