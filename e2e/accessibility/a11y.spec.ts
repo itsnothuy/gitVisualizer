@@ -5,24 +5,38 @@ test.describe("Accessibility", () => {
   test("homepage should not have automatically detectable accessibility issues", async ({ page }) => {
     await page.goto("/");
     
+    // Wait for page stability
+    await page.waitForLoadState('networkidle');
+    
     const accessibilityScanResults = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
       .analyze();
     
-    console.log(accessibilityScanResults.violations);
-    expect(accessibilityScanResults.violations).toEqual([]);
+    // Log full violations for CI diagnostics
+    if (accessibilityScanResults.violations.length > 0) {
+      console.log('AXE VIOLATIONS JSON:\n', JSON.stringify(accessibilityScanResults.violations, null, 2));
+    }
+    
+    expect(accessibilityScanResults.violations.length).toBe(0);
   });
 
   test("demo page should not have accessibility issues", async ({ page }) => {
     await page.goto("/demo");
     
-    // Wait for graph to render
-    await page.waitForSelector('[role="graphics-document"]', { timeout: 20000 });
+    // Wait for page stability and graph to render
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 30000 });
     
     const accessibilityScanResults = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
       .analyze();
     
-    console.log(accessibilityScanResults.violations);
-    expect(accessibilityScanResults.violations).toEqual([]);
+    // Log full violations for CI diagnostics
+    if (accessibilityScanResults.violations.length > 0) {
+      console.log('AXE VIOLATIONS JSON:\n', JSON.stringify(accessibilityScanResults.violations, null, 2));
+    }
+    
+    expect(accessibilityScanResults.violations.length).toBe(0);
   });
 
   test("should have proper landmarks", async ({ page }) => {

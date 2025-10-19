@@ -81,7 +81,8 @@ describe('Level Validation', () => {
     });
 
     it('should reject level with invalid difficulty', () => {
-      const level = { ...validLevel, difficulty: 'super-hard' } as Level;
+      // Cast via unknown to bypass static typing for an intentionally invalid runtime case
+      const level = { ...validLevel, difficulty: 'super-hard' } as unknown as Level;
       const result = validateLevel(level);
       expect(result.valid).toBe(false);
       expect(result.errors.some((e) => e.field === 'difficulty')).toBe(true);

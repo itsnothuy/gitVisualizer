@@ -185,6 +185,31 @@
   text-align: left;
 }
 
+/* Skip link for accessibility - hidden by default, visible on focus */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.skip-link:focus {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: auto;
+  height: auto;
+  padding: 8px 12px;
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  text-decoration: none;
+  font-weight: bold;
+}
+
 /* Reduced motion support - disable animations for users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
