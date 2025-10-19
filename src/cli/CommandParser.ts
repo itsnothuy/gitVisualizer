@@ -26,6 +26,7 @@ const SUPPORTED_COMMANDS = new Set([
   'describe',
   'log',
   'status',
+  'remote',
   'undo',
   'redo',
 ]);
@@ -60,6 +61,9 @@ const BOOLEAN_LONG_OPTIONS = new Set([
   'force',
   'rebase',
   'delete',
+  'interactive',
+  'abort',
+  'continue',
 ]);
 
 /**

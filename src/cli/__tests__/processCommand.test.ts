@@ -58,7 +58,7 @@ describe('processCommand', () => {
     });
 
     it('should handle unimplemented commands', () => {
-      const result = processCommand('push', context);
+      const result = processCommand('cherry-pick abc123', context);
       expect(result.success).toBe(false);
       expect(result.message).toContain('not yet implemented');
     });

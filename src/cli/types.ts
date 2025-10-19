@@ -38,6 +38,22 @@ export interface GitCommit {
   timestamp: number;
   /** Tree SHA (for real repos) */
   tree?: string;
+  /** Conflict status for merge/rebase operations */
+  conflicted?: boolean;
+}
+
+/**
+ * Conflict information for merge/rebase
+ */
+export interface ConflictInfo {
+  /** Files in conflict */
+  files: string[];
+  /** Type of operation causing conflict */
+  operation: 'merge' | 'rebase';
+  /** Source commit/branch */
+  source: string;
+  /** Target commit/branch */
+  target: string;
 }
 
 /**
@@ -63,6 +79,35 @@ export interface GitTag {
 }
 
 /**
+ * Remote tracking information
+ */
+export interface RemoteInfo {
+  /** Remote name */
+  name: string;
+  /** Remote URL */
+  url: string;
+  /** Fetch refspecs */
+  fetch: string[];
+}
+
+/**
+ * Remote tracking branch
+ */
+export interface RemoteTrackingBranch {
+  /** Full ref name (e.g., origin/main) */
+  name: string;
+  /** Remote name */
+  remote: string;
+  /** Local branch name */
+  localName: string;
+  /** Commit ID it points to */
+  target: string;
+  /** Ahead/behind counts vs local branch */
+  ahead?: number;
+  behind?: number;
+}
+
+/**
  * HEAD state
  */
 export type HeadState =
@@ -84,8 +129,16 @@ export interface GitState {
   head: HeadState;
   /** Staging area (for real repos) */
   staging?: Set<string>;
-  /** Remote tracking branches */
+  /** Remote tracking branches: Map<remoteName, Map<branchName, commitId>> */
   remotes?: Map<string, Map<string, string>>;
+  /** Remote configurations */
+  remoteConfigs?: Map<string, RemoteInfo>;
+  /** Remote tracking branch details */
+  remoteTrackingBranches?: Map<string, RemoteTrackingBranch>;
+  /** Current conflict information (if in conflict state) */
+  conflict?: ConflictInfo;
+  /** Rebase state (if in rebase mode) */
+  rebaseState?: RebaseState;
 }
 
 /**
@@ -145,4 +198,41 @@ export interface CommandHistory {
   redoStack: HistoryEntry[];
   /** Maximum history size */
   maxSize: number;
+}
+
+/**
+ * Interactive rebase operation type
+ */
+export type RebaseOperation = 'pick' | 'squash' | 'edit' | 'drop' | 'reword';
+
+/**
+ * Interactive rebase todo item
+ */
+export interface RebaseTodoItem {
+  /** Operation to perform */
+  operation: RebaseOperation;
+  /** Commit ID */
+  commitId: string;
+  /** Commit message (short) */
+  message: string;
+  /** Order in the rebase sequence */
+  order: number;
+}
+
+/**
+ * Rebase state for interactive rebase
+ */
+export interface RebaseState {
+  /** Current rebase operation */
+  operation: 'rebase-interactive' | 'rebase';
+  /** Branch being rebased */
+  branch: string;
+  /** Target branch/commit for rebase */
+  onto: string;
+  /** List of commits to rebase */
+  todos: RebaseTodoItem[];
+  /** Current step in rebase (index in todos) */
+  currentStep: number;
+  /** Original HEAD before rebase started */
+  originalHead: string;
 }
