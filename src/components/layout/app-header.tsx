@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { GitBranch } from "lucide-react";
 import { ThemeToggle } from "@/components/settings/theme-toggle";
+import { ModeSelector } from "@/components/mode/mode-selector";
 
 export function AppHeader() {
   return (
@@ -26,15 +27,10 @@ export function AppHeader() {
             <span className="font-bold">Git Visualizer</span>
           </Link>
         </div>
-        <nav className="flex items-center space-x-6 text-sm font-medium" role="navigation" aria-label="Main navigation">
-          <Link
-            href="/"
-            className="transition-colors hover:text-foreground/80 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm px-1"
-          >
-            Home
-          </Link>
-        </nav>
-        <div className="flex flex-1 items-center justify-end space-x-2">
+        <div className="flex flex-1 items-center justify-center">
+          <ModeSelector />
+        </div>
+        <div className="flex items-center space-x-2">
           <ThemeToggle />
         </div>
       </div>
