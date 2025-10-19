@@ -161,6 +161,8 @@ export function NewScenarioDialog({ onCreateScenario }: NewScenarioDialogProps) 
                 <a
                   href="/docs/SANDBOX.md#json-schema"
                   target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open JSON schema documentation in new tab"
                   className="underline"
                 >
                   documentation
