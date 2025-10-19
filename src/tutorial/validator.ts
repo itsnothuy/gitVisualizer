@@ -77,14 +77,6 @@ function compareCommits(
 ): string[] {
   const differences: string[] = [];
 
-  // Create maps for easier lookup (by structure, not ID since IDs are random)
-  const userCommitStructures = new Set(
-    userCommits.map((c) => JSON.stringify({ parents: c.parents })),
-  );
-  const goalCommitStructures = new Set(
-    goalCommits.map((c) => JSON.stringify({ parents: c.parents })),
-  );
-
   // Check if we have the right number of commits
   if (userCommits.length !== goalCommits.length) {
     differences.push(
@@ -94,12 +86,7 @@ function compareCommits(
 
   // For intro levels, we mainly care about the structure (parent relationships)
   // More sophisticated comparison would check the actual commit graph topology
-  const goalCommitCount = goalCommits.length;
-  const userCommitCount = userCommits.length;
-
-  if (goalCommitCount !== userCommitCount) {
-    return differences; // Already added above
-  }
+  // TODO: Compare commit graph structure, not just count
 
   return differences;
 }

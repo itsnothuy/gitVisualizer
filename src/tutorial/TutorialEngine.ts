@@ -168,7 +168,7 @@ export class TutorialEngine {
   /**
    * Complete the current level
    */
-  async completeLevel(result: ValidationResult): Promise<void> {
+  async completeLevel(_result: ValidationResult): Promise<void> {
     if (!this.state.currentLevel || !this.userProgress) return;
 
     const level = this.state.currentLevel;

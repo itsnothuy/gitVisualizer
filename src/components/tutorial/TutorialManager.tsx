@@ -10,7 +10,6 @@ import { TutorialDialog } from './TutorialDialog';
 import { GitDemonstrationView } from './GitDemonstrationView';
 import { TutorialEngine } from '@/tutorial/TutorialEngine';
 import type {
-  Level,
   TutorialStep,
   DialogTutorialStep,
   DemonstrationTutorialStep,
