@@ -144,7 +144,66 @@ VisBase (abstract)
 - Functions: `gridToScreen()`, `screenToGrid()`, `gridDistance()`
 - Provides deterministic, predictable layout for DAG elements
 
-### 3. Overlay System (`src/lib/overlays/`) [Future]
+### 3. Command System (`src/cli/`)
+
+**Interactive Git Operations** - LearnGitBranching-inspired command interface
+
+**Command Parser** (`CommandParser.ts`)
+- Parses user input into structured command objects
+- Tokenization with quoted string support
+- Option parsing (short flags, long options, values)
+- Command validation with helpful error messages
+- Support for aliases (co, br, ci, st)
+
+**Git Engine** (`GitEngine.ts`)
+- In-memory Git state management
+- Implements core Git operations:
+  - `commit`, `branch`, `checkout`, `switch`
+  - `merge` (fast-forward and merge commits)
+  - `reset`, `revert`, `tag`, `status`, `log`
+- Detached HEAD support
+- HEAD~n notation for commit navigation
+- Merge conflict detection (future)
+
+**Command Pipeline** (`processCommand.ts`)
+- Orchestrates: Parse → Execute → Update → Animate
+- Undo/Redo system with history stack
+- Animation callbacks for visual updates
+- Command history management (up to 50 commands)
+- Error handling and recovery
+
+**Command Console UI** (`components/cli/CommandConsole.tsx`)
+- Terminal-like interface with command input
+- Command history navigation (↑/↓ arrows)
+- Real-time output display (commands, output, errors)
+- Console locking during animations
+- ARIA labels for accessibility
+- Keyboard shortcuts (Esc to clear)
+
+**Data Flow:**
+```
+User Input → Parser → Git Engine → State Update → Animation Trigger
+     ↓                                  ↓
+  History                         Visualization
+```
+
+**State Management:**
+```typescript
+GitState {
+  commits: Map<id, GitCommit>
+  branches: Map<name, GitBranch>
+  tags: Map<name, GitTag>
+  head: HeadState (branch | detached)
+}
+
+CommandHistory {
+  undoStack: HistoryEntry[]
+  redoStack: HistoryEntry[]
+  maxSize: number
+}
+```
+
+### 4. Overlay System (`src/lib/overlays/`) [Future]
 
 **GitHub Integration**
 - GraphQL API for commit → PR mapping
