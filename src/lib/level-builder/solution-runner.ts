@@ -3,7 +3,7 @@
  * Execute solution commands and verify goal state is achievable
  */
 
-import { GitEngine } from '@/cli/GitEngine';
+import { processCommand, createCommandHistory } from '@/cli/processCommand';
 import type { GitState } from '@/cli/types';
 import type { GitStateSnapshot } from '@/tutorial/types';
 import { snapshotToState, stateToSnapshot } from '@/tutorial/stateUtils';
@@ -40,24 +40,31 @@ export async function runSolutionCommands(
   try {
     // Convert snapshot to GitState
     let currentState: GitState = snapshotToState(initialState);
+    const history = createCommandHistory();
 
     // Execute each command
     for (const command of commands) {
       try {
-        const result = GitEngine.executeCommand(command, currentState);
+        const context = {
+          state: currentState,
+          history,
+          sandboxMode: true,
+        };
         
-        if (result.success && result.state) {
-          currentState = result.state;
+        const result = processCommand(command, context);
+        
+        if (result.success && result.newState) {
+          currentState = result.newState;
           commandResults.push({
             command,
             success: true,
-            output: result.output,
+            output: result.message,
           });
         } else {
           commandResults.push({
             command,
             success: false,
-            error: result.error || 'Command failed',
+            error: result.message || 'Command failed',
           });
           
           // Continue execution even if command fails

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { HistoryPanel } from '@/components/sandbox/history-panel';
 import { NewScenarioDialog } from '@/components/sandbox/new-scenario-dialog';
 import { SandboxSession } from '@/lib/sandbox/SandboxSession';
-import { Download, Upload, Share2, RotateCcw } from 'lucide-react';
+import { Download, Upload, Share2, RotateCcw, BookOpen } from 'lucide-react';
 import { snapshotToState } from '@/tutorial/stateUtils';
 import { generatePermalink, getStateFromCurrentURL } from '@/lib/sandbox/permalink';
 import type { GitStateSnapshot } from '@/tutorial/types';
@@ -224,8 +224,20 @@ export default function SandboxPage() {
             Interactive Git sandbox with live command execution and state management
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <NewScenarioDialog onCreateScenario={handleCreateScenario} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const snapshot = session.exportState();
+              const url = `/build-level?from=sandbox&state=${encodeURIComponent(JSON.stringify(snapshot))}`;
+              window.location.href = url;
+            }}
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            Create Level
+          </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Export
