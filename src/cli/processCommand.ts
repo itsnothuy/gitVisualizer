@@ -9,7 +9,6 @@ import type {
   GitState,
   CommandResult,
   CommandHistory,
-  HistoryEntry,
   ParsedCommand,
 } from './types';
 
