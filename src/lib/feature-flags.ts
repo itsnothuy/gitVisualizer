@@ -14,6 +14,11 @@ export interface FeatureFlags {
    * for browsers that don't support File System Access API
    */
   enableIngestFallbacks: boolean;
+  /**
+   * Enable OffscreenCanvas for edge rendering (when supported)
+   * Improves performance for large graphs by offloading rendering to workers
+   */
+  enableOffscreenCanvas: boolean;
 }
 
 /**
@@ -45,6 +50,8 @@ export function getFeatureFlags(): FeatureFlags {
   return {
     // Enable ingestion fallbacks by default for better cross-browser support
     enableIngestFallbacks: getFlag('ENABLE_INGEST_FALLBACKS', true),
+    // Enable OffscreenCanvas support (experimental, opt-in via env var)
+    enableOffscreenCanvas: getFlag('ENABLE_OFFSCREEN_CANVAS', false),
   };
 }
 

@@ -23,6 +23,9 @@
         "total-blocking-time": ["warn", { "maxNumericValue": 300 }],
         "speed-index": ["warn", { "maxNumericValue": 3000 }],
         "interactive": ["warn", { "maxNumericValue": 3500 }],
+        "total-byte-weight": ["warn", { "maxNumericValue": 512000 }],
+        "mainthread-work-breakdown": ["warn", { "maxNumericValue": 4000 }],
+        "bootup-time": ["warn", { "maxNumericValue": 3500 }],
         "uses-responsive-images": "off",
         "offscreen-images": "off"
       }
