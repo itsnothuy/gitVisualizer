@@ -10,7 +10,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest --pool=forks",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:parity": "vitest parity --run --reporter=json > parity-report.json"
   },
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.6.2",
