@@ -1,0 +1,50 @@
+{
+  "samples": [
+    {
+      "id": "linear",
+      "name": "Linear History",
+      "description": "A simple repository with 4 commits in a linear sequence. Perfect for beginners to understand basic Git workflow.",
+      "file": "sample-linear.zip",
+      "difficulty": "beginner",
+      "highlights": [
+        "4 sequential commits",
+        "Single branch (master)",
+        "Basic file modifications"
+      ],
+      "commits": 4,
+      "branches": 1,
+      "tags": 0
+    },
+    {
+      "id": "branches",
+      "name": "Feature Branches",
+      "description": "A repository demonstrating branch creation and merging. Shows how feature branches integrate back into the main branch.",
+      "file": "sample-branches.zip",
+      "difficulty": "intermediate",
+      "highlights": [
+        "Feature branch workflow",
+        "Merge commit",
+        "Parallel development"
+      ],
+      "commits": 5,
+      "branches": 2,
+      "tags": 0
+    },
+    {
+      "id": "complex",
+      "name": "Complex Merge History",
+      "description": "A more complex repository with multiple feature branches, merge commits, and a release tag. Great for exploring advanced Git workflows.",
+      "file": "sample-complex.zip",
+      "difficulty": "advanced",
+      "highlights": [
+        "Multiple feature branches",
+        "Multiple merge commits",
+        "Git tags (v1.0)",
+        "Release workflow"
+      ],
+      "commits": 9,
+      "branches": 3,
+      "tags": 1
+    }
+  ]
+}

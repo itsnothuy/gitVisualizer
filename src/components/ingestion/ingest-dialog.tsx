@@ -24,6 +24,7 @@ import {
   CheckCircleIcon,
   InfoIcon,
   XIcon,
+  BookOpenIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,12 +41,12 @@ import { selectDirectoryInput } from "@/lib/git/fallbacks/directory-input";
 import { selectZipFile } from "@/lib/git/fallbacks/zip-input";
 import {
   getBrowserCapabilities,
-  getRecommendedIngestionMethod,
   getCapabilityMessage,
   getBrowserName,
 } from "@/lib/git/capabilities";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import type { IngestResult, IngestProgress } from "@/lib/git/ingestion-types";
+import { SampleReposPanel } from "@/components/samples/SampleReposPanel";
 
 interface IngestDialogProps {
   onRepositorySelected?: (result: IngestResult) => void;
@@ -64,16 +65,16 @@ export function IngestDialog({ onRepositorySelected, onError }: IngestDialogProp
 
   // Get browser capabilities
   const capabilities = React.useMemo(() => getBrowserCapabilities(), []);
-  const recommendedMethod = React.useMemo(() => getRecommendedIngestionMethod(), []);
   const fallbacksEnabled = React.useMemo(() => isFeatureEnabled('enableIngestFallbacks'), []);
   const browserName = React.useMemo(() => getBrowserName(), []);
 
-  // Set initial tab based on recommended method
+  // Set initial tab to samples (for new users) or based on recommended method
   React.useEffect(() => {
     if (activeTab === "auto") {
-      setActiveTab(recommendedMethod);
+      // Default to samples tab for first-time users
+      setActiveTab("samples");
     }
-  }, [recommendedMethod, activeTab]);
+  }, [activeTab]);
 
   // Handle File System Access API
   const handleFSAMethod = async () => {
@@ -263,7 +264,14 @@ export function IngestDialog({ onRepositorySelected, onError }: IngestDialogProp
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger
+              value="samples"
+              disabled={loading}
+            >
+              <BookOpenIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+              Try a Sample
+            </TabsTrigger>
             <TabsTrigger
               value="fsa"
               disabled={!capabilities.fileSystemAccess || loading}
@@ -286,6 +294,20 @@ export function IngestDialog({ onRepositorySelected, onError }: IngestDialogProp
               Upload ZIP
             </TabsTrigger>
           </TabsList>
+
+          {/* Sample Repositories Tab */}
+          <TabsContent value="samples" className="space-y-4">
+            <SampleReposPanel
+              onSampleSelected={onRepositorySelected}
+              onError={(err) => {
+                setError(err);
+                onError?.(err);
+              }}
+              loading={loading}
+              onLoadingChange={setLoading}
+              onProgressChange={setProgress}
+            />
+          </TabsContent>
 
           {/* File System Access Tab */}
           <TabsContent value="fsa" className="space-y-4">
