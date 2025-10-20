@@ -47,10 +47,8 @@ export async function selectDirectoryInput(
     input.style.display = 'none';
     
     // Set webkitdirectory attribute for directory selection
-    // @ts-expect-error - webkitdirectory is not in TypeScript types but widely supported
-    input.webkitdirectory = true;
-    // @ts-expect-error - directory is the standard attribute (future-proofing)
-    input.directory = true;
+    (input as HTMLInputElement & { webkitdirectory: boolean }).webkitdirectory = true;
+    (input as HTMLInputElement & { directory: boolean }).directory = true;
     input.multiple = true;
 
     // Handle cancellation
