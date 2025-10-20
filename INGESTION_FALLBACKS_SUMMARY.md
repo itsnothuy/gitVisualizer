@@ -5,7 +5,7 @@
 This implementation adds comprehensive cross-browser support for Git repository ingestion, enabling Firefox and Safari users to load repositories through fallback methods when File System Access API is unavailable.
 
 ## Implementation Date
-October 20, 2025
+2025-10-20
 
 ## Features Delivered
 
