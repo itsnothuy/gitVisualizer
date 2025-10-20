@@ -1,0 +1,138 @@
+{
+  "id": "intro1",
+  "name": {
+    "en_US": "Introduction to Commits",
+    "de_DE": "Einführung in Commits"
+  },
+  "description": {
+    "en_US": "Learn how to make your first commit in Git",
+    "de_DE": "Lerne, wie man den ersten Commit in Git erstellt"
+  },
+  "difficulty": "intro",
+  "order": 1,
+  "initialState": {
+    "commits": [
+      {
+        "id": "C0",
+        "parents": [],
+        "message": "Initial commit",
+        "timestamp": 1700000000000
+      }
+    ],
+    "branches": [
+      {
+        "name": "main",
+        "target": "C0"
+      }
+    ],
+    "tags": [],
+    "head": {
+      "type": "branch",
+      "name": "main"
+    }
+  },
+  "goalState": {
+    "commits": [
+      {
+        "id": "C0",
+        "parents": [],
+        "message": "Initial commit",
+        "timestamp": 1700000000000
+      },
+      {
+        "id": "C1",
+        "parents": ["C0"],
+        "message": "New commit",
+        "timestamp": 1700000001000
+      }
+    ],
+    "branches": [
+      {
+        "name": "main",
+        "target": "C1"
+      }
+    ],
+    "tags": [],
+    "head": {
+      "type": "branch",
+      "name": "main"
+    }
+  },
+  "tutorialSteps": [
+    {
+      "type": "dialog",
+      "id": "intro1-welcome",
+      "title": {
+        "en_US": "Welcome to Git!",
+        "de_DE": "Willkommen bei Git!"
+      },
+      "content": {
+        "en_US": [
+          "Git records changes to your project as **commits**. Think of commits as snapshots of your project at a specific point in time.",
+          "Each commit has a unique identifier and points to its parent commit(s), forming a history tree.",
+          "Let's create your first commit!"
+        ],
+        "de_DE": [
+          "Git zeichnet Änderungen an deinem Projekt als **Commits** auf. Stelle dir Commits als Momentaufnahmen deines Projekts zu einem bestimmten Zeitpunkt vor.",
+          "Jeder Commit hat eine eindeutige Kennung und verweist auf seinen/ihre Eltern-Commit(s), wodurch ein Verlaufsbaum entsteht.",
+          "Lass uns deinen ersten Commit erstellen!"
+        ]
+      }
+    },
+    {
+      "type": "demonstration",
+      "id": "intro1-demo",
+      "beforeText": {
+        "en_US": [
+          "To create a commit, use the `git commit` command.",
+          "Watch what happens when we make a commit:"
+        ],
+        "de_DE": [
+          "Um einen Commit zu erstellen, verwende den Befehl `git commit`.",
+          "Beobachte, was passiert, wenn wir einen Commit erstellen:"
+        ]
+      },
+      "setupCommands": [],
+      "demonstrationCommand": "git commit",
+      "afterText": {
+        "en_US": [
+          "Great! A new commit C1 was created, and the main branch now points to it.",
+          "The arrow shows that C1 is built on top of C0."
+        ],
+        "de_DE": [
+          "Großartig! Ein neuer Commit C1 wurde erstellt, und der main-Branch zeigt jetzt darauf.",
+          "Der Pfeil zeigt, dass C1 auf C0 aufgebaut ist."
+        ]
+      }
+    },
+    {
+      "type": "challenge",
+      "id": "intro1-challenge",
+      "instructions": {
+        "en_US": [
+          "Now it's your turn! Create a commit to complete this level.",
+          "Type `git commit` in the console below."
+        ],
+        "de_DE": [
+          "Jetzt bist du dran! Erstelle einen Commit, um dieses Level abzuschließen.",
+          "Gib `git commit` in der Konsole unten ein."
+        ]
+      },
+      "hints": []
+    }
+  ],
+  "solutionCommands": ["git commit"],
+  "hints": [
+    {
+      "en_US": [
+        "Try typing `git commit` to create a new commit."
+      ],
+      "de_DE": [
+        "Versuche, `git commit` einzugeben, um einen neuen Commit zu erstellen."
+      ]
+    }
+  ],
+  "flags": {
+    "compareOnlyMain": true
+  }
+}

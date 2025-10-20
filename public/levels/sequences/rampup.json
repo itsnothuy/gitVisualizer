@@ -1,0 +1,13 @@
+{
+  "id": "rampup",
+  "name": {
+    "en_US": "Ramping Up",
+    "de_DE": "Weiterführend"
+  },
+  "description": {
+    "en_US": "Advanced Git operations: rebase, cherry-pick, and reset",
+    "de_DE": "Fortgeschrittene Git-Operationen: Rebase, Cherry-Pick und Reset"
+  },
+  "levelIds": [],
+  "locked": true
+}

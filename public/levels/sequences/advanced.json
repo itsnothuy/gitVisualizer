@@ -1,0 +1,13 @@
+{
+  "id": "advanced",
+  "name": {
+    "en_US": "Advanced Topics",
+    "de_DE": "Fortgeschrittene Themen"
+  },
+  "description": {
+    "en_US": "Master advanced Git concepts and workflows",
+    "de_DE": "Meistere fortgeschrittene Git-Konzepte und Workflows"
+  },
+  "levelIds": [],
+  "locked": true
+}

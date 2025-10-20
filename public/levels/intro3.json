@@ -1,0 +1,176 @@
+{
+  "id": "intro3",
+  "name": {
+    "en_US": "Merging Branches",
+    "de_DE": "Branches zusammenführen"
+  },
+  "description": {
+    "en_US": "Learn how to merge branches together",
+    "de_DE": "Lerne, wie man Branches zusammenführt"
+  },
+  "difficulty": "intro",
+  "order": 3,
+  "initialState": {
+    "commits": [
+      {
+        "id": "C0",
+        "parents": [],
+        "message": "Initial commit",
+        "timestamp": 1700000000000
+      },
+      {
+        "id": "C1",
+        "parents": ["C0"],
+        "message": "Main work",
+        "timestamp": 1700000001000
+      },
+      {
+        "id": "C2",
+        "parents": ["C1"],
+        "message": "Feature work",
+        "timestamp": 1700000002000
+      }
+    ],
+    "branches": [
+      {
+        "name": "main",
+        "target": "C1"
+      },
+      {
+        "name": "feature",
+        "target": "C2"
+      }
+    ],
+    "tags": [],
+    "head": {
+      "type": "branch",
+      "name": "main"
+    }
+  },
+  "goalState": {
+    "commits": [
+      {
+        "id": "C0",
+        "parents": [],
+        "message": "Initial commit",
+        "timestamp": 1700000000000
+      },
+      {
+        "id": "C1",
+        "parents": ["C0"],
+        "message": "Main work",
+        "timestamp": 1700000001000
+      },
+      {
+        "id": "C2",
+        "parents": ["C1"],
+        "message": "Feature work",
+        "timestamp": 1700000002000
+      },
+      {
+        "id": "C3",
+        "parents": ["C1", "C2"],
+        "message": "Merge feature into main",
+        "timestamp": 1700000003000
+      }
+    ],
+    "branches": [
+      {
+        "name": "main",
+        "target": "C3"
+      },
+      {
+        "name": "feature",
+        "target": "C2"
+      }
+    ],
+    "tags": [],
+    "head": {
+      "type": "branch",
+      "name": "main"
+    }
+  },
+  "tutorialSteps": [
+    {
+      "type": "dialog",
+      "id": "intro3-welcome",
+      "title": {
+        "en_US": "Merging in Git",
+        "de_DE": "Mergen in Git"
+      },
+      "content": {
+        "en_US": [
+          "Merging combines the work from different branches together.",
+          "A merge creates a new commit with two parents, combining both histories.",
+          "Let's merge the feature branch into main!"
+        ],
+        "de_DE": [
+          "Mergen kombiniert die Arbeit aus verschiedenen Branches.",
+          "Ein Merge erstellt einen neuen Commit mit zwei Eltern, der beide Historien kombiniert.",
+          "Lass uns den feature-Branch in main mergen!"
+        ]
+      }
+    },
+    {
+      "type": "demonstration",
+      "id": "intro3-demo",
+      "beforeText": {
+        "en_US": [
+          "To merge a branch, first checkout the branch you want to merge INTO.",
+          "Then use `git merge <branch>` to merge another branch into the current one."
+        ],
+        "de_DE": [
+          "Um einen Branch zu mergen, checke zuerst den Branch aus, in den du mergen möchtest.",
+          "Verwende dann `git merge <branch>`, um einen anderen Branch in den aktuellen zu mergen."
+        ]
+      },
+      "setupCommands": ["git branch demo", "git commit"],
+      "demonstrationCommand": "git merge demo",
+      "afterText": {
+        "en_US": [
+          "Excellent! A merge commit was created with two parents.",
+          "This merge commit combines the history from both branches."
+        ],
+        "de_DE": [
+          "Ausgezeichnet! Ein Merge-Commit wurde mit zwei Eltern erstellt.",
+          "Dieser Merge-Commit kombiniert die Historie beider Branches."
+        ]
+      }
+    },
+    {
+      "type": "challenge",
+      "id": "intro3-challenge",
+      "instructions": {
+        "en_US": [
+          "Merge the 'feature' branch into 'main'.",
+          "Make sure you're on the main branch first!"
+        ],
+        "de_DE": [
+          "Merge den 'feature'-Branch in 'main'.",
+          "Stelle sicher, dass du zuerst auf dem main-Branch bist!"
+        ]
+      },
+      "hints": []
+    }
+  ],
+  "solutionCommands": ["git merge feature"],
+  "hints": [
+    {
+      "en_US": [
+        "Make sure you're on the main branch (you already are!)"
+      ],
+      "de_DE": [
+        "Stelle sicher, dass du auf dem main-Branch bist (das bist du bereits!)"
+      ]
+    },
+    {
+      "en_US": [
+        "Use `git merge feature` to merge the feature branch into main"
+      ],
+      "de_DE": [
+        "Verwende `git merge feature`, um den feature-Branch in main zu mergen"
+      ]
+    }
+  ],
+  "flags": {}
+}
