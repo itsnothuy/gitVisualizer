@@ -132,15 +132,44 @@ pnpm start
 
 ## Usage
 
-### Opening a Repository
+### First-Time Experience
 
-The application supports three methods for opening Git repositories, automatically selecting the best available option for your browser:
+When you first visit Git Visualizer, you'll see a **guided onboarding wizard** that walks you through:
 
-1. **Local Folder (Chrome, Edge)**: Direct access to a local Git repository folder using the File System Access API
-2. **Upload Folder (Firefox, Safari)**: Upload all files from a repository folder using directory input
-3. **Upload ZIP (All Browsers)**: Upload a ZIP archive of your repository (universal fallback)
+1. **Getting Started**: Learn about sample repositories and ingestion methods
+2. **Privacy & Security**: Understand our privacy-first approach and security guarantees
+3. **Key Features**: Discover what you can do with the visualizer
 
-**To open a repository:**
+You can skip the tutorial at any time, or revisit it later by clicking the "Learn More" button.
+
+### Try a Sample Repository
+
+**New to Git Visualizer?** Start with one of our pre-built samples - no local files needed!
+
+We provide three sample repositories to help you explore features:
+
+- **Linear History** (Beginner): 4 commits in a simple sequence
+- **Feature Branches** (Intermediate): Branch creation and merging workflow
+- **Complex Merge History** (Advanced): Multiple branches, merges, and tags
+
+**To load a sample:**
+1. Click "Open Repository" button
+2. Select the "Try a Sample" tab
+3. Click "Load Sample" on any repository
+4. Explore the interactive graph!
+
+All samples load entirely in your browser - no data upload required.
+
+### Opening Your Own Repository
+
+The application supports four methods for opening Git repositories, automatically selecting the best available option for your browser:
+
+1. **Try a Sample (All Browsers)**: Load pre-built sample repositories without any local files
+2. **Local Folder (Chrome, Edge)**: Direct access to a local Git repository folder using the File System Access API
+3. **Upload Folder (Firefox, Safari)**: Upload all files from a repository folder using directory input
+4. **Upload ZIP (All Browsers)**: Upload a ZIP archive of your repository (universal fallback)
+
+**To open your own repository:**
 1. Click "Open Repository" button
 2. Select the appropriate tab based on your browser
 3. Choose your repository (folder or ZIP file)
@@ -153,6 +182,34 @@ The application supports three methods for opening Git repositories, automatical
 1. **Pan & Zoom**: Use mouse to pan/zoom, or keyboard navigation (Tab, Arrow keys)
 2. **View Commit Details**: Click on nodes to see commit information
 3. **Accessibility**: Full keyboard navigation support with Tab/Shift+Tab
+
+### Troubleshooting
+
+#### "File System Access API not available"
+- **Cause**: Your browser doesn't support the File System Access API
+- **Solution**: Use Firefox/Safari, select the "Upload Folder" tab, or use "Upload ZIP" as a universal fallback
+- **Browsers Supported**: Chrome 86+, Edge 86+ support direct folder access
+
+#### "Not a valid Git repository"
+- **Cause**: Selected folder doesn't contain a `.git` directory
+- **Solution**: Make sure to select the root folder of a Git repository (the folder that contains `.git`)
+
+#### Permission Prompts
+- **What**: Browser will ask for permission to access files
+- **Why**: Required for File System Access API security
+- **Privacy**: We only request read-only access and never modify your files
+
+#### HTTPS Requirement
+- **Cause**: File System Access API requires HTTPS
+- **Solution**: Use `pnpm dev:https` for local development, or deploy to a secure hosting platform
+- **Note**: Sample repositories work without HTTPS
+
+#### Sample Won't Load
+- **Cause**: Network error or blocked fetch request
+- **Solution**: Check browser console for errors, ensure JavaScript is enabled
+- **Offline**: Samples require internet connection on first load (cached thereafter)
+
+For more help, see our [Onboarding Testing Guide](./docs/ONBOARDING_TESTING.md) or [open an issue](https://github.com/itsnothuy/gitVisualizer/issues).
 
 ## Architecture
 
