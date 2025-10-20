@@ -84,8 +84,11 @@ async function decompressZip(data: Uint8Array, requestId: string): Promise<void>
             continue;
           }
 
-          files.push({ path, content });
-          totalSize += content.length;
+          // Type guard to ensure content is Uint8Array
+          if (content instanceof Uint8Array) {
+            files.push({ path, content });
+            totalSize += content.length;
+          }
         }
 
         // Send progress update
