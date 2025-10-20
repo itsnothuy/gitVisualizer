@@ -8,9 +8,9 @@ import AxeBuilder from '@axe-core/playwright';
 
 test.describe('Animation Queue System', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the LGB mode page
-    await page.goto('/lgb');
-    await page.waitForLoadState('networkidle');
+    // Navigate to the demo page which has the graph
+    await page.goto('/demo');
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 20000 });
   });
 
   test('should block user input during animation playback', async ({ page }) => {
@@ -49,8 +49,8 @@ test.describe('Animation Queue System', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
 
     // Navigate again with reduced motion
-    await page.goto('/lgb');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/demo');
+    await page.waitForSelector('[role="graphics-document"]', { timeout: 20000 });
 
     // Check if animations are shortened or disabled
     const hasReducedMotion = await page.evaluate(() => {
@@ -167,13 +167,15 @@ test.describe('Animation Queue System', () => {
     // Verify we can access the SVG element and its attributes
     const svgAttributes = await graph.evaluate((el) => {
       return {
-        hasTestId: el.hasAttribute('data-testid'),
+        hasRole: el.hasAttribute('role'),
+        role: el.getAttribute('role'),
         tagName: el.tagName.toLowerCase(),
       };
     });
 
     // Verify the graph structure is accessible
-    expect(svgAttributes.hasTestId).toBe(true);
+    expect(svgAttributes.hasRole).toBe(true);
+    expect(svgAttributes.role).toBe('graphics-document');
     expect(svgAttributes.tagName).toBe('svg');
   });
 });
