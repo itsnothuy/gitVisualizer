@@ -43,6 +43,48 @@ export interface IngestResult {
   totalSize: number;
   /** Error if ingestion failed */
   error?: IngestError;
+  /** LFS analysis result (if enabled) */
+  lfsAnalysis?: LFSAnalysisResult;
+}
+
+/**
+ * LFS analysis result (imported from lfs-hygiene module)
+ * Re-exported here for convenience
+ */
+export interface LFSAnalysisResult {
+  largeFiles: Array<{
+    path: string;
+    size: number;
+    extension: string;
+    severity: 'warning' | 'critical';
+    lfsPointer?: {
+      version: string;
+      oid: string;
+      size: number;
+      isValid: boolean;
+    };
+  }>;
+  totalLargeFileSize: number;
+  lfsFiles: Array<{
+    path: string;
+    size: number;
+    extension: string;
+    severity: 'warning' | 'critical';
+    lfsPointer?: {
+      version: string;
+      oid: string;
+      size: number;
+      isValid: boolean;
+    };
+  }>;
+  filesByExtension: Record<string, Array<{
+    path: string;
+    size: number;
+    extension: string;
+    severity: 'warning' | 'critical';
+  }>>;
+  warningThreshold: number;
+  criticalThreshold: number;
 }
 
 /**
@@ -96,6 +138,12 @@ export interface DirectoryInputOptions {
   onProgress?: (progress: IngestProgress) => void;
   /** Cancellation signal */
   signal?: AbortSignal;
+  /** Enable LFS hygiene analysis (default: true) */
+  analyzeLFS?: boolean;
+  /** LFS warning threshold in bytes (default: 50MB) */
+  lfsWarningThreshold?: number;
+  /** LFS critical threshold in bytes (default: 100MB) */
+  lfsCriticalThreshold?: number;
 }
 
 /**
@@ -108,4 +156,10 @@ export interface ZipInputOptions {
   onProgress?: (progress: IngestProgress) => void;
   /** Cancellation signal */
   signal?: AbortSignal;
+  /** Enable LFS hygiene analysis (default: true) */
+  analyzeLFS?: boolean;
+  /** LFS warning threshold in bytes (default: 50MB) */
+  lfsWarningThreshold?: number;
+  /** LFS critical threshold in bytes (default: 100MB) */
+  lfsCriticalThreshold?: number;
 }

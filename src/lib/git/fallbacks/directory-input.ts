@@ -13,6 +13,7 @@ import type {
   IngestProgress,
   DirectoryInputOptions,
 } from '../ingestion-types';
+import { analyzeFiles, DEFAULT_WARNING_THRESHOLD, DEFAULT_CRITICAL_THRESHOLD } from '../lfs-hygiene';
 
 /**
  * Default maximum size: 500MB
@@ -38,6 +39,9 @@ export async function selectDirectoryInput(
     maxFiles = DEFAULT_MAX_FILES,
     onProgress,
     signal,
+    analyzeLFS = true,
+    lfsWarningThreshold = DEFAULT_WARNING_THRESHOLD,
+    lfsCriticalThreshold = DEFAULT_CRITICAL_THRESHOLD,
   } = options;
 
   return new Promise((resolve, reject) => {
@@ -91,6 +95,9 @@ export async function selectDirectoryInput(
           maxSize,
           onProgress,
           signal,
+          analyzeLFS,
+          lfsWarningThreshold,
+          lfsCriticalThreshold,
         });
 
         resolve(result);
@@ -128,9 +135,19 @@ async function processDirectoryFiles(
     maxSize: number;
     onProgress?: (progress: IngestProgress) => void;
     signal?: AbortSignal;
+    analyzeLFS?: boolean;
+    lfsWarningThreshold?: number;
+    lfsCriticalThreshold?: number;
   }
 ): Promise<IngestResult> {
-  const { maxSize, onProgress, signal } = options;
+  const { 
+    maxSize, 
+    onProgress, 
+    signal,
+    analyzeLFS = true,
+    lfsWarningThreshold = DEFAULT_WARNING_THRESHOLD,
+    lfsCriticalThreshold = DEFAULT_CRITICAL_THRESHOLD,
+  } = options;
 
   // Extract repository name from first file's path
   const firstPath = files[0]?.webkitRelativePath || files[0]?.name || 'repository';
@@ -202,10 +219,26 @@ async function processDirectoryFiles(
     }
   }
 
+  // Perform LFS analysis if enabled
+  let lfsAnalysis;
+  if (analyzeLFS) {
+    const filesForAnalysis = ingestFiles.map(f => ({
+      path: f.path,
+      size: f.content instanceof Uint8Array ? f.content.length : (f.content as Blob).size,
+      content: f.content,
+    }));
+
+    lfsAnalysis = await analyzeFiles(filesForAnalysis, {
+      warningThreshold: lfsWarningThreshold,
+      criticalThreshold: lfsCriticalThreshold,
+    });
+  }
+
   return {
     files: ingestFiles,
     name: repoName,
     totalSize,
+    lfsAnalysis,
   };
 }
 
