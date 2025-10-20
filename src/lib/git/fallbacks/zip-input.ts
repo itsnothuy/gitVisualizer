@@ -13,6 +13,7 @@ import type {
   IngestProgress,
   ZipInputOptions,
 } from '../ingestion-types';
+import { analyzeFiles, DEFAULT_WARNING_THRESHOLD, DEFAULT_CRITICAL_THRESHOLD } from '../lfs-hygiene';
 
 /**
  * Default maximum ZIP size: 500MB
@@ -53,6 +54,9 @@ export async function selectZipFile(
     maxSize = DEFAULT_MAX_SIZE,
     onProgress,
     signal,
+    analyzeLFS = true,
+    lfsWarningThreshold = DEFAULT_WARNING_THRESHOLD,
+    lfsCriticalThreshold = DEFAULT_CRITICAL_THRESHOLD,
   } = options;
 
   return new Promise((resolve, reject) => {
@@ -110,6 +114,9 @@ export async function selectZipFile(
         const result = await processZipFile(file, {
           onProgress,
           signal,
+          analyzeLFS,
+          lfsWarningThreshold,
+          lfsCriticalThreshold,
         });
 
         resolve(result);
@@ -142,9 +149,18 @@ async function processZipFile(
   options: {
     onProgress?: (progress: IngestProgress) => void;
     signal?: AbortSignal;
+    analyzeLFS?: boolean;
+    lfsWarningThreshold?: number;
+    lfsCriticalThreshold?: number;
   }
 ): Promise<IngestResult> {
-  const { onProgress, signal } = options;
+  const { 
+    onProgress, 
+    signal,
+    analyzeLFS = true,
+    lfsWarningThreshold = DEFAULT_WARNING_THRESHOLD,
+    lfsCriticalThreshold = DEFAULT_CRITICAL_THRESHOLD,
+  } = options;
 
   // Read file as ArrayBuffer
   onProgress?.({
@@ -226,11 +242,42 @@ async function processZipFile(
           };
         });
 
-        resolve({
-          files: normalizedFiles,
-          name: repoName,
-          totalSize: response.data.totalSize,
-        });
+        const totalSize = response.data?.totalSize ?? 0;
+
+        // Perform LFS analysis if enabled
+        if (analyzeLFS) {
+          const filesForAnalysis = normalizedFiles.map(f => ({
+            path: f.path,
+            size: f.content instanceof Uint8Array ? f.content.length : (f.content as Blob).size,
+            content: f.content,
+          }));
+
+          analyzeFiles(filesForAnalysis, {
+            warningThreshold: lfsWarningThreshold,
+            criticalThreshold: lfsCriticalThreshold,
+          }).then((lfsAnalysis) => {
+            resolve({
+              files: normalizedFiles,
+              name: repoName,
+              totalSize,
+              lfsAnalysis,
+            });
+          }).catch((err) => {
+            console.error('LFS analysis failed:', err);
+            // Resolve without LFS analysis on error
+            resolve({
+              files: normalizedFiles,
+              name: repoName,
+              totalSize,
+            });
+          });
+        } else {
+          resolve({
+            files: normalizedFiles,
+            name: repoName,
+            totalSize,
+          });
+        }
       } else if (response.type === 'error' && response.error) {
         // Clean up
         worker.terminate();

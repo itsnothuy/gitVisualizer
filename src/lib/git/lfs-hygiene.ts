@@ -105,6 +105,22 @@ export interface LFSAnalysisOptions {
  * }
  * ```
  */
+/**
+ * Type guard to check if content is ArrayBuffer-like (handles cross-realm issues)
+ */
+function isArrayBufferLike(content: unknown): content is ArrayBuffer {
+  if (content instanceof ArrayBuffer) {
+    return true;
+  }
+  // Check for ArrayBuffer from different realms (e.g., jsdom)
+  if (typeof content === 'object' && content !== null) {
+    const obj = content as { constructor?: { name?: string }; byteLength?: unknown };
+    return obj.constructor?.name === 'ArrayBuffer' &&
+           typeof obj.byteLength === 'number';
+  }
+  return false;
+}
+
 export async function detectLFSPointer(
   content: Blob | Uint8Array | ArrayBuffer
 ): Promise<LFSPointer | undefined> {
@@ -130,13 +146,12 @@ export async function detectLFSPointer(
         return undefined;
       }
       text = new TextDecoder().decode(content);
-    } else if (content instanceof ArrayBuffer || content?.constructor?.name === 'ArrayBuffer') {
-      // Check both instanceof and constructor name for cross-realm compatibility (jsdom)
-      const buffer = content as ArrayBuffer;
-      if (buffer.byteLength > 1024) {
+    } else if (isArrayBufferLike(content)) {
+      // ArrayBuffer case (handles cross-realm compatibility)
+      if (content.byteLength > 1024) {
         return undefined;
       }
-      text = new TextDecoder().decode(new Uint8Array(buffer));
+      text = new TextDecoder().decode(new Uint8Array(content));
     } else {
       return undefined;
     }
