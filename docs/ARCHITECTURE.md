@@ -16,6 +16,7 @@ Git Visualizer is a **privacy-first, local-first** Git commit graph visualizatio
 - Initial layout: ≤ 1500ms on medium-sized graphs
 - Pan/zoom interactions: ≤ 16ms/frame for smooth 60 FPS
 - Scalability: React+SVG up to ~10k elements, Canvas/WebGL beyond that
+- Automatic performance guardrails with configurable thresholds (see ADR-0007)
 
 ### Accessibility
 - **WCAG 2.2 AA compliance** across all interfaces

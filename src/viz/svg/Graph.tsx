@@ -48,6 +48,10 @@ interface GraphSVGProps {
   onAnimationComplete?: () => void;
   /** Optional: label placement relative to node */
   labelPlacement?: LabelPlacement;
+  /** Optional: reduce label density for performance */
+  reduceLabelDensity?: boolean;
+  /** Optional: label sampling rate (1 = all labels, 2 = every other, etc.) */
+  labelSamplingRate?: number;
 }
 
 /**
@@ -110,6 +114,7 @@ const GraphNode = React.memo(function GraphNode({
   onFocus,
   isInView,
   labelPlacement = 'top',
+  showLabel = true,
 }: {
   node: DagNode;
   position: { x: number; y: number };
@@ -117,6 +122,7 @@ const GraphNode = React.memo(function GraphNode({
   onFocus?: (node: DagNode) => void;
   isInView: boolean;
   labelPlacement?: LabelPlacement;
+  showLabel?: boolean;
 }) {
   const nodeRef = React.useRef<SVGGElement>(null);
   const [isFocused, setIsFocused] = React.useState(false);
@@ -222,17 +228,19 @@ const GraphNode = React.memo(function GraphNode({
           )}
 
           {/* Commit message label */}
-          <text
-            x={labelPlacement === 'top' ? 0 : 12}
-            y={labelPlacement === 'top' ? -16 : 4}
-            fontSize="12"
-            textAnchor={labelPlacement === 'top' ? 'middle' : 'start'}
-            dominantBaseline={labelPlacement === 'top' ? 'auto' : 'middle'}
-            className="fill-current pointer-events-none select-none"
-            aria-hidden="true"
-          >
-            {node.title.length > 30 ? node.title.slice(0, 30) + "..." : node.title}
-          </text>
+          {showLabel && (
+            <text
+              x={labelPlacement === 'top' ? 0 : 12}
+              y={labelPlacement === 'top' ? -16 : 4}
+              fontSize="12"
+              textAnchor={labelPlacement === 'top' ? 'middle' : 'start'}
+              dominantBaseline={labelPlacement === 'top' ? 'auto' : 'middle'}
+              className="fill-current pointer-events-none select-none"
+              aria-hidden="true"
+            >
+              {node.title.length > 30 ? node.title.slice(0, 30) + "..." : node.title}
+            </text>
+          )}
         </g>
       </TooltipTrigger>
       <TooltipContent side="top" sideOffset={8}>
@@ -370,6 +378,8 @@ export function GraphSVG({
   animationScene,
   onAnimationComplete,
   labelPlacement = 'top',
+  reduceLabelDensity = false,
+  labelSamplingRate = 1,
 }: GraphSVGProps) {
   const [viewBox] = React.useState({ x: 0, y: 0, width: 1200, height: 600 });
   const svgRef = React.useRef<SVGSVGElement>(null);
@@ -544,17 +554,22 @@ export function GraphSVG({
 
             {/* Nodes layer */}
             <g aria-label="Commits">
-              {nodes.map((node) => (
-                <GraphNode
-                  key={node.id}
-                  node={node}
-                  position={positions[node.id] || { x: 0, y: 0 }}
-                  onSelect={onNodeSelect}
-                  onFocus={onNodeFocus}
-                  isInView={visibleNodes.includes(node.id)}
-                  labelPlacement={labelPlacement}
-                />
-              ))}
+              {nodes.map((node, index) => {
+                // Apply label sampling if reduced density is enabled
+                const showLabel = !reduceLabelDensity || (index % labelSamplingRate === 0);
+                return (
+                  <GraphNode
+                    key={node.id}
+                    node={node}
+                    position={positions[node.id] || { x: 0, y: 0 }}
+                    onSelect={onNodeSelect}
+                    onFocus={onNodeFocus}
+                    isInView={visibleNodes.includes(node.id)}
+                    labelPlacement={labelPlacement}
+                    showLabel={showLabel}
+                  />
+                );
+              })}
             </g>
           </svg>
         </TransformComponent>

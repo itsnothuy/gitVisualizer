@@ -6,9 +6,11 @@ import {
 } from "../../lib/cache/layout-cache";
 import { wrap } from "comlink";
 import type { LayoutWorkerApi } from "../../workers/layout.worker";
+import { DEFAULT_THRESHOLDS } from "../../lib/perf-config";
 
 // Threshold for using Web Worker (nodes count)
-const WORKER_THRESHOLD = 1500;
+// Can be configured via NEXT_PUBLIC_WORKER_THRESHOLD env var
+const WORKER_THRESHOLD = DEFAULT_THRESHOLDS.workerThreshold;
 
 // Lazy-load ELK to avoid loading it on non-graph pages
 let elkInstance: InstanceType<typeof import("elkjs").default> | null = null;
