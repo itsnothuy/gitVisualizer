@@ -189,7 +189,7 @@ export class HttpClient {
       const cachedResponse: CachedResponse<T> = {
         data,
         etag: newEtag,
-        rateLimit,
+        rateLimit: rateLimit || undefined,
         timestamp: Date.now(),
       };
 
