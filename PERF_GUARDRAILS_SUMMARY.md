@@ -290,7 +290,7 @@ From the original issue:
 
 ## References
 
-- [Problem Statement Issue](https://github.com/itsnothuy/gitVisualizer/issues/XXX)
+- Problem Statement: See original issue/PR description
 - [ADR-0007: Performance Guardrails](./docs/adr/0007-performance-guardrails.md)
 - [PERF.md Documentation](./docs/PERF.md)
 - [Web Performance API](https://developer.mozilla.org/en-US/docs/Web/API/Performance_API)
