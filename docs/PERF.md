@@ -74,11 +74,45 @@ const Component = dynamic(() => import("@/components/HeavyComponent"), {
 });
 ```
 
+## Performance Modes
+
+### Overview
+
+The application provides three performance modes that automatically adjust settings based on graph size:
+
+- **Auto (Recommended)**: Intelligently balances quality and performance based on graph size
+- **Quality**: Prioritizes visual quality over performance (best for small to medium graphs)
+- **Speed**: Prioritizes performance over visual quality (best for very large graphs)
+
+Users can change modes via the Performance Settings dialog, and preferences are persisted to localStorage.
+
+### Performance Thresholds
+
+The following thresholds are used in **Auto mode** (configurable via environment variables):
+
+| Threshold | Default | Env Var | Description |
+|-----------|---------|---------|-------------|
+| Worker | 1,500 nodes | `NEXT_PUBLIC_WORKER_THRESHOLD` | Use Web Worker for layout |
+| Virtualization | 2,500 nodes | `NEXT_PUBLIC_VIRTUALIZATION_THRESHOLD` | Enable viewport virtualization |
+| Reduced Labels | 5,000 nodes | `NEXT_PUBLIC_REDUCED_LABELS_THRESHOLD` | Reduce label density |
+| Disable Adorners | 5,000 nodes | `NEXT_PUBLIC_DISABLE_ADORNERS_THRESHOLD` | Disable animations/effects |
+
+### Mode Behavior
+
+| Feature | Auto | Quality | Speed |
+|---------|------|---------|-------|
+| Web Worker | ≥ 1,500 nodes | ≥ 1,500 nodes | ≥ 500 nodes |
+| Virtualization | ≥ 2,500 nodes | Never | Always |
+| Label Sampling | ≥ 5,000 nodes | Never | Always |
+| Animations/Effects | ≥ 5,000 nodes disabled | Always enabled | Always disabled |
+| Frame Watchdog | Enabled | Enabled | Enabled |
+| OffscreenCanvas | ≥ 2,500 nodes (if supported) | Never | If supported |
+
 ## Web Worker Integration
 
 ### Overview
 
-For graphs with **> 1500 nodes**, layout computation automatically offloads to a Web Worker to keep the UI responsive.
+For graphs with **> 1500 nodes** (or > 500 in Speed mode), layout computation automatically offloads to a Web Worker to keep the UI responsive.
 
 ### Thresholds
 
@@ -116,20 +150,87 @@ const result = await elkLayout(nodes, edges, { useWorker: false });
 3. Worker terminated after result returned
 4. Falls back to main thread if worker fails
 
-### Performance Monitoring
+### Frame Watchdog
+
+### Overview
+
+The frame watchdog monitors `requestAnimationFrame` performance to detect and report frame drops that impact the 60 FPS target.
+
+### Configuration
+
+```typescript
+import { FrameWatchdog } from '@/lib/frame-watchdog';
+
+const watchdog = new FrameWatchdog({
+  maxFrameTime: 16.7,      // 60 FPS target
+  threshold: 3,            // Warn after 3 consecutive slow frames
+  warningCooldown: 5000,   // Minimum 5s between warnings
+  debug: false,            // Enable debug logging
+  onSlowFrames: (stats) => {
+    console.log('Performance degraded:', stats);
+  },
+});
+
+watchdog.start();
+
+// Later...
+watchdog.stop();
+const report = watchdog.getReport();
+console.log(report);
+```
+
+### React Hook
+
+For React components, use the `usePerformance` hook:
+
+```typescript
+import { usePerformance } from '@/lib/hooks/usePerformance';
+
+function GraphComponent({ nodes, edges }) {
+  const { mode, settings, frameStats, isPerformanceGood } = usePerformance({
+    nodeCount: nodes.length,
+    edgeCount: edges.length,
+    enableWatchdog: true,
+  });
+
+  return (
+    <div>
+      {!isPerformanceGood && (
+        <div className="performance-warning">
+          Frame rate degraded. Consider switching to Speed mode.
+        </div>
+      )}
+      <GraphSVG
+        nodes={nodes}
+        edges={edges}
+        enableVirtualization={settings.enableVirtualization}
+        reduceLabelDensity={settings.reduceLabelDensity}
+      />
+    </div>
+  );
+}
+```
+
+## Performance Monitoring
 
 **In development:**
 ```javascript
 const result = await elkLayout(nodes, edges);
 console.log(`Layout completed in ${result.duration}ms, cached: ${result.cached}`);
+
+// Check frame performance
+const watchdog = getFrameWatchdog();
+console.log(watchdog.getReport());
 ```
 
 **In production:**
 - Monitor `result.duration` to detect performance regressions
 - Track cache hit rate (`result.cached`)
+- Monitor frame stats via watchdog for real-time performance
 - Alert if duration exceeds thresholds:
   - < 1500 nodes: > 2000ms is concerning
   - ≥ 1500 nodes: > 5000ms is concerning
+- Alert if slow frame percentage > 10%
 
 ## Profiling Guide
 
@@ -200,6 +301,22 @@ du -sh .next/static/chunks/*.js
 
 ## Common Issues
 
+### "Performance is degraded / slow frames"
+
+**Symptom:** Frame watchdog reports > 10% slow frames, UI feels sluggish
+
+**Investigation:**
+1. Check current performance mode: `localStorage.getItem('perf-mode')`
+2. Verify graph size and thresholds
+3. Check browser console for frame watchdog warnings
+4. Profile with DevTools Performance tab
+
+**Fix:**
+- Switch to Speed mode for large graphs
+- Reduce graph complexity (fewer nodes/edges)
+- Check for heavy operations in event handlers
+- Disable browser extensions that may interfere
+
 ### "Worker construction failed"
 
 **Symptom:** Layout falls back to main thread even for large graphs
@@ -237,8 +354,44 @@ pnpm build:analyze
 **Investigation:**
 1. Check if cache is disabled: `enableCaching: false`
 2. Verify worker threshold logic is correct
-3. Profile in DevTools to find bottleneck
-4. Check for network requests during layout
+3. Check current performance mode
+4. Profile in DevTools to find bottleneck
+5. Check for network requests during layout
+
+**Fix:**
+- Ensure caching is enabled
+- Try Speed mode for faster layout
+- Clear layout cache if corrupted
+- Check for interfering browser extensions
+
+### "OffscreenCanvas not working"
+
+**Symptom:** OffscreenCanvas feature flag enabled but not being used
+
+**Causes:**
+- Browser doesn't support OffscreenCanvas API
+- Feature flag not properly set in environment
+- Graph size below threshold for auto-enable
+
+**Investigation:**
+```javascript
+// Check browser support
+console.log('OffscreenCanvas supported:', typeof OffscreenCanvas !== 'undefined');
+
+// Check feature flag
+import { isFeatureEnabled } from '@/lib/feature-flags';
+console.log('Feature enabled:', isFeatureEnabled('enableOffscreenCanvas'));
+
+// Check current settings
+import { usePerformance } from '@/lib/hooks/usePerformance';
+const { settings } = usePerformance({ nodeCount, edgeCount });
+console.log('Use OffscreenCanvas:', settings.useOffscreenCanvas);
+```
+
+**Fix:**
+- Use a browser that supports OffscreenCanvas (Chrome 69+, Edge 79+)
+- Set `NEXT_PUBLIC_ENABLE_OFFSCREEN_CANVAS=true` in `.env.local`
+- Use Speed mode or larger graphs to trigger auto-enable
 
 ## Future Optimizations
 
