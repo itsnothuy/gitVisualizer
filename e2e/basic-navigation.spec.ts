@@ -14,8 +14,12 @@ test.describe("Basic Navigation", () => {
 
   test("has main navigation", async ({ page }) => {
     await page.goto("/");
-    const nav = page.getByRole("navigation", { name: /main navigation/i });
-    await expect(nav).toBeVisible();
+    const header = page.getByRole("banner");
+    await expect(header).toBeVisible();
+    
+    // Verify the Git Visualizer logo/link is present
+    const logo = page.getByRole("link", { name: /git visualizer/i });
+    await expect(logo).toBeVisible();
   });
 
   test("displays getting started card", async ({ page }) => {

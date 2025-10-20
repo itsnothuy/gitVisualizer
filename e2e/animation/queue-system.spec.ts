@@ -15,7 +15,7 @@ test.describe('Animation Queue System', () => {
 
   test('should block user input during animation playback', async ({ page }) => {
     // Find the graph container
-    const graph = page.locator('svg[data-testid="graph-svg"]').first();
+    const graph = page.locator('svg[role="graphics-document"]').first();
     await expect(graph).toBeVisible();
 
     // Check if the graph is interactive (not disabled)
@@ -36,11 +36,11 @@ test.describe('Animation Queue System', () => {
     // In a real implementation, we'd trigger multiple Git operations
     // and verify they animate in sequence
 
-    const graph = page.locator('svg[data-testid="graph-svg"]').first();
+    const graph = page.locator('svg[role="graphics-document"]').first();
     await expect(graph).toBeVisible();
 
     // Verify the graph is rendered
-    const nodes = await page.locator('circle[data-node-id]').count();
+    const nodes = await page.locator('[data-testid^="graph-node-"]').count();
     expect(nodes).toBeGreaterThan(0);
   });
 
@@ -70,7 +70,7 @@ test.describe('Animation Queue System', () => {
   });
 
   test('should allow keyboard navigation after animation completes', async ({ page }) => {
-    const graph = page.locator('svg[data-testid="graph-svg"]').first();
+    const graph = page.locator('svg[role="graphics-document"]').first();
     await expect(graph).toBeVisible();
 
     // Wait for any initial animations to complete
@@ -103,7 +103,7 @@ test.describe('Animation Queue System', () => {
     // This test conceptually verifies that high-priority animations
     // play before lower-priority ones
     
-    const graph = page.locator('svg[data-testid="graph-svg"]').first();
+    const graph = page.locator('svg[role="graphics-document"]').first();
     await expect(graph).toBeVisible();
 
     // In a real test, we'd:
@@ -120,7 +120,7 @@ test.describe('Animation Queue System', () => {
   });
 
   test('should clear animation queue on demand', async ({ page }) => {
-    const graph = page.locator('svg[data-testid="graph-svg"]').first();
+    const graph = page.locator('svg[role="graphics-document"]').first();
     await expect(graph).toBeVisible();
 
     // Verify we can interact with the graph
@@ -129,7 +129,7 @@ test.describe('Animation Queue System', () => {
     // 2. Call queue.clear()
     // 3. Verify all pending animations are canceled
 
-    const nodes = await page.locator('circle[data-node-id]').count();
+    const nodes = await page.locator('[data-testid^="graph-node-"]').count();
     expect(nodes).toBeGreaterThan(0);
   });
 
@@ -142,7 +142,7 @@ test.describe('Animation Queue System', () => {
       }
     });
 
-    const graph = page.locator('svg[data-testid="graph-svg"]').first();
+    const graph = page.locator('svg[role="graphics-document"]').first();
     await expect(graph).toBeVisible();
 
     // Wait for any animations
@@ -161,7 +161,7 @@ test.describe('Animation Queue System', () => {
     // This test verifies that we can query the page structure
     // In a real implementation, queue stats would be exposed via data attributes
 
-    const graph = page.locator('svg[data-testid="graph-svg"]').first();
+    const graph = page.locator('svg[role="graphics-document"]').first();
     await expect(graph).toBeVisible();
 
     // Verify we can access the SVG element and its attributes

@@ -59,8 +59,8 @@ test.describe('Sandbox Mode', () => {
       await input.fill('branch feature');
       await input.press('Enter');
 
-      // Check that branch appears in branches panel
-      await expect(page.getByText(/feature/)).toBeVisible();
+      // Check that branch appears in output log
+      await expect(page.getByText('Created branch feature')).toBeVisible();
     });
 
     test('shows error for invalid command', async ({ page }) => {

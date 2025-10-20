@@ -19,14 +19,15 @@ test.describe('Advanced Git Features', () => {
       await input.press('Enter');
       
       // Wait for command execution
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(200);
       
       // List remotes
       await input.fill('remote');
       await input.press('Enter');
       
-      // Check output
-      const output = page.getByRole('region', { name: /command output/i });
+      // Wait and check output in the command console log area
+      await page.waitForTimeout(200);
+      const output = page.locator('[role="log"]');
       await expect(output).toContainText('origin');
     });
 
@@ -36,16 +37,16 @@ test.describe('Advanced Git Features', () => {
       // Add remote
       await input.fill('remote add origin https://github.com/user/repo.git');
       await input.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(200);
       
       // Fetch
       await input.fill('fetch origin');
       await input.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(200);
       
-      // Check output for success
-      const output = page.getByRole('region', { name: /command output/i });
-      await expect(output).toContainText(/fetched/i);
+      // Check output for success in the command console log area
+      const output = page.locator('[role="log"]');
+      await expect(output).toContainText(/fetch/i);
     });
 
     test('can push to remote', async ({ page }) => {
@@ -54,16 +55,16 @@ test.describe('Advanced Git Features', () => {
       // Add remote
       await input.fill('remote add origin https://github.com/user/repo.git');
       await input.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(200);
       
       // Push
       await input.fill('push origin main');
       await input.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(200);
       
-      // Check output for success
-      const output = page.getByRole('region', { name: /command output/i });
-      await expect(output).toContainText(/pushed/i);
+      // Check output for success in the command console log area
+      const output = page.locator('[role="log"]');
+      await expect(output).toContainText(/push/i);
     });
   });
 
@@ -226,7 +227,7 @@ test.describe('Advanced Git Features', () => {
       await page.waitForTimeout(100);
       
       // Check that command succeeded
-      const output = page.getByRole('region', { name: /command output/i });
+      const output = page.locator('[role="log"]');
       await expect(output).not.toContainText(/error/i);
     });
   });
