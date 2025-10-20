@@ -9,7 +9,10 @@ A privacy-first, local-first Git repository visualizer that renders commit graph
 ## Features
 
 - 🔒 **Privacy-First**: All processing happens in your browser - no data leaves your device
-- 📁 **Local Repository Access**: Uses File System Access API to read local Git repositories
+- 📁 **Cross-Browser Repository Access**: 
+  - Direct folder access via File System Access API (Chrome, Edge)
+  - Folder upload fallback for Firefox and Safari
+  - ZIP upload as universal fallback for all browsers
 - 🎨 **Interactive Visualization**: Pan, zoom, and explore commit graphs with keyboard navigation
 - ♿ **Accessible**: WCAG 2.2 AA compliant with keyboard navigation and screen reader support
 - ⚡ **Fast Rendering**: Optimized SVG rendering with virtualization for large repositories
@@ -75,8 +78,8 @@ LGB Mode provides a **grid-based layout** with smooth animations that help visua
 ### Prerequisites
 
 - Node.js 18+ and pnpm
-- Modern browser with File System Access API support (Chrome 86+, Edge 86+)
-- HTTPS connection (required for File System Access API)
+- Modern browser (Chrome 86+, Edge 86+, Firefox 90+, Safari 15.2+)
+- HTTPS connection (recommended for best experience)
 
 ### Development
 
@@ -129,10 +132,27 @@ pnpm start
 
 ## Usage
 
-1. **Open a Repository**: Click "Open Repository" and select a local Git folder
-2. **Explore the Graph**: Use mouse to pan/zoom, or keyboard navigation (Tab, Arrow keys)
-3. **View Commit Details**: Click on nodes to see commit information
-4. **Accessibility**: Full keyboard navigation support with Tab/Shift+Tab
+### Opening a Repository
+
+The application supports three methods for opening Git repositories, automatically selecting the best available option for your browser:
+
+1. **Local Folder (Chrome, Edge)**: Direct access to a local Git repository folder using the File System Access API
+2. **Upload Folder (Firefox, Safari)**: Upload all files from a repository folder using directory input
+3. **Upload ZIP (All Browsers)**: Upload a ZIP archive of your repository (universal fallback)
+
+**To open a repository:**
+1. Click "Open Repository" button
+2. Select the appropriate tab based on your browser
+3. Choose your repository (folder or ZIP file)
+4. The graph will render automatically
+
+**Privacy Guarantee:** All file processing happens entirely in your browser. No data is ever uploaded to any server.
+
+### Interacting with the Graph
+
+1. **Pan & Zoom**: Use mouse to pan/zoom, or keyboard navigation (Tab, Arrow keys)
+2. **View Commit Details**: Click on nodes to see commit information
+3. **Accessibility**: Full keyboard navigation support with Tab/Shift+Tab
 
 ## Architecture
 
@@ -144,9 +164,25 @@ pnpm start
 
 ## Browser Support
 
-- Chrome 86+ (recommended)
-- Edge 86+
-- Firefox and Safari have limited support due to File System Access API requirements
+Git Visualizer supports all modern browsers with automatic fallback for different ingestion methods:
+
+| Browser | Direct Folder Access | Folder Upload | ZIP Upload | Recommended Method |
+|---------|---------------------|---------------|------------|-------------------|
+| Chrome 86+ | ✅ | ✅ | ✅ | Direct Folder Access |
+| Edge 86+ | ✅ | ✅ | ✅ | Direct Folder Access |
+| Firefox 90+ | ❌ | ✅ | ✅ | Folder Upload |
+| Safari 15.2+ | ❌ | ✅ | ✅ | Folder Upload |
+
+**Notes:**
+- **Direct Folder Access** (File System Access API) provides the best experience with read-only access to local folders
+- **Folder Upload** uses `webkitdirectory` input for browsers without File System Access API support
+- **ZIP Upload** works in all browsers as a universal fallback
+- All methods process files entirely in your browser - no data is uploaded
+
+**Performance:**
+- Supports repositories up to 500MB with 50,000 files
+- ZIP decompression runs in a Web Worker to prevent UI freezing
+- Progress indicators show real-time processing status
 
 ## Contributing
 
