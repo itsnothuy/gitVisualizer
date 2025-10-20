@@ -2,13 +2,13 @@
  * Tests for Level Validation
  */
 
-import { describe, it, expect } from 'vitest';
+import type { Level } from '@/tutorial/types';
+import { describe, expect, it } from 'vitest';
 import {
-  validateLevel,
   isValidLevelId,
   sanitizeLevelId,
+  validateLevel,
 } from '../validation';
-import type { Level } from '@/tutorial/types';
 
 describe('Level Validation', () => {
   const validLevel: Level = {

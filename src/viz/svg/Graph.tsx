@@ -22,6 +22,8 @@ type Position = {
   };
 };
 
+type LabelPlacement = 'right' | 'top';
+
 interface GraphSVGProps {
   nodes: DagNode[];
   edges: Edge[];
@@ -44,6 +46,8 @@ interface GraphSVGProps {
   animationScene?: AnimScene | null;
   /** Optional: callback when animation completes */
   onAnimationComplete?: () => void;
+  /** Optional: label placement relative to node */
+  labelPlacement?: LabelPlacement;
 }
 
 /**
@@ -105,12 +109,14 @@ const GraphNode = React.memo(function GraphNode({
   onSelect,
   onFocus,
   isInView,
+  labelPlacement = 'top',
 }: {
   node: DagNode;
   position: { x: number; y: number };
   onSelect?: (node: DagNode) => void;
   onFocus?: (node: DagNode) => void;
   isInView: boolean;
+  labelPlacement?: LabelPlacement;
 }) {
   const nodeRef = React.useRef<SVGGElement>(null);
   const [isFocused, setIsFocused] = React.useState(false);
@@ -217,9 +223,11 @@ const GraphNode = React.memo(function GraphNode({
 
           {/* Commit message label */}
           <text
-            x="12"
-            y="4"
+            x={labelPlacement === 'top' ? 0 : 12}
+            y={labelPlacement === 'top' ? -16 : 4}
             fontSize="12"
+            textAnchor={labelPlacement === 'top' ? 'middle' : 'start'}
+            dominantBaseline={labelPlacement === 'top' ? 'auto' : 'middle'}
             className="fill-current pointer-events-none select-none"
             aria-hidden="true"
           >
@@ -361,6 +369,7 @@ export function GraphSVG({
   skin = defaultSkin,
   animationScene,
   onAnimationComplete,
+  labelPlacement = 'top',
 }: GraphSVGProps) {
   const [viewBox] = React.useState({ x: 0, y: 0, width: 1200, height: 600 });
   const svgRef = React.useRef<SVGSVGElement>(null);
@@ -543,6 +552,7 @@ export function GraphSVG({
                   onSelect={onNodeSelect}
                   onFocus={onNodeFocus}
                   isInView={visibleNodes.includes(node.id)}
+                  labelPlacement={labelPlacement}
                 />
               ))}
             </g>

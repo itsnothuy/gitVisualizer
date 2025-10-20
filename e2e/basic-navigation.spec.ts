@@ -16,7 +16,7 @@ test.describe("Basic Navigation", () => {
     await page.goto("/");
     const header = page.getByRole("banner");
     await expect(header).toBeVisible();
-    
+
     // Verify the Git Visualizer logo/link is present
     const logo = page.getByRole("link", { name: /git visualizer/i });
     await expect(logo).toBeVisible();

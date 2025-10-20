@@ -140,6 +140,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -212,6 +213,7 @@
 
 /* Reduced motion support - disable animations for users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

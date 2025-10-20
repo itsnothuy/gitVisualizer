@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { ThemeToggle } from '../theme-toggle'
 
 describe('ThemeToggle', () => {
@@ -41,14 +41,14 @@ describe('ThemeToggle', () => {
   it('should toggle to LGB mode when clicked', async () => {
     const user = userEvent.setup()
     render(<ThemeToggle />)
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('theme-toggle')).toBeInTheDocument()
     })
-    
+
     const button = screen.getByTestId('theme-toggle')
     await user.click(button)
-    
+
     await waitFor(() => {
       expect(button).toHaveTextContent('On')
       expect(button).toHaveAttribute('aria-pressed', 'true')
@@ -59,20 +59,20 @@ describe('ThemeToggle', () => {
   it('should toggle back to default when clicked again', async () => {
     const user = userEvent.setup()
     render(<ThemeToggle />)
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('theme-toggle')).toBeInTheDocument()
     })
-    
+
     const button = screen.getByTestId('theme-toggle')
     await user.click(button)
-    
+
     await waitFor(() => {
       expect(button).toHaveTextContent('On')
     })
-    
+
     await user.click(button)
-    
+
     await waitFor(() => {
       expect(button).toHaveTextContent('Off')
       expect(button).toHaveAttribute('aria-pressed', 'false')
@@ -82,11 +82,11 @@ describe('ThemeToggle', () => {
 
   it('should have proper accessibility attributes', async () => {
     render(<ThemeToggle />)
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('theme-toggle')).toBeInTheDocument()
     })
-    
+
     const button = screen.getByTestId('theme-toggle')
     expect(button).toHaveAttribute('aria-label')
     expect(button).toHaveAttribute('aria-pressed')
@@ -94,9 +94,9 @@ describe('ThemeToggle', () => {
 
   it('should restore LGB theme from sessionStorage', async () => {
     sessionStorage.setItem('git-viz-theme', 'lgb')
-    
+
     render(<ThemeToggle />)
-    
+
     await waitFor(() => {
       const button = screen.getByTestId('theme-toggle')
       expect(button).toHaveTextContent('On')

@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { GitBranch } from "lucide-react";
-import { ThemeToggle } from "@/components/settings/theme-toggle";
 import { ModeSelector } from "@/components/mode/mode-selector";
+import { ThemeToggle } from "@/components/settings/theme-toggle";
+import { GitBranch } from "lucide-react";
+import Link from "next/link";
 
 export function AppHeader() {
   return (

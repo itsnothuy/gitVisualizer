@@ -3,8 +3,8 @@
  * Tests sequential playback, input blocking, and accessibility
  */
 
-import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
 
 test.describe('Animation Queue System', () => {
   test.beforeEach(async ({ page }) => {
@@ -78,7 +78,7 @@ test.describe('Animation Queue System', () => {
 
     // Try to focus on a node with Tab key
     await page.keyboard.press('Tab');
-    
+
     // Check if an element received focus
     const focusedElement = await page.evaluate(() => {
       return document.activeElement?.tagName;
@@ -91,10 +91,10 @@ test.describe('Animation Queue System', () => {
   test('should announce animation changes to screen readers', async ({ page }) => {
     // Check for ARIA live regions that announce animation changes
     const liveRegion = page.locator('[role="status"], [aria-live]').first();
-    
+
     // The live region should exist for accessibility announcements
     const liveRegionExists = await liveRegion.count();
-    
+
     // Either we have a live region, or the page doesn't need one yet
     expect(liveRegionExists).toBeGreaterThanOrEqual(0);
   });
@@ -102,7 +102,7 @@ test.describe('Animation Queue System', () => {
   test('should handle animation queue priority', async ({ page }) => {
     // This test conceptually verifies that high-priority animations
     // play before lower-priority ones
-    
+
     const graph = page.locator('svg[role="graphics-document"]').first();
     await expect(graph).toBeVisible();
 
@@ -150,7 +150,7 @@ test.describe('Animation Queue System', () => {
 
     // Animation errors should not crash the page
     // We should see no console errors related to animations
-    const animationErrors = consoleErrors.filter(err => 
+    const animationErrors = consoleErrors.filter(err =>
       err.includes('animation') || err.includes('Animation')
     );
 

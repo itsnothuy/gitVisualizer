@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { logWarning } from '@/lib/logging';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * CSP Violation Report Endpoint
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse the CSP report
     const contentType = request.headers.get('content-type') || '';
-    
+
     // CSP reports can be sent as application/csp-report or application/json
     if (!contentType.includes('application/csp-report') && !contentType.includes('application/json')) {
       return NextResponse.json(
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     logWarning('Failed to process CSP report', {
       error: error instanceof Error ? error.message : 'Unknown error',
     });
-    
+
     return new NextResponse(null, { status: 204 });
   }
 }

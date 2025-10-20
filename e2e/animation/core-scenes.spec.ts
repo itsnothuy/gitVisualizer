@@ -178,7 +178,7 @@ test.describe("Core Animation Scenes", () => {
       // SVG should have at least one defs element (may have multiple if multiple graphs exist)
       const defsCount = await page.locator('svg defs').count();
       expect(defsCount).toBeGreaterThanOrEqual(1);
-      
+
       // Defs elements exist in DOM (they may not be "visible" but should be present)
       const defsExist = await page.locator('svg defs').first().count();
       expect(defsExist).toBeGreaterThan(0);

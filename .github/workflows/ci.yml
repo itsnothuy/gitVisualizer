@@ -46,4 +46,4 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       
       - name: E2E tests
-        run: pnpm exec playwright test --project=chromium
+        run: pnpm exec playwright test --project=chromium --reporter=line
