@@ -4,12 +4,23 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RepositoryPicker } from "@/components/ingestion/repository-picker";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { useFirstVisit } from "@/lib/onboarding";
 import { useTranslation } from "@/lib/i18n";
 
 export default function Home() {
   const { t } = useTranslation();
+  const { isFirstVisit, isLoading, markOnboardingComplete } = useFirstVisit();
   const [selectedRepo, setSelectedRepo] = React.useState<FileSystemDirectoryHandle | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = React.useState(false);
+
+  // Show onboarding automatically on first visit
+  React.useEffect(() => {
+    if (!isLoading && isFirstVisit) {
+      setShowOnboarding(true);
+    }
+  }, [isFirstVisit, isLoading]);
 
   const handleRepositorySelected = React.useCallback((handle: FileSystemDirectoryHandle) => {
     setSelectedRepo(handle);
@@ -22,8 +33,20 @@ export default function Home() {
     console.error("Repository selection error:", errorMessage);
   }, []);
 
+  const handleOnboardingComplete = () => {
+    markOnboardingComplete();
+    setShowOnboarding(false);
+  };
+
   return (
     <div className="space-y-6">
+      {/* Onboarding Wizard */}
+      <OnboardingWizard
+        open={showOnboarding}
+        onOpenChange={setShowOnboarding}
+        onComplete={handleOnboardingComplete}
+      />
+
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t('home.welcome')}</h1>
         <p className="text-muted-foreground mt-2">
@@ -64,7 +87,12 @@ export default function Home() {
               onRepositorySelected={handleRepositorySelected}
               onError={handleError}
             />
-            <Button variant="outline">{t('common.learnMore')}</Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowOnboarding(true)}
+            >
+              {t('common.learnMore')}
+            </Button>
           </div>
         </CardContent>
       </Card>
