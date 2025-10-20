@@ -3,6 +3,9 @@ A privacy-first, local-first Git repository visualizer that renders commit graph
 <p align="center">
   <img src="./assets/home.png" alt="Home Page"  width="800"/> &nbsp;&nbsp;&nbsp;
 </p>
+<p align="center">
+  <img src="./assets/demo.gif" alt="Demo Page GIF"  width="800"/> &nbsp;&nbsp;&nbsp;
+</p>
 ## Features
 
 - 🔒 **Privacy-First**: All processing happens in your browser - no data leaves your device
