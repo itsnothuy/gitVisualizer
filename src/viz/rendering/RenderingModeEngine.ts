@@ -184,7 +184,7 @@ export function detectDeviceCapabilities(): DeviceCapabilities {
         maxTextureSize = (gl as WebGLRenderingContext).getParameter((gl as WebGLRenderingContext).MAX_TEXTURE_SIZE);
       }
     }
-  } catch (e) {
+  } catch {
     // WebGL not supported
   }
 

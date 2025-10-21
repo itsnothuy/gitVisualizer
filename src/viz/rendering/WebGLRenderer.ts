@@ -138,7 +138,8 @@ export class WebGLRenderer {
   /**
    * Handle pointer events (stub)
    */
-  handlePointerEvent(event: PointerEvent): InteractionResult {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  handlePointerEvent(_event: PointerEvent): InteractionResult {
     // TODO: Implement GPU-based picking or CPU-side hit testing
     return { type: 'none' };
   }
