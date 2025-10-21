@@ -99,9 +99,11 @@ describe("RepositoryContext", () => {
       expect(result.current.error).toBeNull();
       expect(result.current.progress).toBeNull();
       expect(result.current.handle).toBeNull();
+      expect(result.current.recentRepositories).toEqual([]);
       expect(typeof result.current.loadRepository).toBe("function");
       expect(typeof result.current.clearRepository).toBe("function");
       expect(typeof result.current.clearError).toBe("function");
+      expect(typeof result.current.switchToRecent).toBe("function");
     });
   });
 
@@ -426,6 +428,203 @@ describe("RepositoryContext", () => {
       });
 
       expect(result.current.error).toBeNull();
+    });
+  });
+
+  describe("recent repositories", () => {
+    it("should add repository to recent list after loading", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      await act(async () => {
+        await result.current.loadRepository(mockHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.recentRepositories.length).toBe(1);
+      });
+
+      expect(result.current.recentRepositories[0].name).toBe("test-repo");
+      expect(result.current.recentRepositories[0].commitCount).toBe(10);
+      expect(result.current.recentRepositories[0].branchCount).toBe(2);
+    });
+
+    it("should not duplicate repositories in recent list", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      // Load same repository twice
+      await act(async () => {
+        await result.current.loadRepository(mockHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.recentRepositories.length).toBe(1);
+      });
+
+      await act(async () => {
+        await result.current.loadRepository(mockHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.recentRepositories.length).toBe(1);
+      });
+    });
+
+    it("should limit recent repositories to MAX_RECENT_REPOS", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      // Create 6 different repository handles
+      for (let i = 0; i < 6; i++) {
+        const handle = {
+          ...mockHandle,
+          name: `repo-${i}`,
+        } as FileSystemDirectoryHandle;
+
+        processLocalRepository.mockResolvedValueOnce({
+          metadata: {
+            name: `repo-${i}`,
+            commitCount: i + 1,
+            branchCount: 1,
+            tagCount: 0,
+            processedAt: new Date(),
+          },
+          dag: {
+            nodes: [],
+            commits: [],
+            branches: [],
+            tags: [],
+          },
+          performance: {
+            totalMs: 50,
+            parseMs: 25,
+            buildMs: 25,
+          },
+          warnings: [],
+        });
+
+        await act(async () => {
+          await result.current.loadRepository(handle);
+        });
+      }
+
+      await waitFor(() => {
+        expect(result.current.recentRepositories.length).toBe(5);
+      });
+    });
+  });
+
+  describe("switchToRecent", () => {
+    it("should switch to a recent repository", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      // Load first repository
+      await act(async () => {
+        await result.current.loadRepository(mockHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.currentRepository?.metadata.name).toBe("test-repo");
+      });
+
+      // Load second repository
+      const secondHandle = {
+        ...mockHandle,
+        name: "repo-2",
+      } as FileSystemDirectoryHandle;
+
+      processLocalRepository.mockResolvedValueOnce({
+        metadata: {
+          name: "repo-2",
+          commitCount: 5,
+          branchCount: 1,
+          tagCount: 0,
+          processedAt: new Date(),
+        },
+        dag: {
+          nodes: [],
+          commits: [],
+          branches: [],
+          tags: [],
+        },
+        performance: {
+          totalMs: 50,
+          parseMs: 25,
+          buildMs: 25,
+        },
+        warnings: [],
+      });
+
+      await act(async () => {
+        await result.current.loadRepository(secondHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.currentRepository?.metadata.name).toBe("repo-2");
+        expect(result.current.recentRepositories.length).toBe(2);
+      });
+
+      // Switch back to first repository
+      processLocalRepository.mockResolvedValueOnce({
+        metadata: {
+          name: "test-repo",
+          commitCount: 10,
+          branchCount: 2,
+          tagCount: 1,
+          processedAt: new Date(),
+          defaultBranch: "main",
+        },
+        dag: {
+          nodes: [],
+          commits: [],
+          branches: [],
+          tags: [],
+        },
+        performance: {
+          totalMs: 100,
+          parseMs: 50,
+          buildMs: 50,
+        },
+        warnings: [],
+      });
+
+      await act(async () => {
+        await result.current.switchToRecent("test-repo");
+      });
+
+      await waitFor(() => {
+        expect(result.current.currentRepository?.metadata.name).toBe("test-repo");
+      });
+    });
+
+    it("should handle error when switching to non-existent repository", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      await act(async () => {
+        await result.current.switchToRecent("non-existent");
+      });
+
+      await waitFor(() => {
+        expect(result.current.error).toContain("not found in cache");
+      });
     });
   });
 });
