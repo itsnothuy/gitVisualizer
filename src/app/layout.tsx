@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { AppShell } from "@/components/layout/app-shell";
+import { RepositoryProvider } from "@/lib/repository/RepositoryContext";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,7 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <AppShell>{children}</AppShell>
+          <RepositoryProvider>
+            <AppShell>{children}</AppShell>
+          </RepositoryProvider>
         </Providers>
       </body>
     </html>

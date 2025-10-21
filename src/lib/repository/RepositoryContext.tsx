@@ -16,6 +16,22 @@ import React, { createContext, useContext, useState, useCallback, type ReactNode
 import { processLocalRepository, type ProcessedRepository, type ProcessProgress } from "../git/processor";
 
 /**
+ * Reference to a recently accessed repository
+ */
+export interface RepositoryReference {
+  /** Unique identifier (repository path/name) */
+  id: string;
+  /** Repository display name */
+  name: string;
+  /** When the repository was last accessed */
+  lastAccessed: Date;
+  /** Commit count */
+  commitCount: number;
+  /** Branch count */
+  branchCount: number;
+}
+
+/**
  * Repository context value interface
  */
 export interface RepositoryContextValue {
@@ -29,6 +45,8 @@ export interface RepositoryContextValue {
   progress: ProcessProgress | null;
   /** Directory handle of current repository */
   handle: FileSystemDirectoryHandle | null;
+  /** Recently accessed repositories */
+  recentRepositories: RepositoryReference[];
 
   /** Load a repository from FileSystemDirectoryHandle */
   loadRepository: (handle: FileSystemDirectoryHandle, options?: LoadRepositoryOptions) => Promise<void>;
@@ -36,6 +54,8 @@ export interface RepositoryContextValue {
   clearRepository: () => void;
   /** Clear the error state */
   clearError: () => void;
+  /** Switch to a recent repository by ID */
+  switchToRecent: (id: string) => Promise<void>;
 }
 
 /**
@@ -73,6 +93,9 @@ export interface RepositoryProviderProps {
   children: ReactNode;
 }
 
+// Maximum number of recent repositories to track
+const MAX_RECENT_REPOS = 5;
+
 /**
  * Repository Provider Component
  * 
@@ -91,6 +114,37 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProcessProgress | null>(null);
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | null>(null);
+  const [recentRepositories, setRecentRepositories] = useState<RepositoryReference[]>([]);
+  
+  // Store mapping of repository IDs to their handles
+  const [handleCache] = useState<Map<string, FileSystemDirectoryHandle>>(new Map());
+
+  /**
+   * Add or update a repository in the recent list
+   */
+  const addToRecent = useCallback((repo: ProcessedRepository, dirHandle: FileSystemDirectoryHandle) => {
+    const id = repo.metadata.name || dirHandle.name;
+    
+    const reference: RepositoryReference = {
+      id,
+      name: repo.metadata.name,
+      lastAccessed: new Date(),
+      commitCount: repo.metadata.commitCount,
+      branchCount: repo.metadata.branchCount,
+    };
+    
+    setRecentRepositories(prev => {
+      // Remove if already exists
+      const filtered = prev.filter(r => r.id !== id);
+      // Add to front
+      const updated = [reference, ...filtered];
+      // Limit to MAX_RECENT_REPOS
+      return updated.slice(0, MAX_RECENT_REPOS);
+    });
+    
+    // Cache the handle
+    handleCache.set(id, dirHandle);
+  }, [handleCache]);
 
   /**
    * Load a repository from a FileSystemDirectoryHandle
@@ -126,6 +180,9 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
         percentage: 100,
         message: "Repository loaded successfully",
       });
+      
+      // Add to recent repositories
+      addToRecent(processed, dirHandle);
     } catch (err) {
       // Handle errors
       const errorMessage = err instanceof Error ? err.message : "Failed to load repository";
@@ -135,7 +192,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [addToRecent]);
 
   /**
    * Clear the current repository
@@ -154,6 +211,19 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
   const clearError = useCallback(() => {
     setError(null);
   }, []);
+  
+  /**
+   * Switch to a recent repository by ID
+   */
+  const switchToRecent = useCallback(async (id: string): Promise<void> => {
+    const cachedHandle = handleCache.get(id);
+    if (!cachedHandle) {
+      setError(`Repository "${id}" not found in cache`);
+      return;
+    }
+    
+    await loadRepository(cachedHandle);
+  }, [handleCache, loadRepository]);
 
   const value: RepositoryContextValue = {
     currentRepository,
@@ -161,9 +231,11 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
     error,
     progress,
     handle,
+    recentRepositories,
     loadRepository,
     clearRepository,
     clearError,
+    switchToRecent,
   };
 
   return (

@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { RepositoryPicker } from "@/components/ingestion/repository-picker";
 import { RepositoryHeader } from "@/components/repository/RepositoryHeader";
 import { RepositoryVisualization } from "@/components/repository/RepositoryVisualization";
 import { RepositoryInspector } from "@/components/repository/RepositoryInspector";
-import { processLocalRepository, type ProcessedRepository } from "@/lib/git/processor";
+import { useRepository } from "@/lib/repository/RepositoryContext";
 import type { GitCommit } from "@/cli/types";
 import { AlertCircleIcon } from "lucide-react";
 
@@ -24,61 +26,37 @@ import { AlertCircleIcon } from "lucide-react";
  * Performance: Automatic virtualization for large repositories
  */
 export default function RepositoryPage() {
-  const [repository, setRepository] = React.useState<ProcessedRepository | null>(null);
+  const router = useRouter();
+  const {
+    currentRepository,
+    isLoading,
+    error,
+    progress,
+    handle,
+    loadRepository,
+    clearError,
+  } = useRepository();
   const [selectedCommit, setSelectedCommit] = React.useState<GitCommit | null>(null);
-  const [isProcessing, setIsProcessing] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [repoHandle, setRepoHandle] = React.useState<FileSystemDirectoryHandle | null>(null);
 
   // Process repository when selected
-  const handleRepositorySelected = React.useCallback(async (handle: FileSystemDirectoryHandle) => {
-    setRepoHandle(handle);
-    setIsProcessing(true);
-    setError(null);
-    setRepository(null);
-    setSelectedCommit(null);
-
+  const handleRepositorySelected = React.useCallback(async (newHandle: FileSystemDirectoryHandle) => {
     try {
-      const processed = await processLocalRepository(handle, {
-        maxCommits: 10000,
-        detectLFS: true,
-        onProgress: (progress) => {
-          console.log(`Processing: ${progress.phase} - ${progress.message} (${progress.percentage}%)`);
-        },
-      });
-
-      setRepository(processed);
-
-      // Log warnings
-      if (processed.warnings.length > 0) {
-        console.warn("Repository warnings:", processed.warnings);
-      }
-
-      // Log performance metrics
-      console.log("Processing complete:", {
-        commits: processed.metadata.commitCount,
-        branches: processed.metadata.branchCount,
-        tags: processed.metadata.tagCount,
-        duration: `${processed.performance.totalMs}ms`,
-      });
+      await loadRepository(newHandle);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to process repository";
-      setError(errorMessage);
-      console.error("Repository processing failed:", err);
-    } finally {
-      setIsProcessing(false);
+      // Error is already handled by the context
+      console.error("Repository selection error:", err);
     }
-  }, []);
+  }, [loadRepository]);
 
   const handleError = React.useCallback((errorMessage: string) => {
-    setError(errorMessage);
+    console.error("Repository selection error:", errorMessage);
   }, []);
 
   const handleRefresh = React.useCallback(async () => {
-    if (repoHandle) {
-      await handleRepositorySelected(repoHandle);
+    if (handle) {
+      await loadRepository(handle);
     }
-  }, [repoHandle, handleRepositorySelected]);
+  }, [handle, loadRepository]);
 
   const handleNodeSelect = React.useCallback((commit: GitCommit) => {
     setSelectedCommit(commit);
@@ -92,14 +70,14 @@ export default function RepositoryPage() {
     <div className="flex flex-col h-screen">
       {/* Header */}
       <RepositoryHeader 
-        repository={repository} 
-        onRefresh={repository ? handleRefresh : undefined}
+        repository={currentRepository} 
+        onRefresh={currentRepository ? handleRefresh : undefined}
       />
 
       {/* Main content area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Repository selection or visualization */}
-        {!repository && !isProcessing && (
+        {!currentRepository && !isLoading && (
           <div className="flex-1 flex items-center justify-center p-6">
             <Card className="max-w-2xl w-full">
               <CardHeader>
@@ -119,7 +97,7 @@ export default function RepositoryPage() {
                   <div className="p-4 bg-red-50 dark:bg-red-950 rounded-md border border-red-200 dark:border-red-800" role="alert">
                     <div className="flex gap-2">
                       <AlertCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                      <div>
+                      <div className="flex-1">
                         <p className="text-sm font-semibold text-red-800 dark:text-red-200">
                           Error Loading Repository
                         </p>
@@ -127,6 +105,14 @@ export default function RepositoryPage() {
                           {error}
                         </p>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearError}
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                      >
+                        Dismiss
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -136,6 +122,12 @@ export default function RepositoryPage() {
                     onRepositorySelected={handleRepositorySelected}
                     onError={handleError}
                   />
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push('/')}
+                  >
+                    Back to Home
+                  </Button>
                 </div>
 
                 <div className="pt-4 border-t">
@@ -155,13 +147,25 @@ export default function RepositoryPage() {
         )}
 
         {/* Processing state */}
-        {isProcessing && (
+        {isLoading && (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-2">
               <div className="text-lg font-semibold">Processing Repository...</div>
-              <div className="text-sm text-muted-foreground">
-                Analyzing commit history and building visualization
-              </div>
+              {progress && (
+                <>
+                  <div className="text-sm text-muted-foreground">
+                    {progress.message}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {progress.percentage}% complete
+                  </div>
+                  {progress.processed !== undefined && progress.total !== undefined && (
+                    <div className="text-xs text-muted-foreground">
+                      {progress.processed} / {progress.total} items
+                    </div>
+                  )}
+                </>
+              )}
               <div className="flex justify-center mt-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
@@ -170,11 +174,11 @@ export default function RepositoryPage() {
         )}
 
         {/* Visualization */}
-        {repository && !isProcessing && (
+        {currentRepository && !isLoading && (
           <>
             <div className="flex-1 flex flex-col p-6 overflow-hidden">
               <RepositoryVisualization
-                repository={repository}
+                repository={currentRepository}
                 onNodeSelect={handleNodeSelect}
               />
             </div>
@@ -182,7 +186,7 @@ export default function RepositoryPage() {
             {/* Inspector panel */}
             <RepositoryInspector
               selectedCommit={selectedCommit}
-              repository={repository}
+              repository={currentRepository}
               onClose={handleCloseInspector}
             />
           </>
