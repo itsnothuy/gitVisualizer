@@ -15,17 +15,7 @@
  * - Accessible (WCAG 2.2 AA)
  */
 
-import * as React from "react";
-import {
-  FolderOpenIcon,
-  UploadIcon,
-  FileArchiveIcon,
-  AlertCircleIcon,
-  CheckCircleIcon,
-  InfoIcon,
-  XIcon,
-  BookOpenIcon,
-} from "lucide-react";
+import { SampleReposPanel } from "@/components/samples/SampleReposPanel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,18 +25,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { pickLocalRepoDir, isGitRepository } from "@/lib/git/local";
-import { selectDirectoryInput } from "@/lib/git/fallbacks/directory-input";
-import { selectZipFile } from "@/lib/git/fallbacks/zip-input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import {
   getBrowserCapabilities,
-  getCapabilityMessage,
   getBrowserName,
+  getCapabilityMessage,
 } from "@/lib/git/capabilities";
-import { isFeatureEnabled } from "@/lib/feature-flags";
-import type { IngestResult, IngestProgress } from "@/lib/git/ingestion-types";
-import { SampleReposPanel } from "@/components/samples/SampleReposPanel";
+import { selectDirectoryInput } from "@/lib/git/fallbacks/directory-input";
+import { selectZipFile } from "@/lib/git/fallbacks/zip-input";
+import type { IngestProgress, IngestResult } from "@/lib/git/ingestion-types";
+import { isGitRepository, pickLocalRepoDir } from "@/lib/git/local";
+import {
+  AlertCircleIcon,
+  BookOpenIcon,
+  CheckCircleIcon,
+  FileArchiveIcon,
+  FolderOpenIcon,
+  InfoIcon,
+  UploadIcon,
+  XIcon,
+} from "lucide-react";
+import * as React from "react";
 
 interface IngestDialogProps {
   onRepositorySelected?: (result: IngestResult) => void;
@@ -59,7 +59,7 @@ export function IngestDialog({ onRepositorySelected, onError }: IngestDialogProp
   const [progress, setProgress] = React.useState<IngestProgress | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState<string>("auto");
-  
+
   // Abort controller for cancellation
   const abortControllerRef = React.useRef<AbortController | null>(null);
 
@@ -187,7 +187,7 @@ export function IngestDialog({ onRepositorySelected, onError }: IngestDialogProp
   };
 
   // Determine if any method is available
-  const hasAnyMethod = capabilities.fileSystemAccess || 
+  const hasAnyMethod = capabilities.fileSystemAccess ||
     (fallbacksEnabled && (capabilities.directoryInput || capabilities.fileInput));
 
   return (

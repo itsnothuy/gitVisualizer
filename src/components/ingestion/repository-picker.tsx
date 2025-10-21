@@ -7,8 +7,6 @@
  * with clear permission prompts and error handling.
  */
 
-import * as React from "react";
-import { FolderOpenIcon, AlertCircleIcon, CheckCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,8 +16,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { pickLocalRepoDir, isFileSystemAccessSupported, isGitRepository } from "@/lib/git/local";
 import type { PickRepositoryResult } from "@/lib/git/local";
+import { isFileSystemAccessSupported, isGitRepository, pickLocalRepoDir } from "@/lib/git/local";
+import { AlertCircleIcon, CheckCircleIcon, FolderOpenIcon } from "lucide-react";
+import * as React from "react";
 
 interface RepositoryPickerProps {
   onRepositorySelected?: (handle: FileSystemDirectoryHandle) => void;
@@ -84,8 +84,8 @@ export function RepositoryPicker({ onRepositorySelected, onError }: RepositoryPi
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          size="lg" 
+        <Button
+          size="lg"
           disabled={!isSupported}
           aria-label="Open local repository"
           data-testid="open-repository"
@@ -109,7 +109,7 @@ export function RepositoryPicker({ onRepositorySelected, onError }: RepositoryPi
               <div className="text-sm text-yellow-800 dark:text-yellow-200">
                 <p className="font-semibold mb-1">Browser Not Supported</p>
                 <p>
-                  The File System Access API is not available in your browser. 
+                  The File System Access API is not available in your browser.
                   Please use Chrome 86+, Edge 86+, or another compatible browser.
                 </p>
               </div>
