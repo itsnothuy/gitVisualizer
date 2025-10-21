@@ -29,6 +29,10 @@ export interface RepositoryReference {
   commitCount: number;
   /** Branch count */
   branchCount: number;
+  /** Path for local repositories (if available) */
+  path?: string;
+  /** Size estimate in bytes (for cache management) */
+  sizeBytes?: number;
 }
 
 /**
@@ -47,6 +51,8 @@ export interface RepositoryContextValue {
   handle: FileSystemDirectoryHandle | null;
   /** Recently accessed repositories */
   recentRepositories: RepositoryReference[];
+  /** Total cache size in bytes */
+  cacheSize: number;
 
   /** Load a repository from FileSystemDirectoryHandle */
   loadRepository: (handle: FileSystemDirectoryHandle, options?: LoadRepositoryOptions) => Promise<void>;
@@ -56,6 +62,14 @@ export interface RepositoryContextValue {
   clearError: () => void;
   /** Switch to a recent repository by ID */
   switchToRecent: (id: string) => Promise<void>;
+  /** Refresh the current repository */
+  refreshCurrentRepository: () => Promise<void>;
+  /** Remove a repository from cache by ID */
+  removeFromCache: (id: string) => void;
+  /** Clear all repository cache */
+  clearCache: () => void;
+  /** Get a repository from cache without setting it as current */
+  getRepositoryFromCache: (id: string) => ProcessedRepository | null;
 }
 
 /**
@@ -96,6 +110,26 @@ export interface RepositoryProviderProps {
 // Maximum number of recent repositories to track
 const MAX_RECENT_REPOS = 5;
 
+// Maximum cache size in bytes (50MB as per requirements)
+const MAX_CACHE_SIZE = 50 * 1024 * 1024;
+
+/**
+ * Estimate the size of a processed repository in bytes
+ */
+function estimateRepositorySize(repo: ProcessedRepository): number {
+  // Rough estimate based on JSON serialization
+  const jsonStr = JSON.stringify({
+    metadata: repo.metadata,
+    dag: {
+      nodes: repo.dag.nodes.length,
+      commits: repo.dag.commits.length,
+      branches: repo.dag.branches.length,
+      tags: repo.dag.tags.length,
+    },
+  });
+  return jsonStr.length * 2; // Multiply by 2 for memory overhead
+}
+
 /**
  * Repository Provider Component
  * 
@@ -115,15 +149,53 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
   const [progress, setProgress] = useState<ProcessProgress | null>(null);
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | null>(null);
   const [recentRepositories, setRecentRepositories] = useState<RepositoryReference[]>([]);
+  const [cacheSize, setCacheSize] = useState<number>(0);
   
-  // Store mapping of repository IDs to their handles
+  // Store mapping of repository IDs to their handles and processed data
   const [handleCache] = useState<Map<string, FileSystemDirectoryHandle>>(new Map());
+  const [repositoryCache] = useState<Map<string, ProcessedRepository>>(new Map());
 
   /**
-   * Add or update a repository in the recent list
+   * Add or update a repository in the recent list and cache
    */
   const addToRecent = useCallback((repo: ProcessedRepository, dirHandle: FileSystemDirectoryHandle) => {
     const id = repo.metadata.name || dirHandle.name;
+    const sizeBytes = estimateRepositorySize(repo);
+    
+    // Check if adding this repo would exceed cache limit
+    let currentSize = cacheSize;
+    if (repositoryCache.has(id)) {
+      // If repo already exists, subtract its old size
+      const oldRepo = repositoryCache.get(id);
+      if (oldRepo) {
+        currentSize -= estimateRepositorySize(oldRepo);
+      }
+    }
+    
+    // If adding would exceed limit, remove oldest repositories until there's space
+    if (currentSize + sizeBytes > MAX_CACHE_SIZE) {
+      const sortedRepos = [...recentRepositories].sort((a, b) => 
+        a.lastAccessed.getTime() - b.lastAccessed.getTime()
+      );
+      
+      for (const oldRepo of sortedRepos) {
+        if (oldRepo.id === id) continue; // Don't remove the repo we're adding
+        
+        const cachedRepo = repositoryCache.get(oldRepo.id);
+        if (cachedRepo) {
+          currentSize -= estimateRepositorySize(cachedRepo);
+          repositoryCache.delete(oldRepo.id);
+          handleCache.delete(oldRepo.id);
+          
+          // Remove from recent list
+          setRecentRepositories(prev => prev.filter(r => r.id !== oldRepo.id));
+          
+          if (currentSize + sizeBytes <= MAX_CACHE_SIZE) {
+            break;
+          }
+        }
+      }
+    }
     
     const reference: RepositoryReference = {
       id,
@@ -131,6 +203,8 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
       lastAccessed: new Date(),
       commitCount: repo.metadata.commitCount,
       branchCount: repo.metadata.branchCount,
+      path: dirHandle.name,
+      sizeBytes,
     };
     
     setRecentRepositories(prev => {
@@ -142,9 +216,13 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
       return updated.slice(0, MAX_RECENT_REPOS);
     });
     
-    // Cache the handle
+    // Cache the handle and repository
     handleCache.set(id, dirHandle);
-  }, [handleCache]);
+    repositoryCache.set(id, repo);
+    
+    // Update cache size
+    setCacheSize(currentSize + sizeBytes);
+  }, [handleCache, repositoryCache, cacheSize, recentRepositories]);
 
   /**
    * Load a repository from a FileSystemDirectoryHandle
@@ -216,14 +294,86 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
    * Switch to a recent repository by ID
    */
   const switchToRecent = useCallback(async (id: string): Promise<void> => {
+    const cachedRepo = repositoryCache.get(id);
     const cachedHandle = handleCache.get(id);
+    
     if (!cachedHandle) {
       setError(`Repository "${id}" not found in cache`);
       return;
     }
     
-    await loadRepository(cachedHandle);
-  }, [handleCache, loadRepository]);
+    // If repository is already fully processed, use cached version
+    if (cachedRepo) {
+      setCurrentRepository(cachedRepo);
+      setHandle(cachedHandle);
+      setError(null);
+      setProgress(null);
+      
+      // Update last accessed time
+      setRecentRepositories(prev => 
+        prev.map(repo => 
+          repo.id === id 
+            ? { ...repo, lastAccessed: new Date() }
+            : repo
+        )
+      );
+    } else {
+      // Otherwise, reload from handle
+      await loadRepository(cachedHandle);
+    }
+  }, [handleCache, repositoryCache, loadRepository]);
+  
+  /**
+   * Refresh the current repository
+   */
+  const refreshCurrentRepository = useCallback(async (): Promise<void> => {
+    if (!handle) {
+      setError("No repository handle available for refresh");
+      return;
+    }
+    
+    await loadRepository(handle);
+  }, [handle, loadRepository]);
+  
+  /**
+   * Remove a repository from cache by ID
+   */
+  const removeFromCache = useCallback((id: string): void => {
+    const cachedRepo = repositoryCache.get(id);
+    if (cachedRepo) {
+      const sizeBytes = estimateRepositorySize(cachedRepo);
+      repositoryCache.delete(id);
+      handleCache.delete(id);
+      setCacheSize(prev => Math.max(0, prev - sizeBytes));
+      
+      setRecentRepositories(prev => prev.filter(r => r.id !== id));
+      
+      // If the current repository was removed, clear it
+      if (currentRepository?.metadata.name === id) {
+        setCurrentRepository(null);
+        setHandle(null);
+      }
+    }
+  }, [repositoryCache, handleCache, currentRepository]);
+  
+  /**
+   * Clear all repository cache
+   */
+  const clearCache = useCallback((): void => {
+    repositoryCache.clear();
+    handleCache.clear();
+    setRecentRepositories([]);
+    setCacheSize(0);
+    setCurrentRepository(null);
+    setHandle(null);
+  }, [repositoryCache, handleCache]);
+  
+  /**
+   * Get a repository from cache without setting it as current
+   */
+  const getRepositoryFromCache = useCallback((id: string): ProcessedRepository | null => {
+    return repositoryCache.get(id) || null;
+  }, [repositoryCache]);
 
   const value: RepositoryContextValue = {
     currentRepository,
@@ -232,10 +382,15 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
     progress,
     handle,
     recentRepositories,
+    cacheSize,
     loadRepository,
     clearRepository,
     clearError,
     switchToRecent,
+    refreshCurrentRepository,
+    removeFromCache,
+    clearCache,
+    getRepositoryFromCache,
   };
 
   return (

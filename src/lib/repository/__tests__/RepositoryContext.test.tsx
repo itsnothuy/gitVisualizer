@@ -627,4 +627,156 @@ describe("RepositoryContext", () => {
       });
     });
   });
+
+  describe("cache management", () => {
+    it("should track cache size", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      expect(result.current.cacheSize).toBe(0);
+
+      // Load repository
+      await act(async () => {
+        await result.current.loadRepository(mockHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.currentRepository).toBeDefined();
+        expect(result.current.cacheSize).toBeGreaterThan(0);
+      });
+    });
+
+    it("should allow removing repositories from cache", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      // Load repository
+      await act(async () => {
+        await result.current.loadRepository(mockHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.currentRepository).toBeDefined();
+        expect(result.current.recentRepositories.length).toBe(1);
+      });
+
+      const initialCacheSize = result.current.cacheSize;
+
+      // Remove from cache
+      act(() => {
+        result.current.removeFromCache("test-repo");
+      });
+
+      expect(result.current.recentRepositories.length).toBe(0);
+      expect(result.current.cacheSize).toBe(0);
+      expect(result.current.currentRepository).toBeNull();
+      expect(initialCacheSize).toBeGreaterThan(0);
+    });
+
+    it("should allow clearing all cache", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      // Load first repository
+      await act(async () => {
+        await result.current.loadRepository(mockHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.currentRepository).toBeDefined();
+      });
+
+      // Clear all cache
+      act(() => {
+        result.current.clearCache();
+      });
+
+      expect(result.current.recentRepositories.length).toBe(0);
+      expect(result.current.cacheSize).toBe(0);
+      expect(result.current.currentRepository).toBeNull();
+    });
+
+    it("should allow getting repository from cache without setting as current", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      // Load repository
+      await act(async () => {
+        await result.current.loadRepository(mockHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.currentRepository).toBeDefined();
+      });
+
+      // Get from cache without setting as current
+      const cachedRepo = result.current.getRepositoryFromCache("test-repo");
+      expect(cachedRepo).toBeDefined();
+      expect(cachedRepo?.metadata.name).toBe("test-repo");
+      expect(result.current.currentRepository?.metadata.name).toBe("test-repo");
+    });
+
+    it("should refresh current repository", async () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <RepositoryProvider>{children}</RepositoryProvider>
+      );
+
+      const { result } = renderHook(() => useRepository(), { wrapper });
+
+      // Load repository
+      await act(async () => {
+        await result.current.loadRepository(mockHandle);
+      });
+
+      await waitFor(() => {
+        expect(result.current.currentRepository).toBeDefined();
+      });
+
+      // Setup mock for refresh with updated data
+      processLocalRepository.mockResolvedValueOnce({
+        metadata: {
+          name: "test-repo",
+          commitCount: 20, // Changed
+          branchCount: 3, // Changed
+          tagCount: 2, // Changed
+          processedAt: new Date(),
+          defaultBranch: "main",
+        },
+        dag: {
+          nodes: [],
+          commits: [],
+          branches: [],
+          tags: [],
+        },
+        performance: {
+          totalMs: 100,
+          parseMs: 50,
+          buildMs: 50,
+        },
+        warnings: [],
+      });
+
+      // Refresh
+      await act(async () => {
+        await result.current.refreshCurrentRepository();
+      });
+
+      await waitFor(() => {
+        expect(result.current.currentRepository?.metadata.commitCount).toBe(20);
+        expect(result.current.currentRepository?.metadata.branchCount).toBe(3);
+      });
+    });
+  });
 });
