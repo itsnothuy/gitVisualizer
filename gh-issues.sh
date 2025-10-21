@@ -40,7 +40,9 @@ USAGE:
     ./gh-issues.sh [COMMAND]
 
 COMMANDS:
-    create      Create all GitHub issues and assign to Copilot
+    create      Create all GitHub issues and assign to Copilot (recommended)
+    copilot     Create issues optimized for Copilot with ChatGPT's approach
+    bulk        Bulk create using ChatGPT's simple helper script
     preview     Preview what issues would be created (safe)
     list        List all project issues
     status      Show detailed implementation status dashboard
@@ -52,7 +54,13 @@ EXAMPLES:
     # Safe preview of what would be created
     ./gh-issues.sh preview
 
-    # Create all issues and assign to Copilot
+    # Create all issues optimized for Copilot (RECOMMENDED)
+    ./gh-issues.sh copilot
+
+    # Create issues using ChatGPT's bulk approach
+    ./gh-issues.sh bulk
+
+    # Standard creation with full management
     ./gh-issues.sh create
 
     # Check current status
@@ -61,9 +69,15 @@ EXAMPLES:
     # Monitor progress
     ./gh-issues.sh monitor
 
+COPILOT INTEGRATION:
+    The 'copilot' and 'bulk' commands follow GitHub's official recommendations
+    for assigning issues directly to @copilot using -a flag and -F for file
+    content, exactly as suggested by ChatGPT and GitHub documentation.
+
 FULL FEATURES:
     For advanced issue management, use:
     - make -f Makefile.issues help
+    - ./scripts/create-copilot-issues.sh --help
     - ./scripts/create-github-issues.sh --help
     - ./scripts/manage-github-issues.sh --help
 
@@ -78,9 +92,18 @@ main() {
             echo -e "${BLUE}🚀 Creating GitHub issues and assigning to Copilot...${NC}"
             make -f Makefile.issues create-issues
             ;;
+        copilot)
+            echo -e "${BLUE}🤖 Creating GitHub issues optimized for Copilot (RECOMMENDED)...${NC}"
+            ./scripts/create-copilot-issues.sh
+            ;;
+        bulk)
+            echo -e "${BLUE}⚡ Bulk creating issues using ChatGPT's approach...${NC}"
+            ./scripts/bulk-create-issues.sh
+            ;;
         preview)
             echo -e "${CYAN}👀 Previewing GitHub issues creation...${NC}"
-            make -f Makefile.issues create-issues-dry-run
+            echo -e "${CYAN}Using Copilot-optimized preview...${NC}"
+            ./scripts/create-copilot-issues.sh --dry-run
             ;;
         list)
             echo -e "${BLUE}📋 Listing all project issues...${NC}"

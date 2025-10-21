@@ -38,9 +38,12 @@ help:
 	@echo -e "$(CYAN)Available Commands:$(NC)"
 	@echo ""
 	@echo -e "$(GREEN)Issue Creation:$(NC)"
-	@echo "  make create-issues          Create all GitHub issues and assign to Copilot"
-	@echo "  make create-issues-dry-run  Preview what issues would be created (safe)"
-	@echo "  make create-issues-force    Force recreate existing issues"
+	@echo "  make create-copilot-issues      Create issues optimized for Copilot (RECOMMENDED)"
+	@echo "  make create-copilot-issues-dry-run  Preview Copilot-optimized issues (safe)"
+	@echo "  make create-bulk-issues         Bulk create using ChatGPT's simple approach"
+	@echo "  make create-issues              Create all GitHub issues (full management)"
+	@echo "  make create-issues-dry-run      Preview standard issues creation (safe)"
+	@echo "  make create-issues-force        Force recreate existing issues"
 	@echo ""
 	@echo -e "$(GREEN)Issue Management:$(NC)"
 	@echo "  make list-issues            List all project issues"
@@ -107,6 +110,18 @@ create-issues: check-prerequisites validate-issues
 		--label "type:enhancement" \
 		--label "status:ready" \
 		--label "project:git-visualizer"
+
+create-copilot-issues: check-prerequisites validate-issues
+	@echo -e "$(BLUE)Creating GitHub issues optimized for Copilot (ChatGPT approach)...$(NC)"
+	@$(SCRIPTS_DIR)/create-copilot-issues.sh
+
+create-copilot-issues-dry-run: check-prerequisites validate-issues
+	@echo -e "$(CYAN)Preview: Copilot-optimized issues (dry run)...$(NC)"
+	@$(SCRIPTS_DIR)/create-copilot-issues.sh --dry-run
+
+create-bulk-issues: check-prerequisites validate-issues
+	@echo -e "$(BLUE)Bulk creating issues using ChatGPT's simple approach...$(NC)"
+	@$(SCRIPTS_DIR)/bulk-create-issues.sh
 
 create-issues-force: check-prerequisites validate-issues
 	@echo -e "$(YELLOW)Force creating GitHub issues (will recreate existing)...$(NC)"
