@@ -2,7 +2,9 @@ import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
 import { RepositoryHeader } from "../RepositoryHeader";
+import { RepositoryProvider } from "@/lib/repository/RepositoryContext";
 import type { ProcessedRepository } from "@/lib/git/processor";
+import type { ReactNode } from "react";
 
 // Mock repository data
 const mockRepository: ProcessedRepository = {
@@ -28,15 +30,20 @@ const mockRepository: ProcessedRepository = {
   warnings: [],
 };
 
+// Wrapper component to provide context
+function TestWrapper({ children }: { children: ReactNode }) {
+  return <RepositoryProvider>{children}</RepositoryProvider>;
+}
+
 describe("RepositoryHeader", () => {
   test("renders null state when no repository provided", () => {
-    render(<RepositoryHeader repository={null} />);
+    render(<RepositoryHeader repository={null} />, { wrapper: TestWrapper });
     expect(screen.getByText("No Repository Loaded")).toBeInTheDocument();
     expect(screen.getByText(/Please select a repository/i)).toBeInTheDocument();
   });
 
   test("renders repository metadata correctly", () => {
-    render(<RepositoryHeader repository={mockRepository} />);
+    render(<RepositoryHeader repository={mockRepository} />, { wrapper: TestWrapper });
     
     expect(screen.getByText("test-repo")).toBeInTheDocument();
     expect(screen.getByText(/42 commits/)).toBeInTheDocument();
@@ -47,13 +54,13 @@ describe("RepositoryHeader", () => {
 
   test("renders refresh button when onRefresh provided", () => {
     const onRefresh = vi.fn();
-    render(<RepositoryHeader repository={mockRepository} onRefresh={onRefresh} />);
+    render(<RepositoryHeader repository={mockRepository} onRefresh={onRefresh} />, { wrapper: TestWrapper });
     
     expect(screen.getByRole("button", { name: /refresh repository data/i })).toBeInTheDocument();
   });
 
   test("does not render refresh button when onRefresh not provided", () => {
-    render(<RepositoryHeader repository={mockRepository} />);
+    render(<RepositoryHeader repository={mockRepository} />, { wrapper: TestWrapper });
     
     expect(screen.queryByRole("button", { name: /refresh repository data/i })).not.toBeInTheDocument();
   });
@@ -62,7 +69,7 @@ describe("RepositoryHeader", () => {
     const user = userEvent.setup();
     const onRefresh = vi.fn().mockResolvedValue(undefined);
     
-    render(<RepositoryHeader repository={mockRepository} onRefresh={onRefresh} />);
+    render(<RepositoryHeader repository={mockRepository} onRefresh={onRefresh} />, { wrapper: TestWrapper });
     
     const refreshButton = screen.getByRole("button", { name: /refresh repository data/i });
     await user.click(refreshButton);
@@ -77,7 +84,7 @@ describe("RepositoryHeader", () => {
       resolveRefresh = resolve;
     }));
     
-    render(<RepositoryHeader repository={mockRepository} onRefresh={onRefresh} />);
+    render(<RepositoryHeader repository={mockRepository} onRefresh={onRefresh} />, { wrapper: TestWrapper });
     
     const refreshButton = screen.getByRole("button", { name: /refresh repository data/i });
     
@@ -98,7 +105,7 @@ describe("RepositoryHeader", () => {
   });
 
   test("shows default branch when provided", () => {
-    render(<RepositoryHeader repository={mockRepository} />);
+    render(<RepositoryHeader repository={mockRepository} />, { wrapper: TestWrapper });
     expect(screen.getByText(/Default: main/)).toBeInTheDocument();
   });
 
@@ -111,7 +118,7 @@ describe("RepositoryHeader", () => {
       },
     };
     
-    render(<RepositoryHeader repository={repoWithoutDefault} />);
+    render(<RepositoryHeader repository={repoWithoutDefault} />, { wrapper: TestWrapper });
     expect(screen.queryByText(/Default:/)).not.toBeInTheDocument();
   });
 });
