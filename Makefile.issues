@@ -1,0 +1,327 @@
+# =============================================================================
+# Git Visualizer GitHub Issues Management Makefile
+# =============================================================================
+#
+# This Makefile provides convenient commands for managing GitHub issues
+# related to the Git Visualizer project implementation.
+#
+# Usage:
+#   make help                    # Show available commands
+#   make create-issues          # Create all GitHub issues
+#   make create-issues-dry-run  # Preview what issues would be created
+#   make list-issues            # List all issues
+#   make status                 # Show implementation status
+#   make assign-copilot         # Assign core issues to GitHub Copilot
+#   make monitor                # Monitor issue progress
+#
+# =============================================================================
+
+.PHONY: help create-issues create-issues-dry-run create-issues-force list-issues status assign-copilot monitor update-labels close-completed
+
+# Configuration
+REPO_OWNER := itsnothuy
+REPO_NAME := gitVisualizer
+SCRIPTS_DIR := ./scripts
+
+# Colors for output
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+BLUE := \033[0;34m
+CYAN := \033[0;36m
+NC := \033[0m # No Color
+
+# Default target
+help:
+	@echo ""
+	@echo -e "$(BLUE)Git Visualizer GitHub Issues Management$(NC)"
+	@echo ""
+	@echo -e "$(CYAN)Available Commands:$(NC)"
+	@echo ""
+	@echo -e "$(GREEN)Issue Creation:$(NC)"
+	@echo "  make create-issues          Create all GitHub issues and assign to Copilot"
+	@echo "  make create-issues-dry-run  Preview what issues would be created (safe)"
+	@echo "  make create-issues-force    Force recreate existing issues"
+	@echo ""
+	@echo -e "$(GREEN)Issue Management:$(NC)"
+	@echo "  make list-issues            List all project issues"
+	@echo "  make list-open              List only open issues"
+	@echo "  make list-closed            List only closed issues"
+	@echo "  make status                 Show detailed implementation status"
+	@echo "  make assign-copilot         Assign core issues to GitHub Copilot"
+	@echo "  make monitor                Monitor issue progress (real-time)"
+	@echo ""
+	@echo -e "$(GREEN)Issue Updates:$(NC)"
+	@echo "  make update-labels          Update issue labels based on priority"
+	@echo "  make close-completed        Close issues marked as completed"
+	@echo "  make add-milestone          Add issues to current milestone"
+	@echo ""
+	@echo -e "$(GREEN)Utilities:$(NC)"
+	@echo "  make check-prerequisites   Check if GitHub CLI is properly set up"
+	@echo "  make validate-issues        Validate issue markdown files"
+	@echo "  make clean                  Clean up temporary files"
+	@echo ""
+	@echo -e "$(YELLOW)Prerequisites:$(NC)"
+	@echo "  - GitHub CLI (gh) installed and authenticated"
+	@echo "  - Repository access with issues creation permissions"
+	@echo "  - GitHub Copilot available in the organization"
+	@echo ""
+	@echo -e "$(CYAN)Quick Start:$(NC)"
+	@echo "  1. make check-prerequisites"
+	@echo "  2. make create-issues-dry-run"
+	@echo "  3. make create-issues"
+	@echo "  4. make status"
+	@echo ""
+
+# =============================================================================
+# Prerequisites and Validation
+# =============================================================================
+
+check-prerequisites:
+	@echo -e "$(BLUE)Checking prerequisites...$(NC)"
+	@command -v gh >/dev/null 2>&1 || { echo -e "$(YELLOW)⚠ GitHub CLI not found. Install from: https://cli.github.com/$(NC)"; exit 1; }
+	@gh auth status >/dev/null 2>&1 || { echo -e "$(YELLOW)⚠ GitHub CLI not authenticated. Run: gh auth login$(NC)"; exit 1; }
+	@gh repo view $(REPO_OWNER)/$(REPO_NAME) >/dev/null 2>&1 || { echo -e "$(YELLOW)⚠ Cannot access repository $(REPO_OWNER)/$(REPO_NAME)$(NC)"; exit 1; }
+	@test -d github-issues || { echo -e "$(YELLOW)⚠ github-issues directory not found$(NC)"; exit 1; }
+	@echo -e "$(GREEN)✓ All prerequisites met$(NC)"
+
+validate-issues:
+	@echo -e "$(BLUE)Validating issue files...$(NC)"
+	@test -f github-issues/01-git-repository-processor.md || { echo -e "$(YELLOW)⚠ Missing: 01-git-repository-processor.md$(NC)"; exit 1; }
+	@test -f github-issues/02-repository-visualization-page.md || { echo -e "$(YELLOW)⚠ Missing: 02-repository-visualization-page.md$(NC)"; exit 1; }
+	@test -f github-issues/03-enhanced-ingestion-flow.md || { echo -e "$(YELLOW)⚠ Missing: 03-enhanced-ingestion-flow.md$(NC)"; exit 1; }
+	@test -f github-issues/04-advanced-performance-optimization.md || { echo -e "$(YELLOW)⚠ Missing: 04-advanced-performance-optimization.md$(NC)"; exit 1; }
+	@test -f github-issues/05-interactive-git-features.md || { echo -e "$(YELLOW)⚠ Missing: 05-interactive-git-features.md$(NC)"; exit 1; }
+	@echo -e "$(GREEN)✓ All issue files found$(NC)"
+
+# =============================================================================
+# Issue Creation Commands
+# =============================================================================
+
+create-issues-dry-run: check-prerequisites validate-issues
+	@echo -e "$(CYAN)Preview: Creating GitHub issues (dry run)...$(NC)"
+	@$(SCRIPTS_DIR)/create-github-issues.sh --dry-run --assignee @copilot
+
+create-issues: check-prerequisites validate-issues
+	@echo -e "$(BLUE)Creating GitHub issues and assigning to Copilot...$(NC)"
+	@$(SCRIPTS_DIR)/create-github-issues.sh --assignee @copilot \
+		--label "type:enhancement" \
+		--label "status:ready" \
+		--label "project:git-visualizer"
+
+create-issues-force: check-prerequisites validate-issues
+	@echo -e "$(YELLOW)Force creating GitHub issues (will recreate existing)...$(NC)"
+	@$(SCRIPTS_DIR)/create-github-issues.sh --force --assignee @copilot \
+		--label "type:enhancement" \
+		--label "status:ready" \
+		--label "project:git-visualizer"
+
+create-issues-with-milestone: check-prerequisites validate-issues
+	@echo -e "$(BLUE)Creating GitHub issues with milestone...$(NC)"
+	@read -p "Enter milestone number: " milestone; \
+	$(SCRIPTS_DIR)/create-github-issues.sh --assignee @copilot \
+		--milestone "$$milestone" \
+		--label "type:enhancement" \
+		--label "status:ready" \
+		--label "project:git-visualizer"
+
+# =============================================================================
+# Issue Listing Commands
+# =============================================================================
+
+list-issues: check-prerequisites
+	@echo -e "$(BLUE)Listing all project issues...$(NC)"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh list --state all
+
+list-open: check-prerequisites
+	@echo -e "$(BLUE)Listing open issues...$(NC)"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh list --state open
+
+list-closed: check-prerequisites
+	@echo -e "$(BLUE)Listing closed issues...$(NC)"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh list --state closed
+
+list-copilot: check-prerequisites
+	@echo -e "$(BLUE)Listing issues assigned to Copilot...$(NC)"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh list --assignee copilot
+
+list-unassigned: check-prerequisites
+	@echo -e "$(BLUE)Listing unassigned issues...$(NC)"
+	@gh issue list --repo $(REPO_OWNER)/$(REPO_NAME) --json number,title,assignees \
+		--jq '.[] | select(.assignees | length == 0) | "#\(.number) \(.title)"'
+
+# =============================================================================
+# Status and Monitoring Commands
+# =============================================================================
+
+status: check-prerequisites
+	@echo -e "$(BLUE)Git Visualizer Implementation Status$(NC)"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh status
+
+monitor: check-prerequisites
+	@echo -e "$(BLUE)Starting issue monitoring...$(NC)"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh monitor
+
+progress-report: check-prerequisites
+	@echo -e "$(BLUE)Generating progress report...$(NC)"
+	@echo "# Git Visualizer Implementation Progress Report" > progress-report.md
+	@echo "" >> progress-report.md
+	@echo "Generated: $(shell date)" >> progress-report.md
+	@echo "" >> progress-report.md
+	@echo "## Overall Status" >> progress-report.md
+	@gh issue list --repo $(REPO_OWNER)/$(REPO_NAME) --state all --json state \
+		--jq 'group_by(.state) | map({state: .[0].state, count: length}) | .[] | "- \(.state | ascii_upcase): \(.count) issues"' >> progress-report.md
+	@echo "" >> progress-report.md
+	@echo "## Issues by Label" >> progress-report.md
+	@gh issue list --repo $(REPO_OWNER)/$(REPO_NAME) --json labels \
+		--jq '[.[].labels[].name] | group_by(.) | map({label: .[0], count: length}) | sort_by(.count) | reverse | .[] | "- \(.label): \(.count) issues"' >> progress-report.md
+	@echo -e "$(GREEN)✓ Progress report saved to progress-report.md$(NC)"
+
+# =============================================================================
+# Issue Assignment Commands
+# =============================================================================
+
+assign-copilot: check-prerequisites
+	@echo -e "$(BLUE)Assigning core issues to GitHub Copilot...$(NC)"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh assign @copilot \
+		"Git Repository Processor" \
+		"Repository Visualization Page" \
+		"Enhanced Repository Ingestion Flow"
+
+assign-user: check-prerequisites
+	@read -p "Enter username to assign issues to: " username; \
+	read -p "Enter issue titles (comma-separated): " issues; \
+	IFS=',' read -ra ISSUE_ARRAY <<< "$$issues"; \
+	$(SCRIPTS_DIR)/manage-github-issues.sh assign "$$username" "$${ISSUE_ARRAY[@]}"
+
+# =============================================================================
+# Issue Update Commands
+# =============================================================================
+
+update-labels: check-prerequisites
+	@echo -e "$(BLUE)Updating issue labels...$(NC)"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh update --add-label "priority:high" \
+		"Git Repository Processor" "Repository Visualization Page"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh update --add-label "priority:medium" \
+		"Enhanced Repository Ingestion Flow"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh update --add-label "priority:low" \
+		"Advanced Performance Optimization" "Comprehensive Interactive Git Features"
+
+add-epic-labels: check-prerequisites
+	@echo -e "$(BLUE)Adding epic labels...$(NC)"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh update --add-label "epic:core" \
+		"Git Repository Processor" "Repository Visualization Page"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh update --add-label "epic:workflow" \
+		"Enhanced Repository Ingestion Flow"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh update --add-label "epic:performance" \
+		"Advanced Performance Optimization"
+	@$(SCRIPTS_DIR)/manage-github-issues.sh update --add-label "epic:features" \
+		"Comprehensive Interactive Git Features"
+
+add-milestone: check-prerequisites
+	@read -p "Enter milestone number: " milestone; \
+	$(SCRIPTS_DIR)/manage-github-issues.sh update --milestone "$$milestone" \
+		"Git Repository Processor" \
+		"Repository Visualization Page" \
+		"Enhanced Repository Ingestion Flow"
+
+# =============================================================================
+# Issue Closing Commands
+# =============================================================================
+
+close-completed: check-prerequisites
+	@echo -e "$(BLUE)Closing completed issues...$(NC)"
+	@read -p "Enter issue titles to close (comma-separated): " issues; \
+	IFS=',' read -ra ISSUE_ARRAY <<< "$$issues"; \
+	$(SCRIPTS_DIR)/manage-github-issues.sh close "$${ISSUE_ARRAY[@]}"
+
+close-issue: check-prerequisites
+	@read -p "Enter issue title to close: " issue; \
+	$(SCRIPTS_DIR)/manage-github-issues.sh close "$$issue"
+
+# =============================================================================
+# Comment Commands
+# =============================================================================
+
+add-progress-comment: check-prerequisites
+	@read -p "Enter issue title: " issue; \
+	read -p "Enter progress update: " comment; \
+	$(SCRIPTS_DIR)/manage-github-issues.sh comment "Progress Update: $$comment" "$$issue"
+
+add-blocker-comment: check-prerequisites
+	@read -p "Enter issue title: " issue; \
+	read -p "Enter blocker description: " blocker; \
+	$(SCRIPTS_DIR)/manage-github-issues.sh comment "🚫 **Blocker Identified**: $$blocker" "$$issue"
+
+add-completion-comment: check-prerequisites
+	@read -p "Enter issue title: " issue; \
+	$(SCRIPTS_DIR)/manage-github-issues.sh comment "✅ **Implementation Complete** - Ready for review and testing." "$$issue"
+
+# =============================================================================
+# Utility Commands
+# =============================================================================
+
+backup-issues: check-prerequisites
+	@echo -e "$(BLUE)Backing up issue data...$(NC)"
+	@mkdir -p backups
+	@gh issue list --repo $(REPO_OWNER)/$(REPO_NAME) --state all --json number,title,body,state,labels,assignees,milestone \
+		> backups/issues-backup-$(shell date +%Y%m%d-%H%M%S).json
+	@echo -e "$(GREEN)✓ Issues backed up to backups/$(NC)"
+
+clean:
+	@echo -e "$(BLUE)Cleaning up temporary files...$(NC)"
+	@rm -f progress-report.md
+	@rm -rf .tmp
+	@echo -e "$(GREEN)✓ Cleanup complete$(NC)"
+
+# =============================================================================
+# Workflow Commands
+# =============================================================================
+
+workflow-create: create-issues-dry-run create-issues status
+	@echo -e "$(GREEN)✓ Complete workflow: issues created and status displayed$(NC)"
+
+workflow-review: list-open status
+	@echo -e "$(GREEN)✓ Review workflow complete$(NC)"
+
+workflow-close: close-completed list-closed progress-report
+	@echo -e "$(GREEN)✓ Closing workflow complete$(NC)"
+
+# =============================================================================
+# Development Commands
+# =============================================================================
+
+dev-setup: check-prerequisites validate-issues
+	@echo -e "$(BLUE)Setting up development environment...$(NC)"
+	@$(SCRIPTS_DIR)/create-github-issues.sh --dry-run
+	@echo -e "$(GREEN)✓ Development setup complete$(NC)"
+
+dev-create-sample: check-prerequisites
+	@echo -e "$(BLUE)Creating sample issue for testing...$(NC)"
+	@gh issue create --repo $(REPO_OWNER)/$(REPO_NAME) \
+		--title "Test Issue - Please Delete" \
+		--body "This is a test issue created by the Makefile. Please delete after testing." \
+		--label "test"
+
+dev-clean-test-issues: check-prerequisites
+	@echo -e "$(YELLOW)Cleaning up test issues...$(NC)"
+	@gh issue list --repo $(REPO_OWNER)/$(REPO_NAME) --label "test" --json number \
+		--jq '.[].number' | xargs -I {} gh issue close {} --repo $(REPO_OWNER)/$(REPO_NAME)
+
+# =============================================================================
+# Information Commands
+# =============================================================================
+
+info:
+	@echo -e "$(CYAN)Git Visualizer Project Information$(NC)"
+	@echo "Repository: $(REPO_OWNER)/$(REPO_NAME)"
+	@echo "Scripts Directory: $(SCRIPTS_DIR)"
+	@echo "Issues Directory: github-issues/"
+	@echo ""
+	@echo -e "$(CYAN)Available Issue Files:$(NC)"
+	@ls -1 github-issues/*.md 2>/dev/null | sed 's/^/  /' || echo "  No issue files found"
+
+version:
+	@echo "Git Visualizer GitHub Issues Management v1.0.0"
+
+# Help alias
+h: help
