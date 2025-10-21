@@ -4,13 +4,17 @@ test.describe("Enhanced Ingestion Flow", () => {
   test("homepage displays repository picker", async ({ page }) => {
     await page.goto("/");
     
-    // Look for the Open Repository button on homepage
-    const openButton = page.getByRole("button", { name: /open repository/i });
-    await expect(openButton).toBeVisible();
+    // Look for the select repository button on homepage
+    const selectButton = page.getByRole("button", { name: /select repository folder/i });
+    await expect(selectButton).toBeVisible();
     
     // Verify the getting started section
     const gettingStartedTitle = page.getByRole("heading", { name: /getting started/i });
     await expect(gettingStartedTitle).toBeVisible();
+    
+    // Verify the enhanced picker's Open Repository heading
+    const openRepoHeading = page.getByRole("heading", { name: /^open repository$/i });
+    await expect(openRepoHeading).toBeVisible();
   });
 
   test("repository page displays selection UI when no repo loaded", async ({ page }) => {
@@ -24,9 +28,9 @@ test.describe("Enhanced Ingestion Flow", () => {
     const features = page.getByText(/interactive commit graph/i);
     await expect(features).toBeVisible();
     
-    // Should show repository picker
-    const openButton = page.getByRole("button", { name: /open repository/i });
-    await expect(openButton).toBeVisible();
+    // Should show repository picker button
+    const selectButton = page.getByRole("button", { name: /select repository folder/i });
+    await expect(selectButton).toBeVisible();
     
     // Should show back to home button
     const backButton = page.getByRole("button", { name: /back to home/i });
@@ -60,25 +64,25 @@ test.describe("Enhanced Ingestion Flow", () => {
     await expect(instruction).toBeVisible();
   });
 
-  test("repository picker dialog opens and closes", async ({ page }) => {
+  test("enhanced repository picker displays privacy features", async ({ page }) => {
     await page.goto("/");
     
-    const openButton = page.getByRole("button", { name: /open repository/i });
-    await openButton.click();
+    // Verify privacy messaging is present
+    const privacyMessage = page.getByText(/your repository data never leaves your device/i);
+    await expect(privacyMessage).toBeVisible();
     
-    // Dialog should be open
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
+    const readOnlyMessage = page.getByText(/read-only access/i);
+    await expect(readOnlyMessage).toBeVisible();
+  });
+
+  test("repository picker displays Open Repository card", async ({ page }) => {
+    await page.goto("/");
     
-    // Verify dialog has proper heading
-    const dialogTitle = page.getByRole("heading", { name: /open local repository/i });
-    await expect(dialogTitle).toBeVisible();
+    // Verify the card and its description
+    const openRepoHeading = page.getByRole("heading", { name: /^open repository$/i });
+    await expect(openRepoHeading).toBeVisible();
     
-    // Close with Escape key
-    await page.keyboard.press("Escape");
-    
-    // Dialog should be closed (with a small delay for animation)
-    await page.waitForTimeout(500);
-    await expect(dialog).not.toBeVisible();
+    const description = page.getByText(/select a local git repository from your file system/i);
+    await expect(description).toBeVisible();
   });
 });
