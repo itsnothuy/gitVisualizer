@@ -8,4 +8,8 @@
 export * from './types';
 export * from './RenderingModeEngine';
 export * from './PerformanceMonitor';
+export * from './CanvasVirtualization';
+export * from './CanvasAccessibilityLayer';
+export * from './CanvasRenderer';
+export * from './WebGLRenderer';
 export { QuadTree } from './utils/QuadTree';

@@ -128,7 +128,7 @@ export interface OptimizedNode extends DagNode {
   renderStyle: NodeRenderStyle;
   shouldRenderDetails: boolean;
   shouldRenderLabels: boolean;
-  bounds: Bounds;
+  bounds?: Bounds;
 }
 
 /**
