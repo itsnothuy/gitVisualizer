@@ -12,4 +12,5 @@ export * from './CanvasVirtualization';
 export * from './CanvasAccessibilityLayer';
 export * from './CanvasRenderer';
 export * from './WebGLRenderer';
+export * from './GraphRenderer';
 export { QuadTree } from './utils/QuadTree';
