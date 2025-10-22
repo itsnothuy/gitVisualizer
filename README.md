@@ -9,6 +9,11 @@ A privacy-first, local-first Git repository visualizer that renders commit graph
 ## Features
 
 - 🔒 **Privacy-First**: All processing happens in your browser - no data leaves your device
+- 🌐 **GitHub URL Integration** (NEW): 
+  - Instantly visualize any GitHub repository by pasting its URL
+  - Support for public and private repositories (with token)
+  - No local cloning required - works in all browsers
+  - Multiple URL formats supported (HTTPS, SSH, short format)
 - 📁 **Cross-Browser Repository Access**: 
   - Direct folder access via File System Access API (Chrome, Edge)
   - Folder upload fallback for Firefox and Safari
@@ -131,6 +136,19 @@ pnpm start
 ```
 
 ## Usage
+
+### Quick Start with GitHub URL (Recommended)
+
+The fastest way to visualize a repository:
+
+1. Click **"Open Repository"**
+2. Select the **"GitHub URL"** tab
+3. Paste any GitHub repository URL (e.g., `https://github.com/facebook/react`)
+4. Click **"Visualize Repository"**
+
+For private repositories, add your [GitHub Personal Access Token](https://github.com/settings/tokens) in the token field.
+
+📖 **Full documentation**: See [docs/GITHUB_URL_INTEGRATION.md](docs/GITHUB_URL_INTEGRATION.md)
 
 ### First-Time Experience
 
