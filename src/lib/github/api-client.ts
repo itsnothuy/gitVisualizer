@@ -116,6 +116,15 @@ export class GitHubApiClient {
    */
   constructor(token?: string) {
     this.token = token || process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+    
+    // Debug environment variable availability
+    console.log('🐛 GitHub API Client initialized:', {
+      hasProvidedToken: !!token,
+      hasEnvToken: !!process.env.NEXT_PUBLIC_GITHUB_TOKEN,
+      finalHasToken: !!this.token,
+      nodeEnv: process.env.NODE_ENV,
+      isClient: typeof window !== 'undefined',
+    });
   }
 
   /**
@@ -277,18 +286,34 @@ export class GitHubApiClient {
   ): Promise<GitHubGraphQLResponse<T>> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'User-Agent': 'GitVisualizer/1.0.0 (https://github.com/itsnothuy/gitVisualizer)',
     };
 
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
+    // Debug logging for production issues
+    console.log('🐛 GitHub API Debug:', {
+      endpoint: GitHubApiClient.GRAPHQL_ENDPOINT,
+      hasToken: !!this.token,
+      tokenPrefix: this.token ? this.token.substring(0, 10) + '...' : 'none',
+      environment: typeof window !== 'undefined' ? 'browser' : 'server',
+      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server',
+    });
+
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch(GitHubApiClient.GRAPHQL_ENDPOINT, {
         method: 'POST',
         headers,
         body: JSON.stringify({ query, variables }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       // Extract rate limit from headers
       const rateLimit = this.extractRateLimit(response.headers);
@@ -296,6 +321,13 @@ export class GitHubApiClient {
       if (!response.ok) {
         const text = await response.text();
         let errorMessage = `GitHub API error: ${response.statusText}`;
+
+        console.error('🚨 GitHub API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: text,
+        });
 
         try {
           const errorData = JSON.parse(text);
@@ -318,6 +350,12 @@ export class GitHubApiClient {
 
       return data;
     } catch (error) {
+      console.error('🚨 GitHub API Network Error:', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
+      });
+
       if (error instanceof GitHubApiError) {
         throw error;
       }
