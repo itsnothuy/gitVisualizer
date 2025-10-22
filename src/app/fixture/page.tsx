@@ -46,13 +46,21 @@ export default function FixturePage({
       setIsLoading(true);
       try {
         // Build edges from parent relationships
+        const nodeIds = new Set(nodes.map(n => n.id));
         const edges = nodes.flatMap((node) =>
           node.parents.map((parentId, idx) => ({
             id: `${node.id}-${parentId}-${idx}`,
             source: node.id,
             target: parentId,
           }))
-        );
+        ).filter((edge) => {
+          // Validate that both source and target exist
+          const isValid = nodeIds.has(edge.source) && nodeIds.has(edge.target);
+          if (!isValid) {
+            console.warn(`Invalid edge in fixture: ${edge.id} - source: ${nodeIds.has(edge.source)}, target: ${nodeIds.has(edge.target)}`);
+          }
+          return isValid;
+        });
 
         // Compute layout
         const result = await elkLayout(nodes, edges, {

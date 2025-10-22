@@ -177,6 +177,18 @@ export async function elkLayout(
   const startTime = performance.now();
   const elkOptions = toElkOptions(options);
   const enableCaching = options?.enableCaching !== false; // default true
+  
+  // Validate graph integrity before layout
+  const nodeIds = new Set(nodes.map(n => n.id));
+  const invalidEdges = edges.filter(edge => 
+    !nodeIds.has(edge.source) || !nodeIds.has(edge.target)
+  );
+  
+  if (invalidEdges.length > 0) {
+    console.error('Invalid edges found in graph:', invalidEdges);
+    throw new Error(`Graph contains ${invalidEdges.length} invalid edge(s) referencing non-existent nodes`);
+  }
+  
   // Use worker if explicitly requested OR if node count > threshold
   const useWorker = 
     options?.useWorker === true || 

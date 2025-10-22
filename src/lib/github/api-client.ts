@@ -115,7 +115,7 @@ export class GitHubApiClient {
    * @param token Optional GitHub personal access token for private repos and higher rate limits
    */
   constructor(token?: string) {
-    this.token = token;
+    this.token = token || process.env.NEXT_PUBLIC_GITHUB_TOKEN;
   }
 
   /**
@@ -136,6 +136,14 @@ export class GitHubApiClient {
     } = {}
   ): Promise<GitHubRepository> {
     const { maxCommits = 100, after = null } = options;
+
+    // For requests larger than 100, we need to paginate
+    if (maxCommits > 100) {
+      return this.getRepositoryWithPagination(owner, name, maxCommits);
+    }
+
+    // Ensure we don't exceed the GitHub API limit of 100 records per request
+    const requestLimit = Math.min(maxCommits, 100);
 
     const query = `
       query GetRepository($owner: String!, $name: String!, $maxCommits: Int!, $after: String) {
@@ -197,7 +205,7 @@ export class GitHubApiClient {
     const variables = {
       owner,
       name,
-      maxCommits,
+      maxCommits: requestLimit,
       after,
     };
 
@@ -288,7 +296,7 @@ export class GitHubApiClient {
       if (!response.ok) {
         const text = await response.text();
         let errorMessage = `GitHub API error: ${response.statusText}`;
-        
+
         try {
           const errorData = JSON.parse(text);
           if (errorData.message) {
@@ -320,6 +328,68 @@ export class GitHubApiClient {
 
       throw new GitHubApiError('Unknown error occurred');
     }
+  }
+
+  /**
+   * Get repository data with pagination for large commit counts
+   * 
+   * @param owner Repository owner
+   * @param name Repository name
+   * @param maxCommits Total commits to fetch
+   * @returns Repository data with paginated commits
+   */
+  private async getRepositoryWithPagination(
+    owner: string,
+    name: string,
+    maxCommits: number
+  ): Promise<GitHubRepository> {
+    let allCommits: GitHubCommit[] = [];
+    let after: string | null = null;
+    let hasNextPage = true;
+    let totalFetched = 0;
+
+    // Get the base repository data with first page of commits
+    const baseRepo = await this.getRepository(owner, name, { maxCommits: 100, after: null });
+    
+    allCommits = baseRepo.defaultBranchRef.target.history.nodes;
+    totalFetched = allCommits.length;
+    hasNextPage = baseRepo.defaultBranchRef.target.history.pageInfo.hasNextPage;
+    after = baseRepo.defaultBranchRef.target.history.pageInfo.endCursor;
+
+    // Fetch additional pages if needed
+    while (hasNextPage && totalFetched < maxCommits) {
+      const remainingCommits = maxCommits - totalFetched;
+      const pageSize = Math.min(remainingCommits, 100);
+      
+      const pageRepo = await this.getRepository(owner, name, { 
+        maxCommits: pageSize, 
+        after 
+      });
+      
+      allCommits.push(...pageRepo.defaultBranchRef.target.history.nodes);
+      totalFetched += pageRepo.defaultBranchRef.target.history.nodes.length;
+      hasNextPage = pageRepo.defaultBranchRef.target.history.pageInfo.hasNextPage;
+      after = pageRepo.defaultBranchRef.target.history.pageInfo.endCursor;
+    }
+
+    // Return the base repository with all collected commits
+    return {
+      ...baseRepo,
+      defaultBranchRef: {
+        ...baseRepo.defaultBranchRef,
+        target: {
+          ...baseRepo.defaultBranchRef.target,
+          history: {
+            ...baseRepo.defaultBranchRef.target.history,
+            nodes: allCommits,
+            pageInfo: {
+              hasNextPage,
+              endCursor: after
+            }
+          }
+        }
+      }
+    };
   }
 
   /**

@@ -53,7 +53,7 @@ export async function processGitHubRepository(
   options: GitHubProcessorOptions = {}
 ): Promise<ProcessedRepository> {
   const startTime = performance.now();
-  const { maxCommits = 1000, onProgress, token, signal } = options;
+  const { maxCommits = 100, onProgress, token, signal } = options;
 
   const warnings: RepositoryWarning[] = [];
 
@@ -175,13 +175,27 @@ export async function processGitHubRepository(
 
     const buildStart = performance.now();
 
-    // Build DAG nodes
-    const dagNodes: DagNode[] = commits.map(commit => ({
-      id: commit.id,
-      title: commit.message.split('\n')[0].substring(0, 72), // First line, max 72 chars
-      ts: commit.timestamp,
-      parents: commit.parents,
-    }));
+    // Create a set of all valid commit IDs for validation
+    const validCommitIds = new Set(commits.map(c => c.id));
+
+    // Build DAG nodes with validated parent references
+    const dagNodes: DagNode[] = commits.map(commit => {
+      // Filter out any parent references that don't exist in our commit set
+      const validParents = commit.parents.filter(parentId => {
+        const isValid = validCommitIds.has(parentId);
+        if (!isValid) {
+          console.warn(`Removing invalid parent reference: commit ${commit.id} -> parent ${parentId} (not in fetched data)`);
+        }
+        return isValid;
+      });
+
+      return {
+        id: commit.id,
+        title: commit.message.split('\n')[0].substring(0, 72), // First line, max 72 chars
+        ts: commit.timestamp,
+        parents: validParents,
+      };
+    });
 
     const parseMs = buildStart - parseStart;
     const buildMs = Date.now() - buildStart;
