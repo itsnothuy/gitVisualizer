@@ -3,8 +3,11 @@
 /**
  * Repository Picker Component
  * 
- * Provides UI for selecting local repositories via File System Access API
- * with clear permission prompts and error handling.
+ * Provides UI for selecting repositories via:
+ * - GitHub URL input (primary method)
+ * - Local folder selection via File System Access API
+ * 
+ * Privacy-first: Tokens stored in memory only, local data never uploaded.
  */
 
 import { Button } from "@/components/ui/button";
@@ -16,21 +19,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { PickRepositoryResult } from "@/lib/git/local";
 import { isFileSystemAccessSupported, isGitRepository, pickLocalRepoDir } from "@/lib/git/local";
+import { GitHubUrlInput } from "./GitHubUrlInput";
 import { AlertCircleIcon, CheckCircleIcon, FolderOpenIcon } from "lucide-react";
 import * as React from "react";
 
 interface RepositoryPickerProps {
   onRepositorySelected?: (handle: FileSystemDirectoryHandle) => void;
+  onGitHubRepositoryLoaded?: () => void;
   onError?: (error: string) => void;
 }
 
-export function RepositoryPicker({ onRepositorySelected, onError }: RepositoryPickerProps) {
+export function RepositoryPicker({ onRepositorySelected, onGitHubRepositoryLoaded, onError }: RepositoryPickerProps) {
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [result, setResult] = React.useState<PickRepositoryResult | null>(null);
   const [validating, setValidating] = React.useState(false);
+  const [mode, setMode] = React.useState<'url' | 'local'>('url');
 
   const isSupported = React.useMemo(() => isFileSystemAccessSupported(), []);
 
@@ -90,95 +97,113 @@ export function RepositoryPicker({ onRepositorySelected, onError }: RepositoryPi
     }
   };
 
+  const handleGitHubRepositoryLoaded = () => {
+    onGitHubRepositoryLoaded?.();
+    setOpen(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           size="lg"
-          disabled={!isSupported}
-          aria-label="Open local repository"
+          aria-label="Open repository"
           data-testid="open-repository"
         >
           <FolderOpenIcon className="mr-2 h-5 w-5" aria-hidden="true" />
           Open Repository
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Open Local Repository</DialogTitle>
+          <DialogTitle>Open Git Repository</DialogTitle>
           <DialogDescription>
-            Select a Git repository from your local file system. Your repository data stays on your device and is never uploaded.
+            Visualize any Git repository by pasting its GitHub URL or selecting a local folder.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {!isSupported && (
-            <div className="flex items-start gap-3 p-4 bg-yellow-50 dark:bg-yellow-950 rounded-md" role="alert">
-              <AlertCircleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" aria-hidden="true" />
-              <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                <p className="font-semibold mb-1">Browser Not Supported</p>
-                <p>
-                  The File System Access API is not available in your browser.
-                  Please use Chrome 86+, Edge 86+, or another compatible browser.
+        <Tabs value={mode} onValueChange={(v) => setMode(v as 'url' | 'local')} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="url">GitHub URL</TabsTrigger>
+            <TabsTrigger value="local">Local Folder</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="url" className="space-y-4">
+            <GitHubUrlInput
+              onRepositoryLoaded={handleGitHubRepositoryLoaded}
+              onError={onError}
+            />
+          </TabsContent>
+
+          <TabsContent value="local" className="space-y-4">
+            {!isSupported && (
+              <div className="flex items-start gap-3 p-4 bg-yellow-50 dark:bg-yellow-950 rounded-md" role="alert">
+                <AlertCircleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" aria-hidden="true" />
+                <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <p className="font-semibold mb-1">Browser Not Supported</p>
+                  <p>
+                    The File System Access API is not available in your browser.
+                    Please use Chrome 86+, Edge 86+, or another compatible browser.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {result?.error && (
+              <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950 rounded-md" role="alert">
+                <AlertCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" aria-hidden="true" />
+                <div className="text-sm text-red-800 dark:text-red-200">
+                  <p className="font-semibold mb-1">Error</p>
+                  <p>{result.error.message}</p>
+                </div>
+              </div>
+            )}
+
+            {validating && (
+              <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-950 rounded-md">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" aria-hidden="true" />
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  Validating repository...
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <Button
+                onClick={handlePickDirectory}
+                disabled={!isSupported || loading || validating}
+                className="w-full"
+              >
+                {loading ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
+                    Selecting...
+                  </>
+                ) : (
+                  <>
+                    <FolderOpenIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                    Select Repository Folder
+                  </>
+                )}
+              </Button>
+
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p className="flex items-start gap-1">
+                  <CheckCircleIcon className="h-3 w-3 mt-0.5 shrink-0" aria-hidden="true" />
+                  <span>Your repository data never leaves your device</span>
+                </p>
+                <p className="flex items-start gap-1">
+                  <CheckCircleIcon className="h-3 w-3 mt-0.5 shrink-0" aria-hidden="true" />
+                  <span>Read-only access - we won&apos;t modify your files</span>
+                </p>
+                <p className="flex items-start gap-1">
+                  <CheckCircleIcon className="h-3 w-3 mt-0.5 shrink-0" aria-hidden="true" />
+                  <span>You can disconnect at any time</span>
                 </p>
               </div>
             </div>
-          )}
-
-          {result?.error && (
-            <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950 rounded-md" role="alert">
-              <AlertCircleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" aria-hidden="true" />
-              <div className="text-sm text-red-800 dark:text-red-200">
-                <p className="font-semibold mb-1">Error</p>
-                <p>{result.error.message}</p>
-              </div>
-            </div>
-          )}
-
-          {validating && (
-            <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-950 rounded-md">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" aria-hidden="true" />
-              <p className="text-sm text-blue-800 dark:text-blue-200">
-                Validating repository...
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <Button
-              onClick={handlePickDirectory}
-              disabled={!isSupported || loading || validating}
-              className="w-full"
-            >
-              {loading ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />
-                  Selecting...
-                </>
-              ) : (
-                <>
-                  <FolderOpenIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Select Repository Folder
-                </>
-              )}
-            </Button>
-
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p className="flex items-start gap-1">
-                <CheckCircleIcon className="h-3 w-3 mt-0.5 shrink-0" aria-hidden="true" />
-                <span>Your repository data never leaves your device</span>
-              </p>
-              <p className="flex items-start gap-1">
-                <CheckCircleIcon className="h-3 w-3 mt-0.5 shrink-0" aria-hidden="true" />
-                <span>Read-only access - we won&apos;t modify your files</span>
-              </p>
-              <p className="flex items-start gap-1">
-                <CheckCircleIcon className="h-3 w-3 mt-0.5 shrink-0" aria-hidden="true" />
-                <span>You can disconnect at any time</span>
-              </p>
-            </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

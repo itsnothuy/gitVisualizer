@@ -184,7 +184,7 @@ export async function processGitHubRepository(
     }));
 
     const parseMs = buildStart - parseStart;
-    const buildMs = performance.now() - buildStart;
+    const buildMs = Date.now() - buildStart;
 
     // Repository metadata
     const metadata: RepositoryMetadata = {
@@ -197,7 +197,7 @@ export async function processGitHubRepository(
     };
 
     // Performance metrics
-    const performance: PerformanceMetrics = {
+    const performanceMetrics: PerformanceMetrics = {
       totalMs: Date.now() - startTime,
       parseMs,
       buildMs,
@@ -222,7 +222,7 @@ export async function processGitHubRepository(
         branches,
         tags,
       },
-      performance,
+      performance: performanceMetrics,
       warnings,
     };
   } catch (error) {
