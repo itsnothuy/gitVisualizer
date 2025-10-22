@@ -35,6 +35,7 @@ export default function RepositoryPage() {
     handle,
     loadRepository,
     clearError,
+    repositorySource,
   } = useRepository();
   const [selectedCommit, setSelectedCommit] = React.useState<GitCommit | null>(null);
 
@@ -48,15 +49,22 @@ export default function RepositoryPage() {
     }
   }, [loadRepository]);
 
+  // Handle GitHub repository loaded (already processed)
+  const handleGitHubRepositoryLoaded = React.useCallback(() => {
+    // Repository is already set in context by GitHubUrlInput component
+    // Nothing to do here
+  }, []);
+
   const handleError = React.useCallback((errorMessage: string) => {
     console.error("Repository selection error:", errorMessage);
   }, []);
 
   const handleRefresh = React.useCallback(async () => {
-    if (handle) {
+    // Only support refresh for local repositories
+    if (handle && repositorySource === 'local') {
       await loadRepository(handle);
     }
-  }, [handle, loadRepository]);
+  }, [handle, loadRepository, repositorySource]);
 
   const handleNodeSelect = React.useCallback((commit: GitCommit) => {
     setSelectedCommit(commit);
@@ -120,6 +128,7 @@ export default function RepositoryPage() {
                 <div className="flex gap-2">
                   <RepositoryPicker
                     onRepositorySelected={handleRepositorySelected}
+                    onGitHubRepositoryLoaded={handleGitHubRepositoryLoaded}
                     onError={handleError}
                   />
                   <Button
