@@ -80,11 +80,10 @@ jobs:
         run: pnpm start &
       
       - name: Wait for server
-        run: npx wait-on http://localhost:3000
+        run: npx wait-on http://localhost:3000 --timeout 60000
 
       - name: Run LGB golden tests
         run: pnpm exec playwright test e2e/lgb-goldens.spec.ts --project=chromium
-        continue-on-error: true
 
       - name: Ensure goldens directory exists
         run: mkdir -p fixtures/lgb/goldens/

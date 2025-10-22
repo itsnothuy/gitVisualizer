@@ -1,12 +1,12 @@
-import type { ElkNode, ElkExtendedEdge } from "elkjs";
+import { wrap } from "comlink";
+import type { ElkExtendedEdge, ElkNode } from "elkjs";
 import {
   cacheLayout,
   getCachedLayout,
   type LayoutCacheKey,
 } from "../../lib/cache/layout-cache";
-import { wrap } from "comlink";
-import type { LayoutWorkerApi } from "../../workers/layout.worker";
 import { DEFAULT_THRESHOLDS } from "../../lib/perf-config";
+import type { LayoutWorkerApi } from "../../workers/layout.worker";
 
 // Threshold for using Web Worker (nodes count)
 // Can be configured via NEXT_PUBLIC_WORKER_THRESHOLD env var
@@ -177,21 +177,21 @@ export async function elkLayout(
   const startTime = performance.now();
   const elkOptions = toElkOptions(options);
   const enableCaching = options?.enableCaching !== false; // default true
-  
+
   // Validate graph integrity before layout
   const nodeIds = new Set(nodes.map(n => n.id));
-  const invalidEdges = edges.filter(edge => 
+  const invalidEdges = edges.filter(edge =>
     !nodeIds.has(edge.source) || !nodeIds.has(edge.target)
   );
-  
+
   if (invalidEdges.length > 0) {
     console.error('Invalid edges found in graph:', invalidEdges);
     throw new Error(`Graph contains ${invalidEdges.length} invalid edge(s) referencing non-existent nodes`);
   }
-  
+
   // Use worker if explicitly requested OR if node count > threshold
-  const useWorker = 
-    options?.useWorker === true || 
+  const useWorker =
+    options?.useWorker === true ||
     (options?.useWorker !== false && nodes.length > WORKER_THRESHOLD);
 
   // Generate cache key

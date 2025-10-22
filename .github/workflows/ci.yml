@@ -51,3 +51,5 @@ jobs:
       
       - name: E2E tests
         run: pnpm exec playwright test --project=chromium --reporter=line
+        env:
+          CI: true

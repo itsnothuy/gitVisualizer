@@ -1,12 +1,12 @@
 "use client";
 
-import * as React from "react";
-import { GraphSVG } from "@/viz/svg/Graph";
-import { elkLayout, type DagNode } from "@/viz/elk/layout";
 import type { GitCommit } from "@/cli/types";
 import type { ProcessedRepository } from "@/lib/git/processor";
 import { useTheme } from "@/lib/theme/use-theme";
+import { elkLayout, type DagNode } from "@/viz/elk/layout";
 import { defaultSkin, lgbSkin } from "@/viz/skins/lgb/skin";
+import { GraphSVG } from "@/viz/svg/Graph";
+import * as React from "react";
 
 interface RepositoryVisualizationProps {
   repository: ProcessedRepository;
@@ -19,9 +19,9 @@ interface RepositoryVisualizationProps {
  * Renders an interactive DAG visualization of a Git repository.
  * Integrates with ELK layout engine and GraphSVG renderer.
  */
-export function RepositoryVisualization({ 
-  repository, 
-  onNodeSelect 
+export function RepositoryVisualization({
+  repository,
+  onNodeSelect
 }: RepositoryVisualizationProps) {
   const [layoutData, setLayoutData] = React.useState<{
     positions: { [id: string]: { x: number; y: number } };

@@ -350,7 +350,7 @@ export class GitHubApiClient {
 
     // Get the base repository data with first page of commits
     const baseRepo = await this.getRepository(owner, name, { maxCommits: 100, after: null });
-    
+
     allCommits = baseRepo.defaultBranchRef.target.history.nodes;
     totalFetched = allCommits.length;
     hasNextPage = baseRepo.defaultBranchRef.target.history.pageInfo.hasNextPage;
@@ -360,12 +360,12 @@ export class GitHubApiClient {
     while (hasNextPage && totalFetched < maxCommits) {
       const remainingCommits = maxCommits - totalFetched;
       const pageSize = Math.min(remainingCommits, 100);
-      
-      const pageRepo = await this.getRepository(owner, name, { 
-        maxCommits: pageSize, 
-        after 
+
+      const pageRepo = await this.getRepository(owner, name, {
+        maxCommits: pageSize,
+        after
       });
-      
+
       allCommits.push(...pageRepo.defaultBranchRef.target.history.nodes);
       totalFetched += pageRepo.defaultBranchRef.target.history.nodes.length;
       hasNextPage = pageRepo.defaultBranchRef.target.history.pageInfo.hasNextPage;

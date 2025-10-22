@@ -5,10 +5,10 @@
  * Provides progress feedback and handles pagination for large repositories.
  */
 
-import type { GitCommit, GitBranch, GitTag } from '@/cli/types';
+import type { GitBranch, GitCommit, GitTag } from '@/cli/types';
 import type { DagNode } from '@/viz/elk/layout';
-import type { ProcessProgress, ProcessedRepository, RepositoryMetadata, PerformanceMetrics, RepositoryWarning } from '../git/processor';
-import { GitHubApiClient, type GitHubRepository, type GitHubCommit, GitHubApiError } from './api-client';
+import type { PerformanceMetrics, ProcessProgress, ProcessedRepository, RepositoryMetadata, RepositoryWarning } from '../git/processor';
+import { GitHubApiClient, GitHubApiError, type GitHubCommit, type GitHubRepository } from './api-client';
 
 /**
  * Options for processing a GitHub repository
@@ -263,9 +263,9 @@ export async function fetchMoreCommits(
   options: GitHubProcessorOptions = {}
 ): Promise<GitCommit[]> {
   const { maxCommits = 100, token } = options;
-  
+
   const client = new GitHubApiClient(token);
   const repoData = await client.getRepository(owner, name, { maxCommits, after });
-  
+
   return repoData.defaultBranchRef.target.history.nodes.map(convertGitHubCommit);
 }

@@ -1,12 +1,12 @@
 "use client";
 
-import * as React from "react";
-import { GraphSVG } from "@/viz/svg/Graph";
-import { elkLayout, type DagNode } from "@/viz/elk/layout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTheme } from "@/lib/theme/use-theme";
+import { elkLayout, type DagNode } from "@/viz/elk/layout";
 import { defaultSkin, lgbSkin } from "@/viz/skins/lgb/skin";
+import { GraphSVG } from "@/viz/svg/Graph";
+import * as React from "react";
 
 /**
  * Generate sample commit data for demo
