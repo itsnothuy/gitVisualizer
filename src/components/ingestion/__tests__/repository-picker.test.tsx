@@ -7,10 +7,10 @@
  * - Error state display
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { RepositoryPicker } from "../repository-picker";
 import * as local from "@/lib/git/local";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { RepositoryPicker } from "../repository-picker";
 
 // Mock the local git module
 vi.mock("@/lib/git/local", () => ({
@@ -29,19 +29,19 @@ describe("RepositoryPicker", () => {
 
     render(<RepositoryPicker />);
 
-    const button = screen.getByRole("button", { name: /open local repository/i });
+    const button = screen.getByRole("button", { name: /open repository/i });
     expect(button).toBeInTheDocument();
     expect(button).toHaveAttribute("data-testid", "open-repository");
     expect(button).not.toBeDisabled();
   });
 
-  it("should disable button when File System Access API is not supported", () => {
+  it("should always enable button regardless of File System Access API support", () => {
     vi.mocked(local.isFileSystemAccessSupported).mockReturnValue(false);
 
     render(<RepositoryPicker />);
 
-    const button = screen.getByRole("button", { name: /open local repository/i });
-    expect(button).toBeDisabled();
+    const button = screen.getByRole("button", { name: /open repository/i });
+    expect(button).not.toBeDisabled(); // Button should always be enabled for GitHub URL input
   });
 
   it("should contain folder icon in button", () => {
@@ -49,7 +49,7 @@ describe("RepositoryPicker", () => {
 
     render(<RepositoryPicker />);
 
-    const button = screen.getByRole("button", { name: /open local repository/i });
+    const button = screen.getByRole("button", { name: /open repository/i });
     expect(button.textContent).toContain("Open Repository");
   });
 
@@ -58,7 +58,7 @@ describe("RepositoryPicker", () => {
 
     render(<RepositoryPicker />);
 
-    const button = screen.getByLabelText(/open local repository/i);
+    const button = screen.getByLabelText(/open repository/i);
     expect(button).toBeInTheDocument();
   });
 

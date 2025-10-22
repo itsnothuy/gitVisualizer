@@ -1,6 +1,10 @@
 name: CI
 on: [push, pull_request]
 
+env:
+  NEXT_PUBLIC_ENABLE_OVERLAYS: true
+  NEXT_PUBLIC_ENABLE_GITHUB_OVERLAY: true
+
 jobs:
   test:
     runs-on: ubuntu-latest

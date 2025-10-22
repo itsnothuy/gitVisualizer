@@ -2,9 +2,9 @@
  * Tests for AdvancedDiffViewer component
  */
 
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { AdvancedDiffViewer, type FileDiff } from '../AdvancedDiffViewer';
 
 // Helper to create a test diff
@@ -69,12 +69,12 @@ describe('AdvancedDiffViewer', () => {
     render(<AdvancedDiffViewer diff={diff} />);
 
     const statsText = screen.getByText((content, element) => {
-      return element?.className?.includes('text-green-600') && content.includes('+2');
+      return Boolean(element?.className?.includes('text-green-600') && content.includes('+2'));
     });
     expect(statsText).toBeInTheDocument();
 
     const deletionsText = screen.getByText((content, element) => {
-      return element?.className?.includes('text-red-600') && content.includes('-1');
+      return Boolean(element?.className?.includes('text-red-600') && content.includes('-1'));
     });
     expect(deletionsText).toBeInTheDocument();
   });

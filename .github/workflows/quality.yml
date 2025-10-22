@@ -6,6 +6,10 @@ on:
   push:
     branches: [main]
 
+env:
+  NEXT_PUBLIC_ENABLE_OVERLAYS: true
+  NEXT_PUBLIC_ENABLE_GITHUB_OVERLAY: true
+
 jobs:
   lint:
     name: Lint
