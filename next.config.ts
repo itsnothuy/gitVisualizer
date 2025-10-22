@@ -37,9 +37,11 @@ const nextConfig: NextConfig = {
   async headers() {
     // Check if overlays are enabled to conditionally allow external API connections
     const overlaysEnabled = process.env.NEXT_PUBLIC_ENABLE_OVERLAYS === 'true';
+    const githubOverlayEnabled = process.env.NEXT_PUBLIC_ENABLE_GITHUB_OVERLAY === 'true';
 
     // Build connect-src directive: always allow self, conditionally add overlay APIs
-    const connectSrc = overlaysEnabled
+    // Allow GitHub API if either general overlays or specifically GitHub overlay is enabled
+    const connectSrc = (overlaysEnabled || githubOverlayEnabled)
       ? "'self' https://api.github.com https://github.com https://gitlab.com"
       : "'self'";
 
