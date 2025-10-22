@@ -153,6 +153,8 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
     dirHandle: FileSystemDirectoryHandle,
     options: LoadRepositoryOptions = {}
   ): Promise<void> => {
+    console.log("📁 Repository Context: Starting repository load...", dirHandle.name);
+    
     // Clear previous state
     setError(null);
     setProgress(null);
@@ -161,17 +163,24 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
     setHandle(dirHandle);
 
     try {
+      console.log("📁 Repository Context: Setting up progress callback...");
+      
       // Progress callback
       const onProgress = (progressInfo: ProcessProgress) => {
+        console.log("📁 Repository Context: Progress update:", progressInfo);
         setProgress(progressInfo);
       };
 
+      console.log("📁 Repository Context: Starting processLocalRepository...");
+      
       // Process the repository
       const processed = await processLocalRepository(dirHandle, {
         maxCommits: options.maxCommits,
         detectLFS: options.detectLFS ?? true,
         onProgress,
       });
+
+      console.log("📁 Repository Context: Processing completed successfully:", processed);
 
       // Update state with processed repository
       setCurrentRepository(processed);
@@ -181,9 +190,14 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
         message: "Repository loaded successfully",
       });
       
+      console.log("📁 Repository Context: Adding to recent repositories...");
       // Add to recent repositories
       addToRecent(processed, dirHandle);
+      
+      console.log("📁 Repository Context: Repository load completed successfully!");
     } catch (err) {
+      console.error("📁 Repository Context: Error during repository load:", err);
+      
       // Handle errors
       const errorMessage = err instanceof Error ? err.message : "Failed to load repository";
       setError(errorMessage);

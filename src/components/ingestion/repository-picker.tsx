@@ -35,25 +35,32 @@ export function RepositoryPicker({ onRepositorySelected, onError }: RepositoryPi
   const isSupported = React.useMemo(() => isFileSystemAccessSupported(), []);
 
   const handlePickDirectory = async () => {
+    console.log("🔍 Repository picker: Starting directory selection...");
     setLoading(true);
     setResult(null);
     setValidating(false);
 
     try {
+      console.log("🔍 Repository picker: Calling pickLocalRepoDir...");
       const pickResult = await pickLocalRepoDir();
+      console.log("🔍 Repository picker: Pick result:", pickResult);
       setResult(pickResult);
 
       if (pickResult.handle) {
+        console.log("🔍 Repository picker: Handle received, validating Git repository...");
         // Validate that it's a Git repository
         setValidating(true);
         const isValid = await isGitRepository(pickResult.handle);
+        console.log("🔍 Repository picker: Git validation result:", isValid);
         setValidating(false);
 
         if (isValid) {
+          console.log("🔍 Repository picker: Repository is valid, calling onRepositorySelected...");
           onRepositorySelected?.(pickResult.handle);
           setOpen(false);
         } else {
           const errorMsg = "The selected directory is not a valid Git repository. Please select a directory containing a .git folder.";
+          console.log("🔍 Repository picker: Repository is invalid:", errorMsg);
           setResult({
             handle: null,
             error: {
@@ -64,9 +71,11 @@ export function RepositoryPicker({ onRepositorySelected, onError }: RepositoryPi
           onError?.(errorMsg);
         }
       } else if (pickResult.error) {
+        console.log("🔍 Repository picker: Pick result has error:", pickResult.error);
         onError?.(pickResult.error.message);
       }
     } catch (error) {
+      console.log("🔍 Repository picker: Caught error:", error);
       const errorMsg = error instanceof Error ? error.message : "An unexpected error occurred.";
       setResult({
         handle: null,

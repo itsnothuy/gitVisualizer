@@ -11,7 +11,13 @@
  * @returns true if showDirectoryPicker is available
  */
 export function isFileSystemAccessSupported(): boolean {
-  return typeof window !== "undefined" && "showDirectoryPicker" in window;
+  const isSupported = typeof window !== "undefined" && "showDirectoryPicker" in window;
+  console.log("🔧 isFileSystemAccessSupported:", isSupported, {
+    hasWindow: typeof window !== "undefined",
+    hasShowDirectoryPicker: typeof window !== "undefined" && "showDirectoryPicker" in window,
+    userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "N/A"
+  });
+  return isSupported;
 }
 
 /**
@@ -52,8 +58,11 @@ export interface PickRepositoryResult {
  * ```
  */
 export async function pickLocalRepoDir(): Promise<PickRepositoryResult> {
+  console.log("🔧 pickLocalRepoDir: Starting directory picker...");
+  
   // Check browser support
   if (!isFileSystemAccessSupported()) {
+    console.log("🔧 pickLocalRepoDir: File System Access API not supported");
     return {
       handle: null,
       error: {
@@ -63,6 +72,8 @@ export async function pickLocalRepoDir(): Promise<PickRepositoryResult> {
     };
   }
 
+  console.log("🔧 pickLocalRepoDir: File System Access API is supported, showing directory picker...");
+
   try {
     // Prompt user with directory picker
     // Note: Permission is requested at picker invocation, not persisted
@@ -71,12 +82,16 @@ export async function pickLocalRepoDir(): Promise<PickRepositoryResult> {
       startIn: "documents", // Suggest starting location
     });
     
+    console.log("🔧 pickLocalRepoDir: Directory picker successful, got handle:", handle.name);
     return { handle };
   } catch (error) {
+    console.log("🔧 pickLocalRepoDir: Directory picker failed with error:", error);
+    
     // Handle various error cases
     if (error instanceof Error) {
       // User cancelled the picker
       if (error.name === "AbortError") {
+        console.log("🔧 pickLocalRepoDir: User cancelled directory selection");
         return {
           handle: null,
           error: {
@@ -88,6 +103,7 @@ export async function pickLocalRepoDir(): Promise<PickRepositoryResult> {
       
       // Permission denied
       if (error.name === "NotAllowedError" || error.name === "SecurityError") {
+        console.log("🔧 pickLocalRepoDir: Permission denied:", error.name);
         return {
           handle: null,
           error: {

@@ -40,9 +40,64 @@ gh auth status
 ./gh-issues.sh bulk
 ```
 
-#### **Option C: Manual GitHub CLI Commands (ChatGPT's exact commands)**
+#### **Option C: Enhanced Manual Commands (Production-Ready)**
 ```bash
-# Create each issue individually with ChatGPT's exact syntax
+# ENHANCED VERSION - Better for Copilot understanding and project management
+
+# Issue #1: Git Repository Processor (Critical Path)
+gh issue create \
+  --repo "itsnothuy/gitVisualizer" \
+  --title "Git Repository Processor" \
+  --body-file "github-issues/01-git-repository-processor.md" \
+  --label "area:ingestion,priority:high,type:feature,epic:core,status:ready,complexity:high" \
+  --assignee "@copilot" \
+  --milestone "1" \
+  --project "1"
+
+# Issue #2: Repository Visualization Page (Depends on #1)
+gh issue create \
+  --repo "itsnothuy/gitVisualizer" \
+  --title "Repository Visualization Page" \
+  --body-file "github-issues/02-repository-visualization-page.md" \
+  --label "area:viz,area:ui,priority:high,type:feature,epic:core,status:ready,complexity:high" \
+  --assignee "@copilot" \
+  --milestone "1" \
+  --project "1"
+
+# Issue #3: Enhanced Ingestion Flow (Depends on #1, #2)
+gh issue create \
+  --repo "itsnothuy/gitVisualizer" \
+  --title "Enhanced Ingestion Flow" \
+  --body-file "github-issues/03-enhanced-ingestion-flow.md" \
+  --label "area:ingestion,area:ux,priority:medium,type:feature,epic:workflow,status:ready,complexity:medium" \
+  --assignee "@copilot" \
+  --milestone "1" \
+  --project "1"
+
+# Issue #4: Advanced Performance Optimization (Advanced Feature)
+gh issue create \
+  --repo "itsnothuy/gitVisualizer" \
+  --title "Advanced Performance Optimization" \
+  --body-file "github-issues/04-advanced-performance-optimization.md" \
+  --label "area:perf,area:rendering,priority:low,type:feature,epic:performance,status:ready,complexity:high" \
+  --assignee "@copilot" \
+  --milestone "2" \
+  --project "1"
+
+# Issue #5: Interactive Git Features (Advanced Feature)
+gh issue create \
+  --repo "itsnothuy/gitVisualizer" \
+  --title "Interactive Git Features" \
+  --body-file "github-issues/05-interactive-git-features.md" \
+  --label "area:commands,area:interaction,priority:low,type:feature,epic:features,status:ready,complexity:medium" \
+  --assignee "@copilot" \
+  --milestone "2" \
+  --project "1"
+```
+
+#### **Option D: ChatGPT's Original Commands (Simple)**
+```bash
+# ChatGPT's minimal version (still works but less organized)
 gh issue create -t "Git Repository Processor" \
   -F github-issues/01-git-repository-processor.md \
   -l "area:ingestion,priority:high" \
@@ -68,6 +123,25 @@ gh issue create -t "Interactive Git Features" \
   -l "area:commands,education" \
   -a @copilot
 ```
+
+## 🚀 **What's Enhanced vs ChatGPT's Version**
+
+ChatGPT's commands are good, but here's what we improved for better Copilot success:
+
+| Enhancement | ChatGPT | Enhanced Version | Why Better |
+|-------------|---------|------------------|------------|
+| **Repository** | Implicit | `--repo "itsnothuy/gitVisualizer"` | Explicit, works anywhere |
+| **Labels** | Basic (2-3) | Comprehensive (6-7) | Better categorization & filtering |
+| **Milestones** | None | `--milestone "1"` or `"2"` | Project phases & prioritization |
+| **Projects** | None | `--project "1"` | GitHub Projects integration |
+| **Dependencies** | None | Comments + milestone ordering | Clear implementation sequence |
+| **Status** | None | `status:ready` | Workflow state tracking |
+| **Complexity** | None | `complexity:high/medium` | Effort estimation |
+
+### **Enhanced Label Strategy:**
+- **Core Issues (#1-3)**: `milestone "1"` - Must implement first
+- **Advanced Features (#4-5)**: `milestone "2"` - After core is working
+- **Full Labels**: `area:X,priority:X,type:feature,epic:X,status:ready,complexity:X`
 
 ### **3. What Happens Next**
 
