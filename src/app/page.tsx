@@ -36,6 +36,11 @@ export default function Home() {
     }
   }, [loadRepository, router]);
 
+  const handleGitHubRepositoryLoaded = React.useCallback(() => {
+    // Navigate to visualization page after successful load
+    router.push('/repo');
+  }, [router]);
+
   const handleError = React.useCallback((errorMessage: string) => {
     console.error("Repository selection error:", errorMessage);
   }, []);
@@ -122,6 +127,7 @@ export default function Home() {
           <div className="flex gap-4">
             <RepositoryPicker
               onRepositorySelected={handleRepositorySelected}
+              onGitHubRepositoryLoaded={handleGitHubRepositoryLoaded}
               onError={handleError}
             />
             <Button

@@ -14,6 +14,8 @@
 
 import React, { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { processLocalRepository, type ProcessedRepository, type ProcessProgress } from "../git/processor";
+import { processGitHubRepository } from "../github/processor";
+import { parseGitHubUrl } from "../github/url-parser";
 
 /**
  * Reference to a recently accessed repository
@@ -29,6 +31,8 @@ export interface RepositoryReference {
   commitCount: number;
   /** Branch count */
   branchCount: number;
+  /** Source type */
+  source: 'local' | 'github';
 }
 
 /**
@@ -47,9 +51,15 @@ export interface RepositoryContextValue {
   handle: FileSystemDirectoryHandle | null;
   /** Recently accessed repositories */
   recentRepositories: RepositoryReference[];
+  /** Repository source type */
+  repositorySource: 'local' | 'github' | null;
 
   /** Load a repository from FileSystemDirectoryHandle */
   loadRepository: (handle: FileSystemDirectoryHandle, options?: LoadRepositoryOptions) => Promise<void>;
+  /** Load a repository from GitHub URL */
+  loadFromUrl: (url: string, token?: string) => Promise<void>;
+  /** Load a GitHub repository by owner and name */
+  loadGitHubRepository: (owner: string, name: string, token?: string) => Promise<void>;
   /** Clear the current repository */
   clearRepository: () => void;
   /** Clear the error state */
@@ -115,6 +125,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
   const [progress, setProgress] = useState<ProcessProgress | null>(null);
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | null>(null);
   const [recentRepositories, setRecentRepositories] = useState<RepositoryReference[]>([]);
+  const [repositorySource, setRepositorySource] = useState<'local' | 'github' | null>(null);
 
   // Store mapping of repository IDs to their handles
   const [handleCache] = useState<Map<string, FileSystemDirectoryHandle>>(new Map());
@@ -122,8 +133,8 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
   /**
    * Add or update a repository in the recent list
    */
-  const addToRecent = useCallback((repo: ProcessedRepository, dirHandle: FileSystemDirectoryHandle) => {
-    const id = repo.metadata.name || dirHandle.name;
+  const addToRecent = useCallback((repo: ProcessedRepository, dirHandle: FileSystemDirectoryHandle | null, source: 'local' | 'github') => {
+    const id = repo.metadata.name || (dirHandle ? dirHandle.name : repo.metadata.name);
 
     const reference: RepositoryReference = {
       id,
@@ -131,6 +142,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
       lastAccessed: new Date(),
       commitCount: repo.metadata.commitCount,
       branchCount: repo.metadata.branchCount,
+      source,
     };
 
     setRecentRepositories(prev => {
@@ -142,8 +154,10 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
       return updated.slice(0, MAX_RECENT_REPOS);
     });
 
-    // Cache the handle
-    handleCache.set(id, dirHandle);
+    // Cache the handle if provided
+    if (dirHandle) {
+      handleCache.set(id, dirHandle);
+    }
   }, [handleCache]);
 
   /**
@@ -184,6 +198,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
 
       // Update state with processed repository
       setCurrentRepository(processed);
+      setRepositorySource('local');
       setProgress({
         phase: "complete",
         percentage: 100,
@@ -192,7 +207,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
 
       console.log("📁 Repository Context: Adding to recent repositories...");
       // Add to recent repositories
-      addToRecent(processed, dirHandle);
+      addToRecent(processed, dirHandle, 'local');
 
       console.log("📁 Repository Context: Repository load completed successfully!");
     } catch (err) {
@@ -209,6 +224,79 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
   }, [addToRecent]);
 
   /**
+   * Load a repository from GitHub URL
+   */
+  const loadFromUrl = useCallback(async (url: string, token?: string): Promise<void> => {
+    console.log("📁 Repository Context: Starting GitHub URL load...", url);
+
+    setError(null);
+    setProgress(null);
+    setCurrentRepository(null);
+    setIsLoading(true);
+    setHandle(null);
+
+    try {
+      const parsed = parseGitHubUrl(url);
+      const processed = await processGitHubRepository(parsed.owner, parsed.name, {
+        token,
+        onProgress: setProgress,
+      });
+
+      setCurrentRepository(processed);
+      setRepositorySource('github');
+      setProgress({
+        phase: "complete",
+        percentage: 100,
+        message: "Repository loaded successfully",
+      });
+      addToRecent(processed, null, 'github');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load repository";
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [addToRecent]);
+
+  /**
+   * Load a GitHub repository by owner and name
+   */
+  const loadGitHubRepository = useCallback(async (
+    owner: string,
+    name: string,
+    token?: string
+  ): Promise<void> => {
+    console.log("📁 Repository Context: Starting GitHub repository load...", owner, name);
+
+    setError(null);
+    setProgress(null);
+    setCurrentRepository(null);
+    setIsLoading(true);
+    setHandle(null);
+
+    try {
+      const processed = await processGitHubRepository(owner, name, {
+        token,
+        onProgress: setProgress,
+      });
+
+      setCurrentRepository(processed);
+      setRepositorySource('github');
+      setProgress({
+        phase: "complete",
+        percentage: 100,
+        message: "Repository loaded successfully",
+      });
+      addToRecent(processed, null, 'github');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load repository";
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [addToRecent]);
+
+  /**
    * Clear the current repository
    */
   const clearRepository = useCallback(() => {
@@ -217,6 +305,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
     setProgress(null);
     setError(null);
     setIsLoading(false);
+    setRepositorySource(null);
   }, []);
 
   /**
@@ -246,7 +335,10 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
     progress,
     handle,
     recentRepositories,
+    repositorySource,
     loadRepository,
+    loadFromUrl,
+    loadGitHubRepository,
     clearRepository,
     clearError,
     switchToRecent,
