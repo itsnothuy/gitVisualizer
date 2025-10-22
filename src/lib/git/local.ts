@@ -59,7 +59,7 @@ export interface PickRepositoryResult {
  */
 export async function pickLocalRepoDir(): Promise<PickRepositoryResult> {
   console.log("🔧 pickLocalRepoDir: Starting directory picker...");
-  
+
   // Check browser support
   if (!isFileSystemAccessSupported()) {
     console.log("🔧 pickLocalRepoDir: File System Access API not supported");
@@ -81,12 +81,12 @@ export async function pickLocalRepoDir(): Promise<PickRepositoryResult> {
       mode: "read", // Request read-only access initially
       startIn: "documents", // Suggest starting location
     });
-    
+
     console.log("🔧 pickLocalRepoDir: Directory picker successful, got handle:", handle.name);
     return { handle };
   } catch (error) {
     console.log("🔧 pickLocalRepoDir: Directory picker failed with error:", error);
-    
+
     // Handle various error cases
     if (error instanceof Error) {
       // User cancelled the picker
@@ -100,7 +100,7 @@ export async function pickLocalRepoDir(): Promise<PickRepositoryResult> {
           },
         };
       }
-      
+
       // Permission denied
       if (error.name === "NotAllowedError" || error.name === "SecurityError") {
         console.log("🔧 pickLocalRepoDir: Permission denied:", error.name);
@@ -113,7 +113,7 @@ export async function pickLocalRepoDir(): Promise<PickRepositoryResult> {
         };
       }
     }
-    
+
     // Unknown error
     return {
       handle: null,

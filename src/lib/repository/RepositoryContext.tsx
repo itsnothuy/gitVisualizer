@@ -12,7 +12,7 @@
  * Privacy-first: All processing happens in-browser, no data leaves the device.
  */
 
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import React, { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { processLocalRepository, type ProcessedRepository, type ProcessProgress } from "../git/processor";
 
 /**
@@ -115,7 +115,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
   const [progress, setProgress] = useState<ProcessProgress | null>(null);
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | null>(null);
   const [recentRepositories, setRecentRepositories] = useState<RepositoryReference[]>([]);
-  
+
   // Store mapping of repository IDs to their handles
   const [handleCache] = useState<Map<string, FileSystemDirectoryHandle>>(new Map());
 
@@ -124,7 +124,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
    */
   const addToRecent = useCallback((repo: ProcessedRepository, dirHandle: FileSystemDirectoryHandle) => {
     const id = repo.metadata.name || dirHandle.name;
-    
+
     const reference: RepositoryReference = {
       id,
       name: repo.metadata.name,
@@ -132,7 +132,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
       commitCount: repo.metadata.commitCount,
       branchCount: repo.metadata.branchCount,
     };
-    
+
     setRecentRepositories(prev => {
       // Remove if already exists
       const filtered = prev.filter(r => r.id !== id);
@@ -141,7 +141,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
       // Limit to MAX_RECENT_REPOS
       return updated.slice(0, MAX_RECENT_REPOS);
     });
-    
+
     // Cache the handle
     handleCache.set(id, dirHandle);
   }, [handleCache]);
@@ -154,7 +154,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
     options: LoadRepositoryOptions = {}
   ): Promise<void> => {
     console.log("📁 Repository Context: Starting repository load...", dirHandle.name);
-    
+
     // Clear previous state
     setError(null);
     setProgress(null);
@@ -164,7 +164,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
 
     try {
       console.log("📁 Repository Context: Setting up progress callback...");
-      
+
       // Progress callback
       const onProgress = (progressInfo: ProcessProgress) => {
         console.log("📁 Repository Context: Progress update:", progressInfo);
@@ -172,7 +172,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
       };
 
       console.log("📁 Repository Context: Starting processLocalRepository...");
-      
+
       // Process the repository
       const processed = await processLocalRepository(dirHandle, {
         maxCommits: options.maxCommits,
@@ -189,15 +189,15 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
         percentage: 100,
         message: "Repository loaded successfully",
       });
-      
+
       console.log("📁 Repository Context: Adding to recent repositories...");
       // Add to recent repositories
       addToRecent(processed, dirHandle);
-      
+
       console.log("📁 Repository Context: Repository load completed successfully!");
     } catch (err) {
       console.error("📁 Repository Context: Error during repository load:", err);
-      
+
       // Handle errors
       const errorMessage = err instanceof Error ? err.message : "Failed to load repository";
       setError(errorMessage);
@@ -225,7 +225,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
   const clearError = useCallback(() => {
     setError(null);
   }, []);
-  
+
   /**
    * Switch to a recent repository by ID
    */
@@ -235,7 +235,7 @@ export function RepositoryProvider({ children }: RepositoryProviderProps): React
       setError(`Repository "${id}" not found in cache`);
       return;
     }
-    
+
     await loadRepository(cachedHandle);
   }, [handleCache, loadRepository]);
 
