@@ -1,248 +1,248 @@
 # Git Visualizer
-A privacy-first, local-first Git repository visualizer that renders commit graphs as interactive DAGs (Directed Acyclic Graphs). Built with Next.js, React, and ELK layout engine.
-<p align="center">
-  <img src="./assets/home.png" alt="Home Page"  width="800"/> &nbsp;&nbsp;&nbsp;
-</p>
-<p align="center">
-  <img src="./assets/demo.gif" alt="Demo Page GIF"  width="800"/> &nbsp;&nbsp;&nbsp;
-</p>
-## Features
 
-- 🔒 **Privacy-First**: All processing happens in your browser - no data leaves your device
-- 🌐 **GitHub URL Integration** (NEW): 
-  - Instantly visualize any GitHub repository by pasting its URL
-  - Support for public and private repositories (with token)
-  - No local cloning required - works in all browsers
-  - Multiple URL formats supported (HTTPS, SSH, short format)
-- 📁 **Cross-Browser Repository Access**: 
-  - Direct folder access via File System Access API (Chrome, Edge)
-  - Folder upload fallback for Firefox and Safari
-  - ZIP upload as universal fallback for all browsers
-- 🎨 **Interactive Visualization**: Pan, zoom, and explore commit graphs with keyboard navigation
-- ♿ **Accessible**: WCAG 2.2 AA compliant with keyboard navigation and screen reader support
-- ⚡ **Fast Rendering**: Optimized SVG rendering with virtualization for large repositories
-- 🎯 **Beginner Friendly**: Clean, intuitive interface for understanding Git history
+> A privacy-first, local-first Git commit graph visualizer designed for learning, exploration, and accessibility.
 
-## LGB Mode
+[![CI](https://github.com/yourusername/git-viz/workflows/CI/badge.svg)](https://github.com/yourusername/git-viz/actions)
+[![WCAG 2.2 AA](https://img.shields.io/badge/WCAG-2.2%20AA-green.svg)](https://www.w3.org/WAI/WCAG22/quickref/)
+[![Privacy](https://img.shields.io/badge/Privacy-First-blue.svg)](#privacy--security)
 
-<p align="center">
-  <img src="./assets/home.png" alt="LGB Mode Visualization" width="800"/>
-</p>
+## 🎯 What Makes This Different
 
-Git Visualizer includes an optional **LGB (Learn Git Branching) Mode** that recreates the familiar visual style of [Learn Git Branching](https://learngitbranching.js.org/) for educational purposes.
+**Privacy by Design**: Your Git repositories never leave your device. No data exfiltration, no tracking, no cloud storage required.
 
-### What is LGB Mode?
+**Accessibility First**: Built for everyone with WCAG 2.2 AA compliance, full keyboard navigation, and screen reader support.
 
-LGB Mode provides a **grid-based layout** with smooth animations that help visualize Git operations:
+**Educational Focus**: Perfect for Git learners with clear visualizations and beginner-friendly UX that makes complex Git concepts understandable.
 
-- **Grid Layout**: Commits arranged with generations (topological levels) as rows and branch lanes as columns
-- **Animated Operations**: Watch commits, branches, merges, rebases, and cherry-picks unfold with 120-480ms motion windows
-- **Visual Grammar**: 
-  - Branch labels inline at tips
-  - HEAD arrow clearly visible
-  - Merge commits show two-parent links
-  - Rebase uses dashed "copy" arcs
-  - Cherry-pick displays single copy arc
+## ✨ Key Features
 
-### Accessibility & Performance
+### 🔒 Privacy & Security
+- **Local-first architecture** - All processing happens in your browser
+- **Zero data exfiltration** - Repository contents never leave your device
+- **Optional overlays** - GitHub/GitLab integration only with explicit consent
+- **No tracking or analytics** - Your Git workflow remains private
 
-**Accessibility (WCAG 2.2 AA):**
-- ✅ **Reduced Motion Support**: Automatically collapses animation durations to ≤80ms when `prefers-reduced-motion: reduce` is detected
-- ✅ **Screen Reader Announcements**: `aria-live` region announces each Git operation (e.g., "Committed to main", "Rebased 3 commits onto main")
-- ✅ **Keyboard Navigation**: Full keyboard access maintained during animations
-- ✅ **Color Independence**: All information uses shapes, patterns, and text—not color alone
-- ✅ **Zero Critical Violations**: Verified with axe-core in automated tests
+### 🎓 Learning & Education
+- **Learn Git Branching (LGB) mode** - Interactive Git scenarios with visual feedback
+- **Clear commit graph visualization** - Understand complex branching and merging
+- **Beginner-friendly UX** - Progressive disclosure of advanced features
+- **Visual golden testing** - Consistent, reliable visual output for educational content
 
-**Performance:**
-- ⚡ **Smooth 60 FPS**: Animations run at 60 FPS using `requestAnimationFrame`
-- 🔒 **Input Locking**: User input disabled during playback to prevent race conditions
-- 🎯 **Optimized for Medium Graphs**: First layout ≤1500ms, pan/zoom ≤16ms/frame
-- 📊 **Canvas Fallback Ready**: For graphs >10k elements (not yet implemented)
+### ♿ Accessibility & Inclusion
+- **WCAG 2.2 AA compliant** - Verified with automated and manual testing
+- **Full keyboard navigation** - Tab/Shift+Tab through all interactive elements
+- **Screen reader optimized** - Semantic SVG with comprehensive ARIA labels
+- **Color-independent design** - Patterns and shapes complement color coding
+- **Reduced motion support** - Respects user preferences for animations
 
-### How to Enable
+### ⚡ Performance & Scale
+- **Efficient rendering** - React + SVG with virtualization for large repositories
+- **Web Worker layouts** - ELK.js processing doesn't block the UI
+- **Smart caching** - Layout results cached by commit SHA + parameters
+- **Shallow cloning** - Minimal bandwidth usage for remote repositories
 
-1. Click the **"LGB Mode"** toggle in the application header
-2. Theme applies immediately to all graph visualizations
-3. Preference saved in `sessionStorage` for the current session
-
-### Known Limitations
-
-- **Grid Approximation**: ELK's layered algorithm may produce slightly different spacing than original LGB
-- **Input Locking**: All user input locked during animation playback (no pausing/scrubbing)
-- **Single Scene**: Only one animation at a time; new scenes cancel current ones
-- **Browser Support**: Safari <15.4 may not respect `prefers-reduced-motion`
-
-### Learn More
-
-- 📖 **Full Documentation**: See [/docs/LGB_MODE.md](/docs/LGB_MODE.md) for architecture, API, and testing details
-- 🎓 **Learn Git Branching**: Visit [learngitbranching.js.org](https://learngitbranching.js.org/) to try the original tool
-- 📜 **Attribution**: See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for license information
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
+- Node.js 18+ with corepack enabled
+- Modern browser with File System Access API support
+- HTTPS (required for file system access)
 
-- Node.js 18+ and pnpm
-- Modern browser (Chrome 86+, Edge 86+, Firefox 90+, Safari 15.2+)
-- HTTPS connection (recommended for best experience)
+### Quick Start
 
-### Development
-
-#### Quick Start (Automated)
 ```bash
-# One-command setup and start
-./scripts/dev-start.sh
-```
+# Clone and install
+git clone https://github.com/yourusername/git-viz.git
+cd git-viz
+corepack enable && pnpm install --frozen-lockfile
 
-#### Manual Setup
-```bash
-# Install dependencies
-pnpm install
-
-# Run validation checks
-pnpm validate
-
-# Start development server with HTTPS (recommended)
+# Start development server with HTTPS
 pnpm dev:https
 
-# Or start regular development server
-pnpm dev
+# Open https://localhost:3000 and connect your repository
 ```
 
-Open [https://localhost:3000](https://localhost:3000) to view the application.
+### Browser Support
 
-#### Health Check
+| Feature | Chrome | Edge | Safari | Firefox |
+|---------|--------|------|--------|---------|
+| **Local repositories** | 86+ | 86+ | 15.2+ (partial) | ❌ |
+| **Remote cloning** | 86+ | 86+ | 15.2+ | 111+ |
+| **Core visualization** | ✅ | ✅ | ✅ | ✅ |
+
+## 📖 Usage
+
+### Connecting Local Repositories
+
+1. Click **"Connect Local Repository"**
+2. Select your Git repository folder
+3. Grant read-only access when prompted
+4. Explore your commit graph with full privacy
+
+### Cloning Remote Repositories
+
+1. Click **"Clone Remote Repository"**
+2. Enter repository URL (must be public)
+3. Choose shallow clone depth
+4. Repository cloned to browser storage (OPFS)
+
+*Note: Remote cloning may require CORS proxy for some repositories*
+
+### Navigation & Interaction
+
+- **Keyboard**: Tab/Shift+Tab to navigate, Arrow keys within graph
+- **Mouse**: Click to select, drag to pan, scroll to zoom
+- **Touch**: Pinch to zoom, drag to pan on mobile devices
+
+## 🏗️ Architecture
+
+### Core Modules
+
+```
+src/
+├── lib/git/           # Git ingestion (local + remote)
+├── viz/               # Visualization layer (ELK + React + SVG)
+├── components/        # UI components with accessibility
+├── app/               # Next.js App Router pages
+└── lib/overlays/      # Optional GitHub/GitLab integration
+```
+
+### Technology Stack
+
+- **Frontend**: Next.js 15, React 18, TypeScript
+- **Git Operations**: isomorphic-git, File System Access API
+- **Layout Engine**: ELK.js (Eclipse Layout Kernel)
+- **Rendering**: React + SVG with Canvas/WebGL fallbacks
+- **Styling**: Tailwind CSS, Radix UI primitives
+- **Testing**: Vitest, Playwright, axe-core for accessibility
+
+## 🎮 Learn Git Branching Mode
+
+Interactive Git scenarios that teach version control concepts:
+
+### Available Scenarios
+- **Introduction**: Basic commits, branching, and merging
+- **Rebase Workflows**: Understanding rebase vs merge
+- **Cherry-picking**: Selective commit application
+- **Advanced Branching**: Complex workflow patterns
+
+### Features
+- **Visual step-by-step execution** - See Git operations happen in real-time
+- **Undo/redo support** - Experiment safely with Git commands
+- **Animation system** - Smooth transitions between Git states
+- **Progress tracking** - Visual indicators of lesson completion
+
+## 🔧 Development
+
+### Commands
+
 ```bash
-# Verify the application is running correctly
-./scripts/health-check.sh
+# Development
+pnpm dev              # Development server (HTTP)
+pnpm dev:https        # Development server (HTTPS - required for File System API)
+
+# Testing
+pnpm test             # Unit tests
+pnpm test:watch       # Watch mode
+pnpm test:e2e         # End-to-end tests
+pnpm test:a11y        # Accessibility tests
+
+# Quality
+pnpm lint             # ESLint + Prettier
+pnpm type-check       # TypeScript checking
+pnpm build            # Production build
 ```
 
-#### VS Code Setup
-The project includes recommended extensions and settings:
-- Install recommended extensions when prompted
-- Use built-in debugger configurations
-- Automatic formatting and linting on save
+### Testing Strategy
 
-📋 See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the complete development guide.
+- **Unit Tests**: Core Git operations and layout algorithms
+- **Integration Tests**: File system access and repository parsing
+- **E2E Tests**: Complete user workflows with Playwright
+- **Visual Golden Tests**: SVG snapshot comparison for LGB scenarios
+- **Accessibility Tests**: axe-core integration with zero critical violations
 
-### Building for Production
+## 🔐 Privacy & Security
 
-```bash
-# Build the application
-pnpm build
+### Data Handling
+- **Local repositories**: Read-only access, no data persistence outside OPFS
+- **Remote repositories**: Cloned to browser storage, never uploaded
+- **Overlay integrations**: Explicit opt-in with minimal read-only scopes
+- **No telemetry**: Zero tracking, analytics, or user behavior monitoring
 
-# Start production server
-pnpm start
-```
+### Security Headers
+- Content Security Policy with strict directives
+- HTTPS-only with HSTS
+- No third-party script execution
+- Frame-ancestors prevention
 
-## Usage
+### OAuth (Optional Overlays)
+- PKCE flow for secure authentication
+- Minimal scopes (read-only repository access)
+- Tokens stored in memory only
+- Per-repository consent management
 
-### Quick Start with GitHub URL (Recommended)
+## 🤝 Contributing
 
-The fastest way to visualize a repository:
+### Areas for Contribution
+- **Accessibility testing** with real assistive technologies
+- **Browser compatibility** testing and fallbacks
+- **Performance optimization** for large repositories
+- **Educational content** creation for LGB scenarios
+- **Documentation** improvements and translations
 
-1. Click **"Open Repository"**
-2. Select the **"GitHub URL"** tab
-3. Paste any GitHub repository URL (e.g., `https://github.com/facebook/react`)
-4. Click **"Visualize Repository"**
+### Getting Started
+1. Read our [Contributing Guidelines](CONTRIBUTING.md)
+2. Check the [Development Plan](docs/PLAN.md) for current priorities
+3. Review [Architecture Documentation](docs/ARCHITECTURE.md)
+4. Join discussions in GitHub Issues
 
-For private repositories, add your [GitHub Personal Access Token](https://github.com/settings/tokens) in the token field.
+## 📚 Documentation
 
-📖 **Full documentation**: See [docs/GITHUB_URL_INTEGRATION.md](docs/GITHUB_URL_INTEGRATION.md)
+### User Guides
+- [Getting Started Guide](docs/getting-started.md)
+- [Accessibility Features](docs/accessibility.md)
+- [Privacy & Security](docs/privacy.md)
+- [Learn Git Branching](docs/lgb-mode.md)
 
-### First-Time Experience
+### Developer Docs
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [Development Plan](docs/PLAN.md)
+- [Testing Strategy](docs/TESTING.md)
+- [API Documentation](docs/api/)
 
-When you first visit Git Visualizer, you'll see a **guided onboarding wizard** that walks you through:
+### Examples
+- [Ingestion Usage Examples](docs/examples/ingestion-usage.md)
+- [Custom Layout Configurations](docs/examples/layout-config.md)
+- [Overlay Integration Patterns](docs/examples/overlay-integration.md)
 
-1. **Getting Started**: Learn about sample repositories and ingestion methods
-2. **Privacy & Security**: Understand our privacy-first approach and security guarantees
-3. **Key Features**: Discover what you can do with the visualizer
+## 🏆 Project Goals
 
-You can skip the tutorial at any time, or revisit it later by clicking the "Learn More" button.
+### Primary Objectives
+1. **Privacy-first Git visualization** that keeps data local
+2. **Accessible design** that works for all users
+3. **Educational value** for Git learning and exploration
+4. **Performance** that scales to large repositories
 
-### Try a Sample Repository
+### Success Metrics
+- **WCAG 2.2 AA compliance** (verified with real screen readers)
+- **Zero data exfiltration** by default operation
+- **Sub-1500ms initial layout** on medium repositories (~1000 commits)
+- **60 FPS interactions** regardless of repository size
 
-**New to Git Visualizer?** Start with one of our pre-built samples - no local files needed!
+## 📄 License
 
-We provide three sample repositories to help you explore features:
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- **Linear History** (Beginner): 4 commits in a simple sequence
-- **Feature Branches** (Intermediate): Branch creation and merging workflow
-- **Complex Merge History** (Advanced): Multiple branches, merges, and tags
+## 🙏 Acknowledgments
 
-**To load a sample:**
-1. Click "Open Repository" button
-2. Select the "Try a Sample" tab
-3. Click "Load Sample" on any repository
-4. Explore the interactive graph!
+- **ELK.js team** for the powerful layout algorithms
+- **isomorphic-git contributors** for making Git work in browsers
+- **Web accessibility community** for guidance and testing
+- **Learn Git Branching project** for educational inspiration
 
-All samples load entirely in your browser - no data upload required.
+---
 
-### Opening Your Own Repository
-
-The application supports four methods for opening Git repositories, automatically selecting the best available option for your browser:
-
-1. **Try a Sample (All Browsers)**: Load pre-built sample repositories without any local files
-2. **Local Folder (Chrome, Edge)**: Direct access to a local Git repository folder using the File System Access API
-3. **Upload Folder (Firefox, Safari)**: Upload all files from a repository folder using directory input
-4. **Upload ZIP (All Browsers)**: Upload a ZIP archive of your repository (universal fallback)
-
-**To open your own repository:**
-1. Click "Open Repository" button
-2. Select the appropriate tab based on your browser
-3. Choose your repository (folder or ZIP file)
-4. The graph will render automatically
-
-**Privacy Guarantee:** All file processing happens entirely in your browser. No data is ever uploaded to any server.
-
-### Interacting with the Graph
-
-1. **Pan & Zoom**: Use mouse to pan/zoom, or keyboard navigation (Tab, Arrow keys)
-2. **View Commit Details**: Click on nodes to see commit information
-3. **Accessibility**: Full keyboard navigation support with Tab/Shift+Tab
-
-### Troubleshooting
-
-#### "File System Access API not available"
-- **Cause**: Your browser doesn't support the File System Access API
-- **Solution**: Use Firefox/Safari, select the "Upload Folder" tab, or use "Upload ZIP" as a universal fallback
-- **Browsers Supported**: Chrome 86+, Edge 86+ support direct folder access
-
-#### "Not a valid Git repository"
-- **Cause**: Selected folder doesn't contain a `.git` directory
-- **Solution**: Make sure to select the root folder of a Git repository (the folder that contains `.git`)
-
-#### Permission Prompts
-- **What**: Browser will ask for permission to access files
-- **Why**: Required for File System Access API security
-- **Privacy**: We only request read-only access and never modify your files
-
-#### HTTPS Requirement
-- **Cause**: File System Access API requires HTTPS
-- **Solution**: Use `pnpm dev:https` for local development, or deploy to a secure hosting platform
-- **Note**: Sample repositories work without HTTPS
-
-#### Sample Won't Load
-- **Cause**: Network error or blocked fetch request
-- **Solution**: Check browser console for errors, ensure JavaScript is enabled
-- **Offline**: Samples require internet connection on first load (cached thereafter)
-
-For more help, see our [Onboarding Testing Guide](./docs/ONBOARDING_TESTING.md) or [open an issue](https://github.com/itsnothuy/gitVisualizer/issues).
-
-## Architecture
-
-- **Frontend**: Next.js 15 with React 19
-- **Layout Engine**: ELK.js for automatic graph layout
-- **Rendering**: SVG with React components
-- **Git Operations**: isomorphic-git for browser-based Git operations
-- **Testing**: Vitest + Playwright for unit and E2E tests
-
-## Browser Support
-
-Git Visualizer supports all modern browsers with automatic fallback for different ingestion methods:
-
-| Browser | Direct Folder Access | Folder Upload | ZIP Upload | Recommended Method |
-|---------|---------------------|---------------|------------|-------------------|
+**Made with ❤️ for the Git community, accessibility advocates, and privacy-conscious developers.**
 | Chrome 86+ | ✅ | ✅ | ✅ | Direct Folder Access |
 | Edge 86+ | ✅ | ✅ | ✅ | Direct Folder Access |
 | Firefox 90+ | ❌ | ✅ | ✅ | Folder Upload |

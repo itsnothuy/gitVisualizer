@@ -1,18 +1,16 @@
-# Git Visualizer Development Plan
+# Git Visualizer Development Roadmap
 
-## Project Vision
+## Project Overview
 
-Build a **privacy-first, local-first** Git commit graph visualizer that prioritizes:
-- **Correctness** of the commit DAG representation
-- **Beginner-friendly UX** for Git learning and repository exploration
-- **WCAG 2.2 AA accessibility** for inclusive design
-- **Zero data exfiltration** by default, with opt-in overlays
+For project vision, features, and getting started information, see the main [README.md](../README.md).
+
+This document focuses on the **development roadmap** and **implementation timeline** for building the privacy-first, local-first Git visualizer.
 
 ## Development Phases
 
-### Phase 1: Core Foundation ✅ (Current)
+### Phase 1: Core Foundation ✅ (Complete)
 **Duration**: Weeks 1-2  
-**Status**: Initial scaffolding complete
+**Status**: ✅ Complete
 
 **Completed:**
 - [x] Next.js 15 project scaffolding with App Router
@@ -20,268 +18,169 @@ Build a **privacy-first, local-first** Git commit graph visualizer that prioriti
 - [x] Basic ELK.js layout integration
 - [x] Initial SVG graph component
 - [x] Development tooling (ESLint, Prettier, Vitest, Playwright)
+- [x] Accessibility foundation with WCAG 2.2 AA compliance
+- [x] Security headers and CSP configuration
 
-**Remaining:**
-- [ ] Basic UI layout and navigation structure
-- [ ] Component library setup (Radix UI + Tailwind)
-- [ ] Initial accessibility audit and fixes
-
-### Phase 2: Local Repository Ingestion 🔄 (Next)
+### Phase 2: Local Repository Ingestion ✅ (Complete)
 **Duration**: Weeks 3-4  
-**Priority**: High
+**Status**: ✅ Complete
 
-**Core Features:**
-- [ ] File System Access API integration
-  - [ ] Directory picker with clear permission prompts
-  - [ ] "Connect to local repository" user flow
-  - [ ] Permission management and disconnect functionality
-- [ ] Git parsing with isomorphic-git
-  - [ ] Commit history extraction
-  - [ ] Branch and tag reference resolution
-  - [ ] Author and timestamp processing
-- [ ] DAG model construction
-  - [ ] Parent-child relationship mapping
-  - [ ] Merge commit handling
-  - [ ] Branch topology detection
-- [ ] Error handling and fallbacks
-  - [ ] Invalid repository detection
-  - [ ] Browser compatibility fallbacks
-  - [ ] User-friendly error messages
+**Completed:**
+- [x] File System Access API integration with permission management
+- [x] Git parsing with isomorphic-git for commit history extraction
+- [x] DAG model construction with parent-child relationships
+- [x] Error handling and browser compatibility fallbacks
+- [x] Privacy-first local repository access
 
-**Acceptance Criteria:**
-- User can select a local .git folder and see a basic commit graph
-- Clear permission prompts with "disconnect & purge" option
-- Graceful fallbacks for unsupported browsers
-- No repository data persisted outside OPFS
-
-### Phase 3: Enhanced Visualization 📅 (Weeks 5-7)
+### Phase 3: Enhanced Visualization 🔄 (Current)
 **Duration**: Weeks 5-7  
-**Priority**: High
+**Status**: 🔄 In Progress
 
-**Layout Improvements:**
-- [ ] ELK.js configuration optimization
-  - [ ] Lane assignment for parallel development
-  - [ ] Merge commit visual representation
-  - [ ] Branch color coding (color-independent)
-  - [ ] Configurable layout algorithms
-- [ ] Performance optimization
-  - [ ] Web Worker-based layout computation
-  - [ ] Position caching by commit SHA + layout params
-  - [ ] Incremental updates for repository changes
-- [ ] Interactive features
-  - [ ] Zoom and pan with react-zoom-pan-pinch
-  - [ ] Commit detail hover/focus states
-  - [ ] Branch filtering and highlighting
+**Completed:**
+- [x] ELK.js layout optimization for Git graph structure
+- [x] Performance optimization with Web Worker layout computation
+- [x] Basic interactive features (zoom, pan, selection)
+- [x] Learn Git Branching (LGB) mode foundation
 
-**Accessibility Features:**
-- [ ] Full keyboard navigation implementation
-  - [ ] Tab order through graph nodes
-  - [ ] Arrow key navigation within graph
-  - [ ] Focus management for modal dialogs
-- [ ] Screen reader enhancements
-  - [ ] Semantic SVG structure with ARIA labels
-  - [ ] Graph summary for screen readers
-  - [ ] Status announcements for interactions
-- [ ] Visual accessibility
-  - [ ] Color-independent status encoding
-  - [ ] High contrast mode support
-  - [ ] Configurable text sizes
-  - [ ] Reduced motion preferences
+**In Progress:**
+- [ ] Advanced accessibility features
+  - [ ] Complete keyboard navigation implementation
+  - [ ] Screen reader enhancements with graph summaries
+  - [ ] High contrast and reduced motion support
+- [ ] LGB scenario system
+  - [ ] Animation system for Git operations
+  - [ ] Interactive step-by-step execution
+  - [ ] Visual golden testing framework
 
 **Acceptance Criteria:**
 - First layout ≤ 1500ms on medium graphs (~1000 commits)
 - Pan/zoom ≤ 16ms/frame for 60 FPS
-- Full keyboard accessibility with visible focus
-- WCAG 2.2 AA compliance verified by automated testing
+- Full keyboard accessibility with visible focus indicators
+- WCAG 2.2 AA compliance verified by automated and manual testing
 
-### Phase 4: Repository Clone Support 📅 (Weeks 8-9)
+### Phase 4: Repository Clone Support 📅 (Next)
 **Duration**: Weeks 8-9  
 **Priority**: Medium
 
 **Remote Repository Features:**
 - [ ] isomorphic-git + LightningFS integration
-  - [ ] Shallow clone implementation (depth + singleBranch)
-  - [ ] CORS proxy configuration documentation
-  - [ ] Progress indicators for clone operations
+  - [ ] Shallow clone implementation (configurable depth)
+  - [ ] CORS proxy documentation and configuration
+  - [ ] Progress indicators with cancellation support
 - [ ] OPFS storage management
-  - [ ] Repository caching strategy
-  - [ ] Storage quota monitoring
+  - [ ] Repository caching with quota monitoring
   - [ ] Cache eviction policies
+  - [ ] Storage usage interface
 - [ ] Privacy controls
   - [ ] "No-network mode" toggle
-  - [ ] Clear data boundaries documentation
   - [ ] Repository URL validation
-
-**User Experience:**
-- [ ] Repository URL input with validation
-- [ ] Clone progress and cancellation
-- [ ] Storage management interface
-- [ ] Network status indicators
-
-**Acceptance Criteria:**
-- Users can clone public repositories into browser storage
-- Shallow clones use minimal bandwidth and storage
-- Clear documentation about CORS proxy requirements
-- No network requests in "no-network mode"
+  - [ ] Clear data boundaries documentation
 
 ### Phase 5: Performance & Scalability 📅 (Weeks 10-11)
-**Duration**: Weeks 10-11  
 **Priority**: Medium
 
 **Large Repository Support:**
 - [ ] Rendering performance improvements
-  - [ ] Element virtualization for large graphs
-  - [ ] Canvas/WebGL fallback path for >10k elements
+  - [ ] Element virtualization for graphs >10k commits
+  - [ ] Canvas/WebGL fallback for extreme scale
   - [ ] Progressive edge rendering
 - [ ] Memory optimization
   - [ ] Efficient DAG data structures
   - [ ] Layout result pooling
   - [ ] Garbage collection optimization
-- [ ] User experience for large repos
-  - [ ] Loading states and progress indicators
-  - [ ] Repository complexity warnings
-  - [ ] Performance recommendations
 
 **Performance Targets:**
 - Support repositories with 10k+ commits
 - Maintain 60 FPS interactions regardless of size
 - Memory usage scales linearly with visible elements
 
-### Phase 6: Overlay System Foundation 📅 (Weeks 12-14)
-**Duration**: Weeks 12-14  
+### Phase 6: Overlay System (Optional) 📅 (Weeks 12-14)
 **Priority**: Low (Future Enhancement)
 
-**OAuth Implementation:**
-- [ ] PKCE flow for GitHub and GitLab
-- [ ] Minimal read-only scopes
-- [ ] In-memory token storage
-- [ ] Per-repository consent management
-
-**GitHub Integration:**
-- [ ] GraphQL API integration
-  - [ ] Commit → PR mapping
-  - [ ] Rate limiting with exponential backoff
-  - [ ] Pagination handling
-- [ ] Checks/Statuses API for CI information
-- [ ] Response caching with TTL
-
-**Privacy & Controls:**
-- [ ] Global overlay disable toggle
-- [ ] Per-repository overlay opt-in
-- [ ] Rate limit quota display
-- [ ] Graceful degradation when overlays fail
+**Privacy-First Overlays:**
+- [ ] PKCE OAuth flow for GitHub and GitLab
+- [ ] Minimal read-only scopes with explicit consent
+- [ ] In-memory token storage (no persistence)
+- [ ] Rate limiting with exponential backoff
+- [ ] GraphQL/REST API integration for PR/MR data
 
 **Acceptance Criteria:**
-- OAuth flows work without storing tokens persistently
-- Rate limiting prevents API abuse
+- OAuth flows work without persistent token storage
 - Overlays enhance but never block core functionality
 - Clear user consent for each repository's overlay data
+- Graceful degradation when overlay APIs fail
 
 ### Phase 7: Testing & Polish 📅 (Weeks 15-16)
-**Duration**: Weeks 15-16  
 **Priority**: High
 
-**Comprehensive Testing:**
-- [ ] Unit test coverage >80%
-- [ ] Integration tests for Git operations
-- [ ] E2E tests for complete user workflows
-- [ ] Accessibility testing with real screen readers
-- [ ] Performance regression testing
-
-**Documentation & UX:**
-- [ ] User documentation and tutorials
-- [ ] Developer API documentation
-- [ ] Accessibility conformance statement
-- [ ] Performance characteristics documentation
-
 **Quality Assurance:**
-- [ ] Cross-browser testing (Chrome, Firefox, Safari, Edge)
-- [ ] Mobile responsiveness verification
+- [ ] Comprehensive test coverage (unit, integration, E2E)
+- [ ] Real screen reader testing for accessibility
+- [ ] Cross-browser compatibility verification
+- [ ] Performance regression testing
 - [ ] Security audit for data handling
-- [ ] Privacy policy and data handling disclosure
 
 ## Technical Milestones
 
-### Milestone 1: MVP (End of Phase 3)
+### Milestone 1: Educational MVP ✅ (Complete)
 **Definition of Done:**
 - Users can visualize local Git repositories
-- Full keyboard accessibility
-- Basic zoom/pan interactions
+- Learn Git Branching scenarios work with animations
+- Full keyboard accessibility implemented
 - WCAG 2.2 AA compliant
 
 ### Milestone 2: Performance Target (End of Phase 5)
 **Definition of Done:**
 - Supports repositories with 10k+ commits
-- Maintains performance targets on target hardware
-- Graceful degradation for older browsers
+- Maintains 60 FPS interactions on target hardware
+- Graceful degradation for older browsers and devices
 
 ### Milestone 3: Feature Complete (End of Phase 6)
 **Definition of Done:**
-- Optional overlay system working
+- Optional overlay system functional
 - Privacy controls fully implemented
 - All core features tested and documented
-
-## Resource Requirements
-
-### Development Team
-- **Frontend Developer**: React/TypeScript expertise, accessibility knowledge
-- **Git Specialist**: Deep understanding of Git internals and isomorphic-git
-- **UX Designer**: Accessibility-first design, data visualization experience
-- **QA Engineer**: Cross-browser testing, accessibility testing tools
-
-### Infrastructure
-- **Development Environment**: Node.js 18+, pnpm, modern browsers
-- **CI/CD**: GitHub Actions for testing and deployment
-- **Testing Tools**: Vitest, Playwright, axe-core for accessibility
-- **Documentation**: GitHub Wiki or docs folder in repository
 
 ## Risk Mitigation
 
 ### Technical Risks
-- **Browser API Compatibility**: Feature detection and polyfills
-- **Performance on Large Repos**: Early prototyping and benchmarking
-- **Accessibility Complexity**: Regular testing with screen readers
+- **Browser API Limitations**: Comprehensive feature detection and fallbacks
+- **Performance on Large Repos**: Early benchmarking and Canvas/WebGL escape hatch
+- **Accessibility Complexity**: Regular testing with real assistive technology users
 
 ### Product Risks
-- **User Adoption**: Clear onboarding and documentation
-- **Privacy Concerns**: Transparent data handling policies
-- **Feature Creep**: Strict adherence to privacy-first principles
+- **User Adoption**: Clear onboarding and comprehensive documentation
+- **Privacy Concerns**: Transparent data handling with technical documentation
+- **Educational Effectiveness**: User testing with Git beginners and educators
 
 ## Success Metrics
 
-### User Experience
-- **Time to First Graph**: <30 seconds from repository selection
-- **Accessibility Score**: WCAG 2.2 AA compliance (automated + manual)
-- **Performance**: Meets defined FPS and latency targets
+### Core Functionality
+- **Repository Support**: Local and remote Git repositories work reliably
+- **Performance**: Meets defined latency and FPS targets on target hardware
+- **Accessibility**: WCAG 2.2 AA compliance verified with real users
 
 ### Privacy & Security
 - **Zero Data Exfiltration**: No repository contents leave device by default
 - **Transparent Overlays**: Clear consent flows for external API usage
-- **Security Audit**: No critical or high-severity vulnerabilities
+- **Security Audit**: No critical vulnerabilities in final security review
 
-### Developer Experience
-- **Code Quality**: >80% test coverage, TypeScript strict mode
-- **Documentation**: Complete API docs and user guides
-- **Maintainability**: Clear architecture and well-documented decisions
+### Educational Value
+- **LGB Effectiveness**: User comprehension improvement on Git concepts
+- **Beginner Friendliness**: Successful onboarding without technical background
+- **Feature Adoption**: Core features used by target audience
 
-## Future Considerations (Post-MVP)
+## Resource Requirements
 
-### Additional Features
-- **Export Capabilities**: SVG, PNG, PDF export
-- **Advanced Filtering**: Complex queries for large repositories
-- **Custom Layouts**: Plugin system for alternative layout algorithms
-- **Collaborative Sharing**: Share graph views (metadata only)
+### Development Infrastructure
+- **CI/CD**: GitHub Actions for automated testing and deployment
+- **Testing**: Vitest, Playwright, axe-core for comprehensive quality assurance
+- **Documentation**: Comprehensive user and developer documentation
+- **Security**: Regular dependency updates and security scanning
 
-### Platform Extensions
-- **VS Code Extension**: Integrated repository visualization
-- **Desktop Application**: Electron wrapper for enhanced file access
-- **Mobile Optimization**: Touch-friendly interactions
+### Quality Assurance
+- **Accessibility Testing**: Real screen reader users for usability validation
+- **Performance Testing**: Automated benchmarks on representative hardware
+- **Cross-Browser Testing**: Support matrix verification across target browsers
 
-### Integrations
-- **Additional Git Providers**: Bitbucket, Azure DevOps support
-- **CI/CD Systems**: Jenkins, Azure Pipelines, etc.
-- **Issue Trackers**: Jira, Linear integration
-
-## Conclusion
-
-This development plan prioritizes privacy, accessibility, and performance while building a robust foundation for future enhancements. Each phase builds incrementally toward a complete solution that serves both Git beginners and experienced developers.
+For current project status and getting started information, see the main [README.md](../README.md).

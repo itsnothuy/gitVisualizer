@@ -116,7 +116,7 @@ export class GitHubApiClient {
    */
   constructor(token?: string) {
     this.token = token || process.env.NEXT_PUBLIC_GITHUB_TOKEN;
-    
+
     // Debug environment variable availability
     console.log('🐛 GitHub API Client initialized:', {
       hasProvidedToken: !!token,
